@@ -1,0 +1,53 @@
+/* CSS Document */
+
+#dcom_ajax_proccessbar{
+	display:block;
+	position:fixed;
+	top:0px;
+	left:0px;
+	height:5px;
+	background:#67CF22;
+	width:0px;
+	z-index:200000;
+}
+
+#dcom_ajax_loading {
+  width: 60px;
+  height: 60px;
+  position:absolute;
+  margin: 100px;
+  z-index:200000;
+  
+}
+.dcom_ajax_loading-bounce1, .dcom_ajax_loading-bounce2 {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #67CF22;
+  opacity: 0.6;
+  position: absolute;
+  top: 0;
+  left: 0;
+  -webkit-animation: bounce 2.0s infinite ease-in-out;
+  animation: bounce 2.0s infinite ease-in-out;
+}
+ 
+.dcom_ajax_loading-bounce2{
+  -webkit-animation-delay: -1.0s;
+  animation-delay: -1.0s;
+}
+ 
+@-webkit-keyframes bounce {
+  0%, 100% { -webkit-transform: scale(0.0) }
+  50% { -webkit-transform: scale(1.0) }
+}
+ 
+@keyframes bounce {
+  0%, 100% { 
+    transform: scale(0.0);
+    -webkit-transform: scale(0.0);
+  } 50% { 
+    transform: scale(1.0);
+    -webkit-transform: scale(1.0);
+  }
+}

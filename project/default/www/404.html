@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Not Found</title>
+    <style>
+        body{font-family:"Microsoft Yahei"}
+        .box{width: 370px;height: 315px;margin: 181px auto;}
+        .text-center{text-align: center}
+        .tip{font-size: 24px;color:#1e3a49}
+        .word{font-size: 18px!important;color:#666666}
+        .return_button a{text-decoration: none;display:inline-block;width:150px;height:42px;line-height:42px;text-align:center;color:#fff;background: #24d698;font-size: 14px;margin-top: 40px}
+        .return_button a:first-child{margin-right: 44px}
+    </style>
+</head>
+<body>
+<div class="box">
+    <div class="text-center"><img src="/static/images/404_cry.png" alt=""></div>
+    <div class="text-center">
+        <p class="tip">无法找到您想要的页面！</p>
+        <p class="word">该页面可能被删除、转移或暂时不可用</p>
+    </div>
+    <div class="return_button">
+        <a href="javascript:history.go(-1)"><span class="num">5</span>秒后返回上一级页面</a>
+        <a href="http://hf.fclm.com/">立即返回首页</a>
+    </div>
+</div>
+<script>
+    var countnum = function(){
+        var countdown=document.getElementsByClassName('num')[0];
+        var timeoutflag=window.setTimeout(function(){
+            countdown.innerHTML--;
+            if(countdown.innerHTML>0){
+                countnum();
+            }else{
+                clearTimeout(timeoutflag);
+                window.location.href="javascript:history.go(-1)";
+            }
+        }, 1000);
+    };
+    countnum();
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+.bus_dlg {
+     width: 560px !important;
+     position: absolute;
+ }
+.bus_dlg .dcom-sys-dlg-container {min-height: 570px!important;}
+
+
+
+.bus_dlg .g_fenye_body{
+    text-align: center;
+    float: none !important;
+}
+.bus_dlg .dcom-listview-body li{
+    width: 33.33%;
+}
+
+.add-btn a{
+    display: inline-block;
+    padding: 8px 24px;
+    border: 1px solid #5196e2;
+    margin-right: 10px;
+    border-radius: 5px;
+    background: #5196e2;
+    color: #fff;
+}
+
+.g-formctrl-radio-item i{
+    width: 16px !important;
+    height: 16px !important;
+}
+.dlg-skin-1 .dcom-sys-dlg-title h3{
+    text-align: center;
+}
+
+.bus_dlg .dcom-listview-head{
+    width:560px !important;
+}
+.bus_dlg .dcom-listview-head ul li{
+    width: 33.33%;
+}
+
+.dcom-listview-body dl dd.on{
+    background: #24D698 !important;
+}
+
+
+.bus_dlg .dcom-sys-dlg-title {width: 510px !important}
+.bus_dlg .dcom-sys-dlg-title h3{padding-left: 20px;}
+.bus_dlg.dlg-skin-1 .dcom-sys-dlg-close { background: #24D698;}
+.newpost_title a{ display: inline-block; width: 100px; height: 30px;  margin-right:20px;text-align: center; line-height: 30px; color: #24D698; border: 1px solid #24D698;}
+.newpost_title a.active{ background:#24D698; color: #fff;}
+.newpost_status .g-select-input{ border-color: #000;}
+.newpost_status .g-select-control,.newpost_status .g-select-control .g-select-list{ width: 123px !important;}
+.xianlu .g-formctrl-inputwrap,
+.sort .g-formctrl-inputwrap {width: 230px!important;}
+.g-formctrl-radiowrap {margin-left: 12px;}
+.g-formctrl-radio-item.checked i {background-position: -31px -50px;}
+.g-formctrl-radio-item i {background-position: -31px -70px;}
+.bus_dlg .dialog_btn {position:absolute!important;left:105px!important;bottom:30px!important;}
+.newpost_bmselect a{ display: block; width: 280px; height: 23px; z-index: 10;}
+.newpost_gangwei .g-formctrl-inputwrap{ width: 121px;}
+.dialog_btn a{display: inline-block; float:left;width: 80px; height: 30px;  margin-right:20px;text-align:center;line-height: 30px; color: #24D698; border: 1px solid #24D698;}
+.dialog_btn a.active{ background:#24D698; color: #fff;}
+.city_list.g-formctrlnode{ position: relative !important;}
+.city_list{ width: 280px;}
+.city_list .lists_city {float: left;width: 80px;}
+.city_list span{ position: relative; padding-left: 15px; }
+.newpost_bumen .g-formctrl-textarea .g-formctrl-textareawrap{height: 21px;}

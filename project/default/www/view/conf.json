@@ -1,0 +1,6 @@
+{
+  "jsrootpath":"/static/js/",
+  "jslibpath":"/static/lib/",
+  "cssrootpath":"/static/css/",
+  "pluginpath":"/static/plugin/"
+}

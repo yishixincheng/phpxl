@@ -1,0 +1,163 @@
+/* CSS Document */
+
+.dcom-sys-dlg{
+	
+}
+
+.g_dragging{
+	cursor:move;
+}
+
+.dcom-sys-dlg-graybg{
+	width:100%; height:100%; 
+	position:fixed; 
+	z-index:19998; 
+	top:0px; 
+	left:0px; 
+	filter:Alpha(Opacity=60); 
+	background:#000;
+	opacity:0.6;
+}
+.dcom-sys-dlg-modalbg{
+	width:100%; height:100%; 
+	position:fixed; 
+	z-index:19999; 
+	top:0px; 
+	left:0px; 
+	filter:Alpha(Opacity=20); 
+	background:#fff;
+	opacity:0.2;
+}
+.dcom-sys-dlg-body{padding:5px; z-index:19999; position:absolute;}
+.dcom-sys-dlg-container{position:relative;z-index:1; background:#fff; border-radius:0px 0px 3px 3px;}
+.dcom-sys-dlg-container.black{
+	background:#000;
+	filter:Alpha(Opacity=85);
+	opacity:0.85;
+	border:1px solid #848484;
+}
+.dcom-sys-dlg-close{
+	right:10px;
+	top:10px;
+	width:32px;
+	height:32px;
+	cursor:pointer;
+	display:block;
+	position:absolute;
+	background:url(../images/dlg-close.png) no-repeat;
+	background-size:contain;
+}
+.dcom-sys-dlg-title{
+	background:#2d353c;
+    color: #fff;
+    height: 30px;
+    line-height: 30px;
+    width: 100%;
+}
+.dcom-sys-dlg-title h3{
+	color:#fff;
+	font-weight:normal;
+	padding:0px;
+	margin:0px;
+	display:block;
+    font-family: Microsoft Yahei;
+    font-size: 12px;
+    height: 30px;
+    width: auto;
+}
+.dcom-sys-dlg-container.black .dlg_popdlg_title{
+	background:none;
+	color:#efefef;
+}
+.dcom-sys-dlg-container.black .dlg_popdlg_title h3{
+	color:#efefef;
+}
+
+.dcom-sys-dlg-layerbg{
+   background:#000000;
+   border-radius: 3px 3px 3px 3px;
+   height: 100%;left: 0;
+   filter:Alpha(Opacity=10);opacity: 0.1;
+   position: absolute;
+   top: 0px;
+   width: 100%;
+   z-index:-1;
+}
+
+.dcom-sys-modeldlg .dcom-sys-dlg-container{
+	
+    box-shadow: 0px 2px 5px #aaa;
+}
+
+.dcom-sys-dlg-title-attach{
+	width:auto;
+	height: 30px;
+	position: absolute;
+	left:5px;
+	top:5px;
+}
+
+
+/*皮肤*/
+
+.dlg-skin-1 .dcom-sys-dlg-title{
+	background:#2d353c;
+	height:30px;
+
+}
+.dlg-skin-1 .dcom-sys-dlg-layerbg{
+	filter:Alpha(Opacity=0);
+	opacity: 0;
+}
+
+.dlg-skin-1 .dcom-sys-dlg-title h3{
+	padding-left: 30px;
+	height:30px;
+	line-height:30px;
+}
+.dlg-skin-1 .dcom-sys-dlg-close{
+    color: #fff;
+    font-size: 18px;
+    text-align: center;
+    width: 50px;
+	background:#76a6ef;
+	position:absolute;
+	right:5px;
+	height:30px;
+	top:5px;
+}
+/*蓝色皮肤*/
+.blueskindlg  .dcom-sys-dlg-close{
+	background:#00A6CF;
+}
+
+/*深蓝色皮肤*/
+.shenblueskindlg .dcom-sys-dlg-close{
+	background:#016db6;
+}
+
+/*紫色皮肤*/
+.purpleskindlg  .dcom-sys-dlg-close{
+	background:#ce8df1;
+}
+.purpleskindlg .dlg-form-submit{background:#ce8df1; display:inline-block;width:135px; height:25px; line-height: 25px; margin-left:0}
+.purpleskindlg  .dlg-form-cancel{
+	background: #fff none repeat scroll 0 0;
+    color: #ce8df1;
+	border:1px solid #ce8df1;
+    display: inline-block;
+    line-height: 25px;
+    margin-left: 10px;
+    margin-top: 20px;
+    text-align: center;
+    width: 135px;
+	height:25px;
+}
+
+
+
+
+
+
+
+

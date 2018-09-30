@@ -1,0 +1,136 @@
+/* CSS Document */
+
+.dcom-sys-confirm{
+	
+}
+
+.g_dragging{
+	cursor:move;
+}
+
+.dcom-sys-confirm-graybg{
+	width:100%; height:100%; 
+	position:fixed; 
+	z-index:19998; 
+	top:0px; 
+	left:0px; 
+	filter:Alpha(Opacity=50); 
+	background:#000;
+	opacity:0.5;
+}
+.dcom-sys-confirm-modalbg{
+	width:100%; height:100%; 
+	position:fixed; 
+	z-index:19999; 
+	top:0px; 
+	left:0px; 
+	filter:Alpha(Opacity=20); 
+	background:#fff;
+	opacity:0.2;
+}
+.dcom-sys-confirm-body{padding:5px; z-index:199999; position:absolute;}
+.dcom-sys-confirm-container{position:relative;z-index:1; background:#fff; border-radius:0px 0px 3px 3px; padding:10px;}
+.dcom-sys-confirm-container.black{
+	background:#000;
+	filter:Alpha(Opacity=85);
+	opacity:0.85;
+	border:1px solid #848484;
+}
+.dcom-sys-confirm-tip{
+	display:block;
+	text-align:center;
+	padding-top:20px;
+	color:#000;
+	font-size:14px;
+	
+}
+.dcom-sys-confirm-okbutton,.dcom-sys-confirm-cancelbutton{
+	height:30px;
+	background:#76a6ef;
+	display:inline-block;
+	text-align:center;
+	line-height:30px;
+	margin:35px 20px 20px 20px;
+	border:none;
+	padding: 0px 10px;
+	color:#fff;
+}
+.dcom-sys-confirm-cancelbutton{
+	background:#444;
+	color:#fff;
+}
+
+.dcom-sys-confirm-close{
+	right:10px;
+	top:10px;
+	width:32px;
+	height:32px;
+	cursor:pointer;
+	display:block;
+	position:absolute;
+	background:url(../images/dlg-close.png) no-repeat;
+	background-size:contain;
+}
+.dcom-sys-confirm-title{
+	background: none repeat scroll 0 0 #F8F8F8;
+    color: #666666;
+    height: 42px;
+    line-height: 42px;
+    width: 100%;
+	border-radius:3px 3px 0px 0px;
+}
+.dcom-sys-confirm-title h3{
+	color:#313131;
+	padding:0px;
+	margin:0px;
+	display:block;
+    font-family: Microsoft Yahei;
+    font-size: 16px;
+    font-weight: bold;
+    height: 42px;
+    padding-left: 18px;
+    width: auto;
+}
+.dcom-sys-confirm-container.black .dlg_popdlg_title{
+	background:none;
+	color:#efefef;
+}
+.dcom-sys-confirm-container.black .dlg_popdlg_title h3{
+	color:#efefef;
+}
+
+.dcom-sys-confirm-layerbg{
+   background:#000000;
+   border-radius: 3px 3px 3px 3px;
+   height: 100%;left: 0;
+   filter:Alpha(Opacity=10);opacity: 0.1;
+   position: absolute;
+   top: 0px;
+   width: 100%;
+   z-index:-1;
+}
+
+/*皮肤*/
+
+.dlg-skin-1 .dcom-sys-confirm-title{
+	background:#eee;
+	height:35px;
+}
+.dlg-skin-1 .dcom-sys-confirm-layerbg{
+	background:#ccc;
+	border-radius:5px;
+	filter:Alpha(Opacity=90);
+	opacity: 0.9;
+}
+
+.dlg-skin-1 .dcom-sys-confirm-title h3{
+	height:35px;
+	line-height:35px;
+}
+.dlg-skin-1 .dcom-sys-confirm-close{
+	right:13px;
+	top:13px;
+	width:20px;
+	height:20px;
+	background:url(../images/dlg-close1.png) no-repeat;
+}

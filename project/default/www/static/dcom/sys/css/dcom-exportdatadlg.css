@@ -1,0 +1,35 @@
+/* CSS Document */
+
+.dcom-exportdata-body{
+	padding:20px 10px;
+}
+
+.dcom-exportdata-body h3{
+	height:25px;
+	line-height:25px;
+	background:#f8f8f8;
+}
+
+.dlg-exportdata-butt a{
+	background:#ff8b00;
+	color:#fff;
+	height:32px;
+	border-radius:5px;
+	line-height:32px;
+	width:120px;
+	padding:0px 20px;
+	display:block;
+	margin-left:65px;
+}
+.dlg-exportdata-pagenum{
+	position: relative;
+	height: 35px;
+}
+.dlg-exportdata-pagenum input{
+	width: 50px;
+}
+.dlg-exportdata-pagenum .g-formctrl-tip{
+	padding-left:4px;
+}
+
+

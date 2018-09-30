@@ -1,0 +1,10 @@
+li{ list-style: none;}
+.citylistdlg .dcom-sys-dlg-title h3{padding-left: 20px;}
+.citylistdlg.dlg-skin-1 .dcom-sys-dlg-close { background: #E70011;}
+.citylist_key a{  display:block; width: 100px; height: 30px; text-align: center; line-height: 30px; background: #E70011; color: #fff;}
+.citylist a{ font-weight: bold; margin-right: 10px;}
+.all_city_list{ width: 470px; height: 220px; overflow-y: auto; }
+.all_city_list a{ display: block; float: left; width: 78px; height: 30px; }
+.citylist a.active{color: #E70011;}
+.hot_city_list{ width: 470px; height: 220px; overflow-y: auto; }
+.hot_city_list a{ display: block; float: left; width: 38px; height: 30px; }

@@ -1,0 +1,25 @@
+.dcom-sys-dlg-container {min-height: 250px !important;}
+.NewPostdlg .dcom-sys-dlg-title h3{padding-left: 20px;}
+.NewPostdlg.dlg-skin-1 .dcom-sys-dlg-close { background: #76a6ef;}
+.newpost_title a{ display: inline-block; width: 100px; height: 30px;  margin-right:20px;text-align: center; line-height: 30px; color: #76a6ef; border: 1px solid #76a6ef;}
+.newpost_title a.active{ background:#76a6ef; color: #fff;}
+.newpost_status .g-select-input{ border-color: #000;}
+.newpost_status .g-select-control,.newpost_status .g-select-control .g-select-list{ width: 123px !important;}
+.password .g-formctrl-inputwrap {width: 200px!important;}
+
+.roleName textarea{ width: 100px; height: 20px}
+.remark textarea{width: 330px; height: 20px;}
+
+.dcom-newpostdlg-box .dialog_btn {position:absolute!important;left:110px!important;bottom:30px!important;}
+.newpost_bmselect a{ display: block; width: 280px; height: 23px; z-index: 10;}
+.newpost_gangwei .g-formctrl-inputwrap{ width: 121px;}
+.dialog_btn a{display: inline-block; float:left;width: 50px; height: 30px;  margin-right:20px;text-align:center;line-height: 30px; color: #76a6ef; border: 1px solid #76a6ef;}
+.dialog_btn a.active{ background:#76a6ef; color: #fff;}
+.city_list.g-formctrlnode{ position: relative !important;}
+.city_list{ width: 280px;}
+.city_list .lists_city {float: left;width: 80px;}
+.city_list span{ position: relative; padding-left: 15px; }
+
+.dcom-newpostdlg-box i.g-formctrl-checkbox-item{ position: absolute; top: 2px; left: -5px; width:15px; height:15px;background: url("/static/images/redios.png") no-repeat -49px -90px;}
+.dcom-newpostdlg-box i.g-formctrl-checkbox-item.checked{ background-position: -31px -90px;}
+.newpost_bumen .g-formctrl-textarea .g-formctrl-textareawrap{height: 21px;}

@@ -1,0 +1,33 @@
+/* CSS Document */
+
+.if_p_alertbody{position:absolute;height:60px;z-index:20000; background:#000; opacity:0.5;filter:Alpha(Opacity=50); color:#fff; border-radius:5px;}
+.if_p_alert_left{ width:4px; height:58px; position:absolute; left:0px; top:0px;}
+.if_p_alert_right{width:4px; height:58px; position:absolute; right:0px; top:0px;}
+.if_p_alert_mid{ height:58px; position:absolute; left:8px; top:0px;}
+
+.if_p_alert_mid span{
+    position:relative;
+    top:14px;
+    left:10px;
+    display:block;
+    height:30px;
+    line-height:30px;
+    color:#fff;
+    padding-left:36px;
+    font-size:16px;
+    font-weight:bold;
+
+}
+.if_p_alert_mid span i{
+    height:64px;
+    width:64px;
+    display:block;
+    position:absolute;
+    left:-17px;
+    top:-17px;
+    background-size:contain;
+}
+
+.if_p_alert_mid .right i{background-image:url(../images/right1.png);}
+.if_p_alert_mid .error i{background-image:url(../images/error1.png);}
+.if_p_alert_mid .notice i{background-image:url(../images/notice1.png);}

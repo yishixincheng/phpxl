@@ -1,0 +1,73 @@
+html{
+    overflow-y: scroll;
+}
+.dcom-sys-pic-graybg{
+	/*width:100%; 
+    height:100%; */
+	position:fixed; 
+	z-index:44001;
+	top:0px; 
+	left:0px; 
+	filter:Alpha(Opacity=100); 
+	background:#000;
+	opacity:1;
+}
+.dcom-sys-pic-close.g-layerclose{
+	right:10px;
+	top:10px;
+	width:60px;
+	height:60px;
+	cursor:pointer;
+	display:block;
+	position:fixed;
+	background:url(../images/60.png) no-repeat;
+	background-size:contain;
+    z-index:500000; 
+}
+.dcom-sys-pic-imgwrap{
+	position: relative;
+}
+.dcom-sys-pic-imgwrap li.curs img{
+	z-index: 45000;
+}
+.dcom-sys-pic-arrow{
+	position: fixed;
+	top:45%;
+	font-size: 80px;
+	font-family: '宋体';
+	z-index: 45000;
+	font-weight: bold;
+	color:#f59c1a;
+	cursor: pointer;
+	width: 300px;
+	text-align: center;
+}
+.dcom-sys-pic-arrow.dcom-sys-pic-left{
+	left:0;
+}
+.dcom-sys-pic-arrow.dcom-sys-pic-right{
+	right:0;
+}
+.dcom-sys-pic-img{
+    position: fixed;
+    margin: auto;
+	left:0;
+	top:0;
+	bottom: 0;
+	right: 0;
+	display: block;
+    z-index:44000;
+}
+.dcom-sys-pic-title{
+	color: #fff;
+	position: fixed;
+	top: 20px;
+	left: 47%;
+	z-index: 45000;
+	font-size: 20px;
+}
+.dcom-sys-pic-title span{
+	color: #fff;
+	margin-left: 12px;
+}
+

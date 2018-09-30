@@ -1,0 +1,67 @@
+/* CSS Document */
+
+.dcom-listview-head{
+	background: #f4f5f7 none repeat scroll 0 0;
+    color: #364454;
+    height: 40px;
+    line-height: 40px;
+    width: 100%;
+}
+
+.dcom-listview-head ul li{
+	float: left;
+    position: relative;
+    text-align: center;
+}
+.dcom-listview-head *{
+	color:#364454;
+    font-weight: 700;
+}
+
+/*.dcom-listview-body *{
+	min-height:1px;
+}*/
+
+.dcom-listview-body dl dd.on{
+	background:#0000ff;
+	color:#fff;
+}
+.dcom-listview-body dl dd.on *{
+	color:#fff;
+}
+.dcom-listview-body dl dd ul li{
+    float: left;
+}
+
+.dcom-listview-head .orderbynode{
+	cursor:pointer;
+}
+
+.dcom-listview-head .orderbynode i{
+	display:block;
+    background: url("/static/images/arrow.png") no-repeat scroll -23px 0;
+    height: 16px;
+    position: absolute;
+    right: 5px;
+    top: 12px;
+    width: 10px;
+}
+.dcom-listview-head .orderbynode i.down{
+	
+	background-position:-12px 0px;
+}
+
+.dcom-listview-head .orderbynode i.up{
+	background-position:-1px 0px;
+}
+.dcom-listview-body dd{ height: 40px;}
+.dcom-listview-body dd li{
+    height:40px;
+    line-height: 40px;
+    text-align: center;
+    overflow:hidden;
+}
+
+.dcom-listview-body dd:nth-child(2n) {
+    background: #f1f1f1;
+}

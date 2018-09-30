@@ -1,0 +1,97 @@
+{
+	"hosts":{
+		"master":{
+			"name":"主站点",          //特点，流量大，读多写少
+			"host":"localhost",               //用于内网通信
+			"url":"www.xxx.cn",               //域名,用于外网通信
+			"rpc_appkey":"xxx",     //rpc,appkey
+			"rpc_appsecret":"111"  //rpc通信秘钥
+		}
+	},
+	"dbhosts":{
+		"host1":{
+			"host":"localhost",
+			"username":"root",
+			"password":"test",
+			"port":"3306",
+			"driver":"pdo"
+		}
+	},
+	"scheme":{
+		"xl_demodb2":{
+			"name":"用户主库",
+			"masterhost":"host1",
+			"slavehost":"host1",
+			"branch":{
+				"img":{
+					"name":"图片数据库",
+					"masterhost":"host1",
+					"slavehost":"host1",
+					"tables":{
+						"mysellfy":{
+							"sharding":{
+								"1_5":{   //mysellfy1~mysellfy5的数据表在如下主机对应的数据库里，具体的路由规则在Model文件里配置
+									"masterhost":"host1",
+									"slavehost":"host3"
+								},
+								"6_":{    //mysellfy6~其他尾号的数据表，在如下对应的数据库里，具体的路由规则在Model文件里配置
+									"masterhost":"host3",
+									"slavehost":"host2"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"xl_chat":{
+			"name":"用户聊天主库",
+			"masterhost":"host1",
+			"slavehost":"host1",
+			"tables":{
+				"chatlog":{
+					"sharding":{
+						"1_5":{
+							"masterhost":"host1",
+							"slavehost":"host1"
+						},
+						"6_":{
+							"masterhost":"host1",
+							"slavehost":"host1"
+						}
+					}
+				},
+				"chatuser":{
+					"sharding":{
+						"1_5":{
+							"masterhost":"host1",
+							"slavehost":"host1"
+						},
+						"6_":{
+							"masterhost":"host1",
+							"slavehost":"host1"
+						}
+					}
+				},
+				"chattoken":{
+					"sharding":{
+						"1_5":{
+							"masterhost":"host1",
+							"slavehost":"host1"
+						},
+						"6_":{
+							"masterhost":"host1",
+							"slavehost":"host1"
+						}
+					}
+				}
+			}
+		},
+		"xl_demodb1":{
+			"name":"数据库1",
+			"masterhost":"host1",
+			"slavehost":"host1"
+		}
+	},
+	"domain":"xxxx.com"
+}

@@ -1,0 +1,88 @@
+/* CSS Document */
+
+.dcom-importdata-body{
+	padding:20px;
+}
+
+.dcom-importdata-control{
+	height:50px;
+	border:1px solid #ddd;
+	position:relative;
+}
+.dcom-importdata-control a{
+	position:relative;
+	display:block;
+	cursor:pointer;
+	line-height:50px;
+	text-indent:60px;
+	font-size:16px;
+	color:#999;
+}
+
+.dcom-importdata-control a i{
+	background:url(/static/images/uppicico.png) 0px -40px;
+	width:40px;
+	height:40px;
+	display:block;
+	left:10px;
+	top:5px;
+	position:absolute;
+			
+}
+.dcom-importdata-control input[type="file"]{
+	width:300px;
+	height:40px;
+	position:absolute;
+	left:10px;
+	top:5px;
+	z-index:10;
+	filter:alpha(opacity=0);
+	opacity:0;
+}
+
+.dcom-importdata-tip{
+	line-height:30px;
+	color:#aaa;
+	font-size:12px;
+	margin-top:20px;
+}
+
+.dcom-importdata-columns{
+	width:480px;
+	line-height:20px;
+	overflow-x:hidden;
+	margin-top:5px;
+}
+.dcom-importdata-columns ul{
+	height:20px;
+}
+.dcom-importdata-columns ul li{
+	float:left;
+	padding:0 5px;
+	line-height:20px;
+	color:#333;
+	font-weight:bold;
+	height:20px;
+	border:1px solid #ddd;
+	margin-left:-1px;
+	top:-1px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

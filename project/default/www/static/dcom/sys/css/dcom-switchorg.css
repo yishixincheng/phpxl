@@ -1,0 +1,30 @@
+.dcom-org-box{
+    padding:20px;
+}
+
+
+.dcom-org-box ul{
+	display:inline-block;
+}
+
+.dcom-org-box ul li{
+	width:200px;
+	height:30px;
+	line-height:30px;
+	text-align:center;
+	border:1px solid #000;
+	cursor:pointer;
+}
+.dcom-org-box ul li.active{
+	background:#f59c1a;
+	color:#fff;
+}
+.dcom-org-box .org_title{
+	vertical-align:top;
+}
+.current_info,.main_info,.other_info{
+	height:40px;
+}
+.other_info ul li{
+	margin-bottom:10px;
+}
