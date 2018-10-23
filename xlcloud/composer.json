@@ -1,0 +1,5 @@
+{
+    "require": {
+        "qcloud/weapp-sdk": "^2.2"
+    }
+}
