@@ -1,0 +1,5 @@
+{
+    "require": {
+        "xlext/weapp-php-sdk": "^1.0"
+    }
+}

@@ -19,6 +19,10 @@ class ComposerStaticInitb619c181796e707e067b186be536006b
     );
 
     public static $prefixLengthsPsr4 = array (
+        'X' => 
+        array (
+            'Xl_WeApp_SDK\\' => 13,
+        ),
         'W' => 
         array (
             'Workerman\\' => 10,
@@ -79,6 +83,10 @@ class ComposerStaticInitb619c181796e707e067b186be536006b
     );
 
     public static $prefixDirsPsr4 = array (
+        'Xl_WeApp_SDK\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/xlext/weapp-php-sdk/src',
+        ),
         'Workerman\\' => 
         array (
             0 => __DIR__ . '/..' . '/workerman/workerman',

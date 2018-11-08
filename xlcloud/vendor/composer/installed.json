@@ -1813,5 +1813,44 @@
             "asynchronous",
             "event-loop"
         ]
+    },
+    {
+        "name": "xlext/weapp-php-sdk",
+        "version": "1.0.0",
+        "version_normalized": "1.0.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/yishixincheng/Xl_WeApp_SDK.git",
+            "reference": "cef139a9c8bfdccb406be8de38835367910310b9"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/yishixincheng/Xl_WeApp_SDK/zipball/cef139a9c8bfdccb406be8de38835367910310b9",
+            "reference": "cef139a9c8bfdccb406be8de38835367910310b9",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.6.0"
+        },
+        "time": "2018-11-08T07:23:20+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Xl_WeApp_SDK\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "Apache-2.0"
+        ],
+        "description": "Weapp sdk of php",
+        "homepage": "https://github.com/yishixincheng/Xl_WeApp_SDK",
+        "keywords": [
+            "php",
+            "sdk",
+            "weapp",
+            "xl"
+        ]
     }
 ]

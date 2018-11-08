@@ -6,6 +6,7 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'Xl_WeApp_SDK\\' => array($vendorDir . '/xlext/weapp-php-sdk/src'),
     'Workerman\\' => array($vendorDir . '/workerman/workerman'),
     'Twig\\' => array($vendorDir . '/twig/twig/src'),
     'Tightenco\\Collect\\' => array($vendorDir . '/tightenco/collect/src/Collect'),
