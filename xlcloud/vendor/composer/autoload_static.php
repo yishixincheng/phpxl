@@ -39,7 +39,6 @@ class ComposerStaticInitb619c181796e707e067b186be536006b
             'Symfony\\Component\\Yaml\\' => 23,
             'Symfony\\Component\\VarDumper\\' => 28,
             'Symfony\\Component\\Filesystem\\' => 29,
-            'Symfony\\Component\\EventDispatcher\\' => 34,
             'Symfony\\Component\\DependencyInjection\\' => 38,
             'Symfony\\Component\\Config\\' => 25,
         ),
@@ -51,7 +50,6 @@ class ComposerStaticInitb619c181796e707e067b186be536006b
         array (
             'QL\\Ext\\' => 7,
             'QL\\' => 3,
-            'QCloud_WeApp_SDK\\' => 17,
         ),
         'P' => 
         array (
@@ -119,10 +117,6 @@ class ComposerStaticInitb619c181796e707e067b186be536006b
         array (
             0 => __DIR__ . '/..' . '/symfony/filesystem',
         ),
-        'Symfony\\Component\\EventDispatcher\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/symfony/event-dispatcher',
-        ),
         'Symfony\\Component\\DependencyInjection\\' => 
         array (
             0 => __DIR__ . '/..' . '/symfony/dependency-injection',
@@ -143,10 +137,6 @@ class ComposerStaticInitb619c181796e707e067b186be536006b
         'QL\\' => 
         array (
             0 => __DIR__ . '/..' . '/jaeger/querylist/src',
-        ),
-        'QCloud_WeApp_SDK\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/qcloud/weapp-sdk/lib',
         ),
         'Psr\\Log\\' => 
         array (
@@ -206,13 +196,6 @@ class ComposerStaticInitb619c181796e707e067b186be536006b
                 0 => __DIR__ . '/..' . '/twig/twig/lib',
             ),
         ),
-        'Q' => 
-        array (
-            'Qcloud\\Cos\\' => 
-            array (
-                0 => __DIR__ . '/..' . '/qcloud/cos-sdk-v5/src',
-            ),
-        ),
         'P' => 
         array (
             'PhantomInstaller\\' => 
@@ -225,17 +208,6 @@ class ComposerStaticInitb619c181796e707e067b186be536006b
             'JonnyW\\PhantomJs\\' => 
             array (
                 0 => __DIR__ . '/..' . '/jonnyw/php-phantomjs/src',
-            ),
-        ),
-        'G' => 
-        array (
-            'Guzzle\\Tests' => 
-            array (
-                0 => __DIR__ . '/..' . '/guzzle/guzzle/tests',
-            ),
-            'Guzzle' => 
-            array (
-                0 => __DIR__ . '/..' . '/guzzle/guzzle/src',
             ),
         ),
     );
