@@ -306,6 +306,12 @@ class XlMvcBase extends XlHookBase {
      */
     final public function Logic($clsname,$binds=null,$iscache=1){
 
+        if(!$binds){
+            if($this->_Isplugin){
+                $binds=['properties'=>['_Isplugin'=>$this->_Isplugin,'_Ns'=>$this->_Ns]];
+            }
+        }
+
         return __autocreaterunobject("logic",$clsname,$iscache,$binds,$this->_Isplugin?$this->_Ns:null);
 
     }
