@@ -4,7 +4,7 @@
    "keywords":["php","sdk","weapp","xl"],
    "license" : "Apache-2.0",
    "homepage": "https://github.com/yishixincheng/Xl_WeApp_SDK",
-   "version": "1.0.0",
+   "version": "1.0.1",
    "require" : {
       "php" : ">=5.6.0"
    },

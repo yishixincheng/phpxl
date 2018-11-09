@@ -44,7 +44,7 @@ $loginService=App::getService("Login");
 $loginService->login(function($method,$params){
 
     swtich($method){
-        case "findUserByOpenId":  //跟据openid从数据表获取用户信息
+        case "findUserByOpenId":  //根据openid从数据表获取用户信息
         $result="";
         break;
         case "storeUserInfo":  //更新存储用户信息
@@ -61,7 +61,7 @@ $loginService->login(function($method,$params){
 $loginService->check(function($method,$params){
 
     if($method=="findUserBySKey"){
-         //跟据skey从数据表获取用户信息
+         //根据skey从数据表获取用户信息
          return $userinfo;
     }
    

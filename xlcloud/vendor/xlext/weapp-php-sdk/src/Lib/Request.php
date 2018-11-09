@@ -35,12 +35,17 @@ class Request {
         if (isset($options['data'])&&$options['method']=="POST") {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $options['data']);
         }else{
-            if(is_array($options['data'])&&$options['data']){
-                $queryStr=http_build_query($options['data']);
+            if(isset($options['data'])&&$options['data']){
+
+                if(is_array($options['data'])){
+                    $queryStr=http_build_query($options['data']);
+                }else{
+                    $queryStr=$options['data'];
+                }
                 if(strpos($options['url'],"?")){
                     $options['url'].="&".$queryStr;
-                }else{
-                    $options['url'].="?".$queryStr;
+                }else {
+                    $options['url'] .= "?" . $queryStr;
                 }
             }
         }

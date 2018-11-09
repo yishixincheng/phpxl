@@ -1507,16 +1507,16 @@
         },
         {
             "name": "xlext/weapp-php-sdk",
-            "version": "1.0.0",
+            "version": "1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/yishixincheng/Xl_WeApp_SDK.git",
-                "reference": "cef139a9c8bfdccb406be8de38835367910310b9"
+                "reference": "26e58154e2aceccd6ffb92c4ed2b1c5a0b6414da"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/yishixincheng/Xl_WeApp_SDK/zipball/cef139a9c8bfdccb406be8de38835367910310b9",
-                "reference": "cef139a9c8bfdccb406be8de38835367910310b9",
+                "url": "https://api.github.com/repos/yishixincheng/Xl_WeApp_SDK/zipball/26e58154e2aceccd6ffb92c4ed2b1c5a0b6414da",
+                "reference": "26e58154e2aceccd6ffb92c4ed2b1c5a0b6414da",
                 "shasum": ""
             },
             "require": {
@@ -1540,7 +1540,7 @@
                 "weapp",
                 "xl"
             ],
-            "time": "2018-11-08T07:23:20+00:00"
+            "time": "2018-11-09T05:51:50+00:00"
         }
     ],
     "packages-dev": [],
