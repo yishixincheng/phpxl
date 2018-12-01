@@ -30,7 +30,7 @@ class XlUAccessfirewall{
             return null;
         }
         if(!$this->ip){
-            throw new XlUException("刷新频繁",403); //禁止访问
+            return null;
         }
 
         if($this->whites&&in_array($this->ip,$this->whites)){

@@ -63,14 +63,19 @@ class  XlLead{
             if (is_callable($ins)) {
                 $ins();
             }
+
             if(method_exists($ins,"init")){
+
                 $ins->init();//注册事件
             }
+
             static::$hook=$ins;
 
         }catch (\Exception $e){
             //nothing to do
         }
+
+
 
         if(defined("ISCLIPURE")&&ISCLIPURE){
             //cli模式或者回调模式
@@ -141,7 +146,7 @@ class  XlLead{
             define("CHARSET","utf-8");
         }
         header('Content-type: text/html; charset='.CHARSET);
-        
+
         //读取插件配置文件，并将插件文件载入到自动加载类中
         $plugins_conf_file=PROROOT_PATH.'config'.D_S."plugins.php";
         $plugins_conf=null;
@@ -162,6 +167,7 @@ class  XlLead{
         AutoLoad::run($conf['nss'],$plugins_conf);
         XlStatic::init();
 
+
         if(function_exists('ob_gzhandler')) {
             ob_end_clean();
             ob_start('ob_gzhandler');
@@ -176,6 +182,7 @@ class  XlLead{
     public static function AtoRArray($a_path){
 
         //绝对路径转换为相对路径
+
         $ns='';
         $isplugin=false;
         if(defined("PLUGIN_PATH")&&strpos($a_path,PLUGIN_PATH)===0){
@@ -196,11 +203,11 @@ class  XlLead{
         if(!isset($r_path)){
             return null;
         }
-        $r_path=ltrim($r_path,'/');
+        $r_path=ltrim($r_path,D_S);
         $class_name=null;
         if(substr_compare ($r_path, '.php', strlen($r_path)-4,4,true) ==0){
             $class_name = substr($r_path, 0, strlen($r_path)-4);
-            $class_name = str_replace('/','\\',$class_name);
+            $class_name = str_replace(D_S,'\\',$class_name);
             $class_name=$ns.'\\'.$class_name;
         }
 

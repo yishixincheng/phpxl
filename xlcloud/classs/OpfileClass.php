@@ -10,6 +10,7 @@ class OpfileClass extends XlClassBase {
     private $propcache=[];
 
     function __construct(){
+
         parent::__construct();
     }
     public function getFilePath(){
@@ -20,17 +21,17 @@ class OpfileClass extends XlClassBase {
     public function setParam($filepath,$islocal=true){
         $this->filepath=$filepath;
         if($islocal==true){$this->filepath=$_SERVER['DOCUMENT_ROOT'].$this->filepath;}
-        $farr=explode('/',$this->filepath);
+        $farr=explode(D_S,$this->filepath);
         array_pop($farr);
-        $this->filedir=implode('/',$farr);
+        $this->filedir=implode(D_S,$farr);
     }
     public function C($filepath)
     {
         //改变文件路径
         $this->filepath=$filepath;
-        $farr=explode('/',$this->filepath);
+        $farr=explode(D_S,$this->filepath);
         array_pop($farr);
-        $this->filedir=implode('/',$farr);
+        $this->filedir=implode(D_S,$farr);
     }
     public function Read($one=false)
     {

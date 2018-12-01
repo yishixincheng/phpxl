@@ -268,11 +268,11 @@ class XlRouter extends XlBase{
             if($entry=="."||$entry==".."){
                 continue;
             }
-            $path = $mdl_dir. str_replace('\\', '/', $entry);
+            $path = $mdl_dir. str_replace('\\', D_S, $entry);
             if(is_file($path)){
                 $this->_fetchRoutesFromFile($routes, $path,$method);
             }elseif(is_dir($path)){
-                $this->eachRoutes($routes,$path.'/',$class,$method);
+                $this->eachRoutes($routes,$path.D_S,$class,$method);
             }
         }
         if($dir !== null){
