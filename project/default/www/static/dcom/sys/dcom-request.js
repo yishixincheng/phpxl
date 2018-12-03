@@ -6,17 +6,45 @@
 
 	var Ajax_ProgressBar_Lock=false;
 
+
+    var parseParam=function(param, key){
+        var paramStr="";
+        if(Xl.isObject(param)||Xl.isArray(param)){
+            for(var i in param) {
+                var k = key == null ? i : key + (param instanceof Array ? "[" + i + "]" : "." + i);
+                paramStr += '&' + parseParam(param[i], k);
+            }
+        }else{
+            paramStr+="&"+key+"="+encodeURIComponent(param);
+        }
+        return paramStr.substr(1);
+    };
+
+    var lockKey=function(url,param){
+        if(Xl.isEmpty(param)){
+            return url;
+        }
+        if(/\?[a-zA-Z0-9_]+\=/g.test(url)){
+            url+="&"+parseParam(param);
+        }else{
+            url+="?"+parseParam(param);
+        }
+        return url;
+    };
+
 	var __T=function(p){
 
-        var url=p.u;
-        var data=p.d;
-        var dataType=p.dt;
-        var type=p.t;
-        var success=p.s;
-        var async=p.a;
-        var style=p.st;//1,顶层加载进度条，dom对象是绑定对象上加载进度条，样式自行修改
+        var url=p.url;
+        var data=p.data;
+        var dataType=p.dataType;
+        var type=p.type;
+        var success=p.success;
+        var async=p.async;
+        var style=p.style;//1,顶层加载进度条，dom对象是绑定对象上加载进度条，样式自行修改
         var callbackhook=p.callbackhook;
         var objhook=p.objhook;
+        var disablelock=p.disablelock||false;
+
 
         if(Xl.isFunction(dataType)){
             //顺序,url,data,success,style,datatype,type,asnc
@@ -35,13 +63,55 @@
         type=type||'get';
 
         if($.inArray(type,['post','get'])!=-1){
-            this.Ajax(url,data,dataType,type,success,async,style,callbackhook,objhook);
+            this.Ajax(url,data,dataType,type,success,async,style,disablelock,callbackhook,objhook);
         }
 
 	};
 
+	__T.lockData={};
+
 	__T.prototype={
-        Ajax:function(url,data,dataType,type,success,async,style,callbackhook,objhook){
+
+	    lock:function(url){
+
+	         //默认同一个请求，在没返回结果前锁定，超时自动解锁
+            var d = new Date();
+            var currTime=d.getTime();
+
+            if(__T.lockData.hasOwnProperty(url)){
+
+                var execTime=__T.lockData[url];
+
+                if(execTime>0&&currTime-execTime<3000){
+
+                    //小于3秒锁有效
+                    return true; //锁定
+
+                }else{
+
+                    delete __T.lockData[url]; //释放锁
+
+                    return false;
+                }
+
+            }else{
+
+                __T.lockData[url]=currTime; //设置时间
+
+                return false; //未上锁
+
+            }
+
+
+        },
+        unlock:function(url){
+
+	        if(__T.lockData.hasOwnProperty(url)){
+                delete __T.lockData[url]; //释放锁
+            }
+
+        },
+        Ajax:function(url,data,dataType,type,success,async,style,disablelock,callbackhook,objhook){
 
         	var __t=this;
             data=data||{};
@@ -67,30 +137,55 @@
                 }
             }
 
-            var ajaxObj=Xl.Ajax(url,data,dataType,type,function(d){
-                var isright=true;
-                if(dataType=="json"){
-                    var response=d['response'];
-                    var result=d['result'];
-                    if(response=="fail"){
-                        isright=false;
-                    }
-                }else{
-                    var result=d;
-                }
-                var rt=true;
-                if(Xl.isFunction(callbackhook)){
-                    rt=callbackhook(result,isright);
-                }
-                if(Xl.isFunction(Xl.ajaxHook)){
-                    //钩子
-                    rt=Xl.ajaxHook(result,isright);
-                }
-                if(rt===false){
+            if(!disablelock){
+                //上锁
+                var _lockkey=lockKey(url,data);
+                if(this.lock(_lockkey)){
+                    //锁定直接返回
                     return;
                 }
-                if(Xl.isFunction(success)){
-                    success(result,isright);
+            }
+
+            var ajaxObj=Xl.Ajax(url,data,dataType,type,function(d){
+
+                try {
+                    var isright = true;
+                    if (dataType == "json") {
+                        var response = d['response'];
+                        var result = d['result'];
+                        if (response == "fail") {
+                            isright = false;
+                        }
+                    } else {
+                        var result = d;
+                    }
+                    var rt = true;
+                    if (Xl.isFunction(callbackhook)) {
+                        rt = callbackhook(result, isright);
+                    }
+                    if (Xl.isFunction(Xl.ajaxHook)) {
+                        //钩子
+                        rt = Xl.ajaxHook(result, isright);
+                    }
+                    if (rt === false) {
+                        return;
+                    }
+                    if (Xl.isFunction(success)) {
+                        success(result, isright);
+                    }
+
+                    if(!disablelock){
+                        __t.unlock(_lockkey); //解锁
+                    }
+
+
+                }catch(err){
+
+                    if(!disablelock){
+                        __t.unlock(_lockkey); //解锁
+                    }
+                    throw err;
+
                 }
 
 
@@ -210,7 +305,7 @@
 			//调用接口,必须函数
 			__t.iswait=false;
 			if($.inArray(oiname,__t.outinterface)==-1){
-				alert("调用接口不存在");
+				alert("调用接口不存在","error");
 				return;
 			}
 			if($.isFunction(__t['outi_'+oiname])){

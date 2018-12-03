@@ -1426,15 +1426,18 @@
         return Xl.Dcom.callc("sys/lunbobigpic","look",param);
     };
     //ajax请求
-    Xl.request=function(u,d,dt,t,s,a,st){
-        if(Xl.isUndefined(st)){
-            st=1;
-        }else if(Xl.isNumber(st)){
-            if(st!="0"||st!=1){
-                st=0;
+    Xl.request=function(url,data,dataType,type,success,async,style,disablelock,callbackhook,objhook){
+        if(Xl.isUndefined(style)){
+            style=1;
+        }else if(Xl.isNumber(style)){
+            if(style!="0"||style!=1){
+                style=0;
             }
         }
-        Xl.Dcom.callc("sys/request","open",{u:u,d:d||{},dt:dt||'',t:t,s:s||null,a:a,st:st});
+        Xl.Dcom.callc("sys/request","open",{url:url,data:data||{},dataType:dataType||'',
+            type:type,success:success||null,async:async,style:style,
+            disablelock:disablelock||false,callbackhook:callbackhook||null,
+            objhook:objhook||null});
     };
 
     Xl.confirm=function(tip,fun,cancel){
