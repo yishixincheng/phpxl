@@ -598,7 +598,7 @@
         leftStr:function(a,len,b){
 
             if(!Xl.isString(a)){
-                return;
+                return a;
             }
             if(Xl.isUndefined(b)){
                 b=true;

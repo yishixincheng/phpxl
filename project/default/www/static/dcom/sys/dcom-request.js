@@ -15,6 +15,7 @@
                 paramStr += '&' + parseParam(param[i], k);
             }
         }else{
+            param=Xl.leftStr(param,10,true);
             paramStr+="&"+key+"="+encodeURIComponent(param);
         }
         return paramStr.substr(1);
