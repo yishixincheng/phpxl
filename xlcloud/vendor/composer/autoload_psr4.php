@@ -7,6 +7,7 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Xl_WeApp_SDK\\' => array($vendorDir . '/xlext/weapp-php-sdk/src'),
+    'Xl_MQ\\' => array($vendorDir . '/xlext/mq/src'),
     'Workerman\\' => array($vendorDir . '/workerman/workerman'),
     'Twig\\' => array($vendorDir . '/twig/twig/src'),
     'Tightenco\\Collect\\' => array($vendorDir . '/tightenco/collect/src/Collect'),

@@ -1,5 +1,6 @@
 {
     "require": {
-        "xlext/weapp-php-sdk": "^1.0"
+        "xlext/weapp-php-sdk": "^1.0",
+        "xlext/mq": "^1.0"
     }
 }

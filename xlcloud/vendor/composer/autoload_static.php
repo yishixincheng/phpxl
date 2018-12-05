@@ -22,6 +22,7 @@ class ComposerStaticInitb619c181796e707e067b186be536006b
         'X' => 
         array (
             'Xl_WeApp_SDK\\' => 13,
+            'Xl_MQ\\' => 6,
         ),
         'W' => 
         array (
@@ -84,6 +85,10 @@ class ComposerStaticInitb619c181796e707e067b186be536006b
         'Xl_WeApp_SDK\\' => 
         array (
             0 => __DIR__ . '/..' . '/xlext/weapp-php-sdk/src',
+        ),
+        'Xl_MQ\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/xlext/mq/src',
         ),
         'Workerman\\' => 
         array (

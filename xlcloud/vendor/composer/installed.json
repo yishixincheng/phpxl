@@ -1557,6 +1557,46 @@
         ]
     },
     {
+        "name": "xlext/mq",
+        "version": "1.0.0",
+        "version_normalized": "1.0.0.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/yishixincheng/Xl_MQ.git",
+            "reference": "7b1fc0500166c977e17e11f4b43fdd92ecc12e31"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/yishixincheng/Xl_MQ/zipball/7b1fc0500166c977e17e11f4b43fdd92ecc12e31",
+            "reference": "7b1fc0500166c977e17e11f4b43fdd92ecc12e31",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=5.6.0",
+            "workerman/workerman": ">=3.1.8"
+        },
+        "time": "2018-12-05T07:22:21+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "psr-4": {
+                "Xl_MQ\\": "src/"
+            }
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "MIT"
+        ],
+        "description": "MQ消息队列基于redis",
+        "homepage": "https://github.com/yishixincheng/Xl_MQ",
+        "keywords": [
+            "MQ",
+            "php",
+            "redis",
+            "xl"
+        ]
+    },
+    {
         "name": "xlext/weapp-php-sdk",
         "version": "1.0.1",
         "version_normalized": "1.0.1.0",
