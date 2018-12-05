@@ -11,6 +11,7 @@ class XlMvcBase extends XlHookBase {
     protected static $_modellist=[];
     protected static $_sqlviewlist=[];
     protected static $_datasetlist=[];
+    protected static $_isopenmq=false;
 
     public function __construct() {
 
@@ -335,6 +336,29 @@ class XlMvcBase extends XlHookBase {
     final public function TS($name,$params=null){
 
         return TS($name,$params,$this->_Isplugin,$this->_Ns);
+
+    }
+
+    /**
+     * 添加到消息队列
+     * 结构plugin:folder/taskname
+     */
+    final public function MQ($task,$params=null,$queuename=null){
+
+        $config=null;
+        if(!static::$_isopenmq){
+            static::$_isopenmq=true;
+            $config=config("mq");
+        }
+        if(substr($task,0,1)==":"){
+            if($this->_Isplugin){
+                $task=$this->_Ns.$task;
+            }else{
+                $task=substr($task,1);
+            }
+        }
+        //添加到消息队列中
+        return \xl\api\XlApi::exec("AddMQMessage", ['queuename'=>$queuename,'task'=>$task,'params'=>$params,'config'=>$config]);
 
     }
 

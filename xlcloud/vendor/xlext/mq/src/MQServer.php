@@ -37,6 +37,9 @@ class MQServer{
             });
         };
 
+        \Workerman\Worker::$daemonize=true; //守护进程方式
+        \Workerman\Worker::runAll(); //运行
+
     }
     public static function openTask($worker){
 
