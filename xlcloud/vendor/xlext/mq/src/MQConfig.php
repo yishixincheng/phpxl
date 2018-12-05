@@ -10,15 +10,15 @@ namespace Xl_MQ;
 class MQConfig{
 
 
-    public static $redisHost="localhost"; //redis主机
-    public static $redisPort=6379;         //redis监听端口
-    public static $redisPre="";            //前缀
-    public static $redisPconnect=false;    //是否是长链接
+    public static $RedisHost="localhost"; //redis主机
+    public static $RedisPort=6379;         //redis监听端口
+    public static $RedisPre="";            //前缀
+    public static $RedisPconnect=false;    //是否是长链接
 
 
-    public static $beatSec=0.2;            //2秒检测一次有无新的队列
-    public static $maxProcessesNum=10;     //最多的进程数
-    public static $maxQuequeTaskNum=1000;  //每个队列里同时最多任务数
+    public static $BeatSec=0.2;            //2秒检测一次有无新的队列
+    public static $MaxProcessesNum=10;     //最多的进程数
+    public static $MaxQuequeTaskNum=1000;  //每个队列里同时最多任务数
     
 
     public static function __callStatic($name, $arguemnts) {
@@ -43,6 +43,7 @@ class MQConfig{
         if (!is_array($config)) {
             throw new \Exception("配置参数应该是数组");
         }
+
         $class = get_class();
         foreach ($config as $key => $value) {
             $key = ucfirst($key);

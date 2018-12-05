@@ -19,6 +19,12 @@ class OpenMQServer extends XlApiBase{
     public function run()
     {
 
+        if($this->config&&empty($this->config['redisPre'])){
+            $this->config['redisPre']=md5(DOC_ROOT);
+        }
+
+        print_r($this->config);
+
         \Xl_MQ\MQConfig::setup($this->config);
 
         \Xl_MQ\MQServer::setCallback(function($msgStruct){
@@ -39,9 +45,10 @@ class OpenMQServer extends XlApiBase{
                 $isplugin=true;
             }
 
-            TS($methodname,$params,$isplugin,$ns); //调用task任务
+            TS("消息队列任务",$params,$isplugin,$ns)->task($methodname)->done(); //调用task任务
 
         });
+
         \Xl_MQ\MQServer::setLogger($this->logger);
 
         \Xl_MQ\MQServer::run(); //执行

@@ -54,6 +54,7 @@ class Redis{
      *    lpush
      */
     public function lpush($key,$value){
+
         return $this->_redisObj->lPush($this->_key($key),$value);
     }
 

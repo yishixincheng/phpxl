@@ -48,6 +48,7 @@ class Queue{
         if(static::$redisObject){
             return static::$redisObject;
         }
+
         static::$redisObject=new Redis(MQConfig::getRedisHost(),MQConfig::getRedisPort(),MQConfig::getRedisPre(),MQConfig::getRedisPconnect());
 
         return static::$redisObject;

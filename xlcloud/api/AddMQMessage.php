@@ -18,6 +18,11 @@ class AddMQMessage extends XlApiBase{
     public function run(){
 
         if(!self::$issetup&&$this->config){
+
+            if(empty($this->config['redisPre'])){
+                $this->config['redisPre']=md5(DOC_ROOT);
+            }
+
             \Xl_MQ\MQConfig::setup($this->config);
             self::$issetup=true;
         }

@@ -31,9 +31,12 @@ class MQServer{
         //启动
         $worker=new \Workerman\Worker();
         $worker->count=MQConfig::getMaxProcessesNum(); //最多进程数
-        $worker->onWorkerStart=function($worker){
-            \Workerman\Lib\Timer::add(MQConfig::getBeatSec(), function() use($worker){
-                static::openTask($worker);
+        $beatsec=MQConfig::getBeatSec();
+        $worker->onWorkerStart=function($worker) use($beatsec){
+
+            $worker_id = $worker->id; //进程编号
+            \Workerman\Lib\Timer::add($beatsec, function() use($worker_id){
+                static::openTask($worker_id);
             });
         };
 
@@ -41,14 +44,13 @@ class MQServer{
         \Workerman\Worker::runAll(); //运行
 
     }
-    public static function openTask($worker){
+    public static function openTask($worker_id){
 
         try {
-            $worker_id = $worker->id; //进程编号
             //读取任务列表
             $currtime = time();
             if (static::$fetchquequelisttime) {
-                if ($currtime - static::$fetchquequelisttime > 1000) {
+                if ($currtime - static::$fetchquequelisttime > 1) {
                     //缓存1秒
                     $queuenamelist = Queue::getQueueNameList();
                     static::$fetchquequelisttime = $currtime;
@@ -80,16 +82,19 @@ class MQServer{
 
             $msgStruct = Queue::getQueueNode(static::$currqueuename); //取队列，结构体
 
-            if (static::$logger) {
-                static::$logger->write("进程".$worker_id."取任务执行", true);
-            }
+            if($msgStruct&&is_callable(static::$taskCallBack)){
 
-            if(is_callable(static::$taskCallBack)){
+                if (static::$logger) {
+                    static::$logger->write("进程".$worker_id."取任务执行".print_r($msgStruct,true).PHP_EOL, true);
+                }
 
                 (static::$taskCallBack)($msgStruct); //调用任务处理方法
             }
 
         }catch(\Exception $e){
+            if (static::$logger) {
+                static::$logger->write($e->getMessage(), true);
+            }
 
         }
 
