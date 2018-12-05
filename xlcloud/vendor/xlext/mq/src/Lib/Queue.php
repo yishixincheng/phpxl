@@ -49,6 +49,7 @@ class Queue{
             return static::$redisObject;
         }
 
+
         static::$redisObject=new Redis(MQConfig::getRedisHost(),MQConfig::getRedisPort(),MQConfig::getRedisPre(),MQConfig::getRedisPconnect());
 
         return static::$redisObject;
@@ -69,7 +70,7 @@ class Queue{
         $key="xl_mqnl";
         $queuenamelist=$redis->get($key);
 
-        if(!is_array($queuename)){
+        if(!is_array($queuenamelist)){
             $queuenamelist=[];
         }
         if(!in_array($queuename,$queuenamelist)){

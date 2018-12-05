@@ -23,8 +23,6 @@ class OpenMQServer extends XlApiBase{
             $this->config['redisPre']=md5(DOC_ROOT);
         }
 
-        print_r($this->config);
-
         \Xl_MQ\MQConfig::setup($this->config);
 
         \Xl_MQ\MQServer::setCallback(function($msgStruct){

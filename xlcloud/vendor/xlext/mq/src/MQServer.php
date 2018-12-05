@@ -52,32 +52,33 @@ class MQServer{
             if (static::$fetchquequelisttime) {
                 if ($currtime - static::$fetchquequelisttime > 1) {
                     //缓存1秒
-                    $queuenamelist = Queue::getQueueNameList();
+                    static::$queuenamelist = Queue::getQueueNameList();
                     static::$fetchquequelisttime = $currtime;
                 }
             } else {
-                $queuenamelist = Queue::getQueueNameList();
+                static::$queuenamelist = Queue::getQueueNameList();
                 static::$fetchquequelisttime = $currtime;
             }
-            if (!(isset($queuenamelist) && $queuenamelist)) {
+            if (!(isset(static::$queuenamelist) &&static::$queuenamelist)) {
                 //没有任务
                 return;
             }
 
-            if (empty(static::$currqueuename)) {
-                static::$currqueuename = static::$queuenamelist[0];
-            } else {
-                $len = count(static::$queuenamelist);
-                for ($i = 0; $i < $len; $i++) {
-                    if (static::$queuenamelist[$i] == static::$currqueuename) {
-                        if ($i == $len - 1) {
-                            static::$currqueuename = static::$queuenamelist[0];
-                        } else {
-                            static::$currqueuename = static::$queuenamelist[$i + 1];
-                        }
-                        break;
+            $len = count(static::$queuenamelist);
+            $isfind=false;
+            for ($i = 0; $i < $len; $i++) {
+                if (static::$queuenamelist[$i] == static::$currqueuename) {
+                    if ($i == $len - 1) {
+                        static::$currqueuename = static::$queuenamelist[0];
+                    } else {
+                        static::$currqueuename = static::$queuenamelist[$i + 1];
                     }
+                    $isfind=true;
+                    break;
                 }
+            }
+            if (empty(static::$currqueuename)||!$isfind){
+                static::$currqueuename = static::$queuenamelist[0];
             }
 
             $msgStruct = Queue::getQueueNode(static::$currqueuename); //取队列，结构体
