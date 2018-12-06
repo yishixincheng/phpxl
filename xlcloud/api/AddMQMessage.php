@@ -29,9 +29,7 @@ class AddMQMessage extends XlApiBase{
         $msgStruct=['task'=>$this->task,'params'=>$this->params];
 
         //添加到消息队列中
-        \Xl_MQ\MQClient::addToQueue($msgStruct,$this->queuename);
-
-        return true;
+        return \Xl_MQ\MQClient::addToQueue($msgStruct,$this->queuename);
 
     }
 
