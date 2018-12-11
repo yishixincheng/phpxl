@@ -53,16 +53,26 @@ class Redis{
     /**
      *    lpush
      */
-    public function lpush($key,$value){
+    public function lPush($key,$value){
 
         return $this->_redisObj->lPush($this->_key($key),$value);
+    }
+
+    public function rPush($key,$value){
+
+        return $this->_redisObj->rPush($this->_key($key),$value);
+
     }
 
     /**
      *    add lpop
      */
-    public function lpop($key){
+    public function lPop($key){
         return $this->_redisObj->lPop($this->_key($key));
+    }
+
+    public function rPop($key){
+        return $this->_redisObj->rPop($this->_key($key));
     }
 
     public function close(){

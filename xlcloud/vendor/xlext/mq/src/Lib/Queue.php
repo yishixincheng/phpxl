@@ -49,7 +49,6 @@ class Queue{
             return static::$redisObject;
         }
 
-
         static::$redisObject=new Redis(MQConfig::getRedisHost(),MQConfig::getRedisPort(),MQConfig::getRedisPre(),MQConfig::getRedisPconnect());
 
         return static::$redisObject;
@@ -126,7 +125,19 @@ class Queue{
 
         $key="xl_mq_".$_queuename;
 
-        $redis->lpush($key,$_msgStruct); //设置到队列中
+        $len=$redis->lPush($key,$_msgStruct); //设置到队列中
+
+        if($len>MQConfig::getMaxQuequeTaskNum()){
+
+            //大于个数
+            $_spillMsgStruct=$redis->lPop($key); //移除头部队列
+
+            if($_spillMsgStruct){
+                //保存到文件中
+                SpillQueue::add($_queuename,$_spillMsgStruct);
+            }
+
+        }
 
         static::addToQueueNameList($_queuename); //队列名称
 
@@ -159,7 +170,7 @@ class Queue{
         }
         $redis=static::getRedisObject();
         $key="xl_mq_".$queuename;
-        $msgStructStr=$redis->lpop($key);
+        $msgStructStr=$redis->rPop($key);
 
         if($msgStructStr){
             $msgStruct=json_decode($msgStructStr,true);
@@ -169,10 +180,77 @@ class Queue{
             return $msgStruct;
 
         }else{
-            //队列数据取完
+            //队列数据取完,移除名称节点,如果是定时计划则移除
+            if($queuename!="default"){
+                if(preg_match("/inner_timing/",$queuename)){
+                    static::clearList($queuename);
+                }
+            }
             return null;
         }
 
     }
+
+    //获取队列控制节点
+    public static function getQueueNameControlParam($queuename=null){
+
+        if(empty($queuename)){
+            $queuename="default";
+        }
+        $redis=static::getRedisObject();
+        $key="xl_mq_controlparam_".$queuename;
+        $controlparam=$redis->get($key);
+
+        if(!$controlparam){
+            return null;
+        }
+        if(!is_array($controlparam)){
+            return null;
+        }
+
+        return $controlparam;
+
+    }
+
+    //设置控制节点参数
+    public static function setQueueNameControlParam($queuename=null,$key,$value=null){
+
+        $controlparam=static::getQueueNameControlParam($queuename);
+
+        if(!$controlparam){
+            $controlparam=[];
+        }
+        if($value==null){
+            unset($controlparam[$key]);
+        }else{
+            $controlparam[$key]=$value;
+        }
+
+        $redis=static::getRedisObject();
+        $key="xl_mq_controlparam_".$queuename;
+
+        return $redis->set($key,$controlparam);
+
+    }
+
+    public static function getSpillLock(){
+
+        $key="xl_mq_spilllock";
+        $redis=static::getRedisObject();
+        $time=$redis->get($key);
+        $currtime=time();
+        if($time){
+
+            if($currtime-$time<1800){
+                return true; //有锁
+            }
+
+        }
+        $redis->set($key,$currtime);
+
+        return false;
+    }
+
+
 
 }

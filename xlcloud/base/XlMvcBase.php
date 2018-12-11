@@ -343,7 +343,7 @@ class XlMvcBase extends XlHookBase {
      * 添加到消息队列
      * 结构plugin:folder/taskname
      */
-    final public function MQ($task,$params=null,$queuename=null,$debug=false){
+    final public function MQ($task,$params=null,$queuename=null,$settime=null,$debug=false){
 
         $config=null;
         if(!static::$_isopenmq){
@@ -375,7 +375,11 @@ class XlMvcBase extends XlHookBase {
             return TS("消息队列任务",$params,$isplugin,$ns)->task($methodname)->done(); //调用task任务
         }
 
-        return \xl\api\XlApi::exec("AddMQMessage", ['queuename'=>$queuename,'task'=>$task,'params'=>$params,'config'=>$config]);
+        return \xl\api\XlApi::exec("AddMQMessage", ['queuename'=>$queuename,
+                                                                'task'=>$task,
+                                                                'params'=>$params,
+                                                                'settime'=>$settime,
+                                                                'config'=>$config]);
 
     }
 

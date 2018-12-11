@@ -16,9 +16,23 @@ class MQConfig{
     public static $RedisPconnect=false;    //是否是长链接
 
 
-    public static $BeatSec=0.2;            //2秒检测一次有无新的队列
+    public static $BeatSec=0.2;            //200毫秒检测一次有无新的队列
     public static $MaxProcessesNum=10;     //最多的进程数
     public static $MaxQuequeTaskNum=1000;  //每个队列里同时最多任务数
+
+
+    /**
+     * queuename参数配置项
+     * [
+     *    'queuename'=>[
+     *        'type'=>0,  //0,默认取值执行，1，顺序取值（前一个执行完执行下一个）
+     *        'interval'=>1, //间隔一秒
+     *        'settime'=>null, //整个队列开始执行的时间
+     *    ]
+     * ]
+     *
+     */
+    public static $QNPSet=[];
     
 
     public static function __callStatic($name, $arguemnts) {
@@ -45,6 +59,7 @@ class MQConfig{
         }
 
         $class = get_class();
+
         foreach ($config as $key => $value) {
             $key = ucfirst($key);
             if (property_exists($class, $key)) {
