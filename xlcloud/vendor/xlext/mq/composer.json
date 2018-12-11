@@ -4,7 +4,7 @@
   "keywords":["php","mq","xl","redis"],
   "license" : "MIT",
   "homepage": "https://github.com/yishixincheng/Xl_MQ",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "require" : {
     "workerman/workerman" : ">=3.1.8",
     "php" : ">=5.6.0"
