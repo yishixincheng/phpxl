@@ -1244,6 +1244,7 @@ function __autocreaterunobject($mdl,$clsname,$iscache=1,$binds=null,$ns=null){
     }else{
         $s_clsname=$clsname;
     }
+    $s_clsname=$mdl."_".$s_clsname;
     static $__runmdlclasscache=[];
     $clsname=ucfirst($clsname);
     $clsname.=ucfirst($mdl);
@@ -1690,8 +1691,7 @@ function TS($name,$params=null,$isplugin=null,$ns=null){
 }
 
 /**
- * @param $methodname  插件名:方法目录.方法名
- * @param $params
+ *
  * @return mixed
  * 内部接口调用函数
  */
