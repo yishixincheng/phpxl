@@ -1333,20 +1333,19 @@ final class XlOldModelFactory extends XlMvcBase {
                 }
             }else{
 
-                foreach($values as &$rows){
-
-                    if(!$rows[$this->_primarykeys[0]]){
+                if(is_array($columns)){
 
 
-                        $id=$this->createId(); //获取id值
-                        if($id){
-                            //id不存在
-                            $rows[$this->_primarykeys[0]]=$id;
-                        }else{
+                    if(!in_array($this->_primarykeys[0],$columns)) {
 
-                            if(!$this->_increments[$this->_primarykeys[0]]){
-                                //不是自增的情况，id必须指定
-                                throw new XlException("primarykey:".$this->_primarykeys[0]." value is not null");
+                        $columns[] = $this->_primarykeys[0];
+
+                        foreach ($values as &$rows) {
+
+                            $id = $this->createId(); //获取id值
+                            if ($id) {
+                                //id不存在
+                                $rows[] = $id;
                             }
                         }
                     }
