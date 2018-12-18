@@ -33,7 +33,7 @@ class OpfileClass extends XlClassBase {
         array_pop($farr);
         $this->filedir=implode(D_S,$farr);
     }
-    public function Read($one=false)
+    public function Read($one=false,$sharelock=false)
     {
         //读取文件
         $filepath=$this->filepath;
@@ -42,9 +42,15 @@ class OpfileClass extends XlClassBase {
             if(file_exists($filepath))
             {
                 $file=fopen($filepath,'r');
+                if($sharelock){
+                    flock($file,LOCK_SH);
+                }
                 $buff='';
                 while (!feof($file)) {
                     $buff.=fgets($file);
+                }
+                if($sharelock){
+                    flock($file,LOCK_UN);
                 }
                 @fclose($file);
                 return $buff;
@@ -60,7 +66,7 @@ class OpfileClass extends XlClassBase {
         }
         return false;
     }
-    public function Write($buff,$add=false)
+    public function Write($buff,$add=false,$ismutex=false)
     {
         //写文件
         $this->mkdirm($this->filedir);
@@ -73,7 +79,13 @@ class OpfileClass extends XlClassBase {
         {
             $file= fopen($filepath,"a");
         }
-        $b=@fwrite($file,$buff);
+        if($ismutex){
+            flock($file,LOCK_EX);
+            $b=@fwrite($file,$buff);
+            flock($file,LOCK_UN);
+        }else{
+            $b=@fwrite($file,$buff);
+        }
         @fclose($file);
         return $b;
     }
@@ -100,7 +112,7 @@ class OpfileClass extends XlClassBase {
         }
 
     }
-    public function readProp($key=null,$iscache=true){
+    public function readProp($key=null,$iscache=true,$sharelock=false){
 
         if($key===null){
             $prop_key=md5($this->filepath);
@@ -109,7 +121,7 @@ class OpfileClass extends XlClassBase {
                     return $this->propcache[$prop_key];
                 }
             }
-            $propsstr=$this->Read();
+            $propsstr=$this->Read(false,$sharelock);
             $props=[];
             if($propsstr){
                 $propsarr=explode("\n",$propsstr);
@@ -140,7 +152,7 @@ class OpfileClass extends XlClassBase {
         }
 
     }
-    public function writeProp($props,$value=null){
+    public function writeProp($props,$value=null,$ismutex=false){
 
         $propstr='';
         if($props&&is_array($props)){
@@ -162,7 +174,7 @@ class OpfileClass extends XlClassBase {
             return $this->writeProp($propsarr);
 
         }
-        $rt=$this->Write($propstr,false);
+        $rt=$this->Write($propstr,false,$ismutex);
 
         if($rt){
             $this->propcache=[]; //清空缓存数据
@@ -170,4 +182,6 @@ class OpfileClass extends XlClassBase {
 
         return $rt;
     }
+
+
 }

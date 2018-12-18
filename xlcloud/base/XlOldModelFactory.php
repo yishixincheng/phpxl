@@ -2670,6 +2670,20 @@ final class XlOldModelFactory extends XlMvcBase {
     }
 
     /**
+     * 主动关闭数据库连接
+     */
+    public function close(){
+
+        if($this->_writedb){
+            $this->_writedb->close(); //关闭数据库连接
+        }
+        if($this->_readdb){
+            $this->_readdb->close();
+        }
+
+    }
+
+    /**
      * 静态方法区域
      */
 

@@ -74,13 +74,12 @@ class  XlLead{
         }catch (\Exception $e){
             //nothing to do
         }
-
-
-
         if(defined("ISCLIPURE")&&ISCLIPURE){
             //cli模式或者回调模式
             static::cli();
             return;
+        }else{
+            define("ISCLIPURE",false);
         }
 
         try {
