@@ -8,10 +8,10 @@ class XlClassBase extends XlBase{
         //加载
         return self;
     }
-    final public function setParam($key,$value){
+    public function setParam($key,$value){
         $this->__params[$key]=$value;
     }
-    final public function getParam($key){
+    public function getParam($key){
         return $this->__params[$key];
     }
 
