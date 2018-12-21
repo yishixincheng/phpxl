@@ -17,7 +17,6 @@ final class XlModelFactory extends XlMvcBase {
     private $_model_path=MODEL_PATH;
 
     //数据库配置
-    public static $db_checktableexist=[];
     public static $db_repairnum=[]; //修复次数统计
     private $_workid=1;
     private $_dbconfig=null;
@@ -499,14 +498,15 @@ final class XlModelFactory extends XlMvcBase {
     public function tableExists($table){
 
         $tablekey=$this->_database.$table;
-        if(isset(static::$db_checktableexist[$tablekey])){
-            return static::$db_checktableexist[$tablekey];
+
+        if($this->staticCacheIsSet("tableexist",$tablekey)){
+            return $this->staticCacheGet("tableexist",$tablekey);
         }
         if(!$this->_readdb){
             $this->connectDbHostAndGetTable();
         }
         $istableexist=$this->_readdb->tableExists($this->_tablepre.$table);
-        static::$db_checktableexist[$tablekey]=$istableexist;
+        $this->staticCacheSet("tableexist",$tablekey,$istableexist);
         return $istableexist;
     }
     private function _createTable($tablename,$fields){
@@ -628,7 +628,7 @@ final class XlModelFactory extends XlMvcBase {
         $rt=$this->query($sqlstr);
 
         if($rt){
-            static::$db_checktableexist[$this->_database.$table]=1;
+            $this->staticCacheSet("tableexist",$this->_database.$table,1);
         }
 
         if($rt){

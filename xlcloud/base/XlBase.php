@@ -11,23 +11,11 @@ namespace  xl\base;
 
 class XlBase{
 
-    private $___params=[];
+    public static $__staticCache=null;
+    private $__staticCacheLen=null;
 
-    public function __construct(){
+    public function __construct(){}
 
-    }
-    public function setParam($key,$value){
-        if(!is_array($this->___params)) {
-            $this->___params = [];
-        }
-        $this->___params[$key]=$value;
-    }
-    public function getParam($key){
-        if(!is_array($this->___params)) {
-            $this->___params = [];
-        }
-        return $this->___params[$key];
-    }
     public function hasProperty($name, $checkVars = true)
     {
         return $this->canGetProperty($name, $checkVars) || $this->canSetProperty($name, false);
@@ -47,5 +35,75 @@ class XlBase{
     public static function getClassName(){
         return get_called_class();
     }
+
+    public function staticCacheLenSet($len=100){
+
+        $this->staticCacheLen=$len;
+
+    }
+
+    private function _staticCacheCheck(&$staticname){
+
+        $staticname=static::getClassName()."_".$staticname;
+
+        if(!isset(static::$__staticCache)){
+            static::$__staticCache=[];
+        }
+        if(!isset(static::$__staticCache[$staticname])){
+            static::$__staticCache[$staticname]=[];
+        }else{
+            $len=count(static::$__staticCache[$staticname]);
+            if($len>($this->__staticCacheLen?:100)){
+                array_shift(static::$__staticCache[$staticname]);
+            }
+        }
+    }
+
+    /**
+     * 静态缓存设置
+     */
+    public function staticCacheSet($staticname,$key,$value=null){
+
+        //静态缓存
+        $this->_staticCacheCheck($staticname);
+        if($value===null){
+            unset(static::$__staticCache[$staticname][$key]);
+        }else{
+            static::$__staticCache[$staticname][$key]=$value;
+        }
+        unset($staticname);
+
+    }
+    /**
+     * 静态缓存获取
+     */
+    public function staticCacheGet($staticname,$key){
+
+        //静态缓存
+        $this->_staticCacheCheck($staticname);
+        $data=static::$__staticCache[$staticname][$key];
+
+        unset($staticname);
+
+        return $data;
+
+    }
+
+    /**
+     * 静态缓存是否设置
+     */
+    public function staticCacheIsSet($staticname,$key){
+
+        //静态缓存
+        $this->_staticCacheCheck($staticname);
+
+        $data=isset(static::$__staticCache[$staticname][$key]);
+
+        unset($staticname);
+
+        return $data;
+
+    }
+
 
 }

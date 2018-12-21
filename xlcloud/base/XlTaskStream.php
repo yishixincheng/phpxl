@@ -17,7 +17,6 @@ class XlTaskStream extends XlMvcBase{
     private $_name=null; //业务名称
     private $_tasklist=[];
     private $_tasknum=0;
-    private static $_taskobjcache=[];
 
     public function __construct($name="",$param=null)
     {
@@ -203,9 +202,9 @@ class XlTaskStream extends XlMvcBase{
     }
     private function _getTaskObject($taskname,$issingleton=true){
 
-        if($issingleton){
-            if(static::$_taskobjcache[$taskname]){
-                return static::$_taskobjcache[$taskname];
+        if($issingleton&&!ISCLIPURE){
+            if($obj=$this->staticCacheGet("taskobjs",$taskname)){
+                return $obj;
             }
         }
         if($this->_Isplugin){
@@ -221,8 +220,9 @@ class XlTaskStream extends XlMvcBase{
 
         $obj=\xl\XlLead::$factroy->bind("properties",['_Isplugin'=>$this->_Isplugin,'_Ns'=>$this->_Ns])->getInstance($cls);
 
-        static::$_taskobjcache[$taskname]=$obj;
-
+        if($issingleton&&!ISCLIPURE){
+            $this->staticCacheSet("taskobjs",$taskname,$obj);
+        }
         return $obj;
     }
 

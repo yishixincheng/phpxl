@@ -12,8 +12,6 @@ class XlUMeta{
      * @return array
      */
 
-    private static $valid=array();
-
     static function get($inst, $record_doc=false, $select=null){
         $reflection = new \ReflectionClass($inst);
         $reader= new XlUAnnotationReader($reflection);

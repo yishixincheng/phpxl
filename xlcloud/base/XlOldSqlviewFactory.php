@@ -11,8 +11,6 @@ namespace xl\base;
 final class XlOldSqlviewFactory extends XlMvcBase
 {
 
-    public static $db_checktableexist=[];
-
     private $_dbconfig=null;
     private $_tablepre=null;
 
@@ -475,7 +473,7 @@ final class XlOldSqlviewFactory extends XlMvcBase
         $rt=$this->query($sqlstr);
 
         if($rt){
-            static::$db_checktableexist[$this->_database.$tablename]=1;
+            $this->staticCacheSet("tableexist",$this->_database.$tablename,1);
         }
 
         if($rt){

@@ -14,7 +14,6 @@ class XlInjector{
 
     private $_bindParam=[];
     private $_insStack=[];
-    private $_metaCache=[];
     private $_singletons=[];
 
     private $_cachesec=TIMEOUT_METACACHE; //缓存时间
@@ -270,9 +269,6 @@ class XlInjector{
             $reflClass=new \ReflectionClass($reflClass);
         }
         $name=$reflClass->getName(); //类名
-        if(isset($this->_metaCache[$name])){
-            return $this->_metaCache[$name]; //从缓存读取
-        }
         if(!IS_DEBUG) {
             if(!static::$cache){
                 $cls = sysclass("cachefactory", 0);
@@ -289,14 +285,6 @@ class XlInjector{
         }
         //从文件中获取meta信息
         $data = XlUMeta::get($name);
-        $files=[$reflClass->getFileName()];
-        $parent=$reflClass->getParentClass();
-        if($parent){
-            $files[] = $parent->getFileName();
-        }
-        foreach ($reflClass->getInterfaces() as $i){
-            $files[] = $i->getFileName();
-        }
         if(isset($cache)&&$cache) {
 
             //缓存时间60秒

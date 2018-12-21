@@ -82,6 +82,7 @@
                 this.tabIndex=p.tabIndex;
                 this._focusCallback=p.focusCallback||null;
                 this._blurCallback=p.blurCallback||null;
+                this._beforeSdCallBack=p.beforeSdCallBack||null;
                 //选择器类型，0代表单选，1代表多选，2代表2级多选，3，输入选择下拉框.4，输入下拉框
                 var selectTypeMap={select:0,mselect:1,dselect:2,dropselect:3,wselect:4};
 
@@ -135,12 +136,12 @@
                     if(Xl.isEmpty(ctrldom)){
 
                         var htm='';
-                        htm+='<div class="g-select-control '+(classname||'')+'" style="z-index:'+zIndex+';'+(width?'width:'+width+'px;':'')+(height?'height:'+height+'px;':'')+'">';
+                        htm+='<div class="g-select-control '+(classname||'')+'">';
                         htm+='<div data-event="select" class="g-select-input">';
                         if(this.type==3||this.type==4){
-                            htm+='<div class="g-select-input-input g-select-input-type'+this.type+'" style="line-height:'+height+'px;width:'+width+'px">';
+                            htm+='<div class="g-select-input-input g-select-input-type'+this.type+'" style="width:'+width+'px">';
                         }else{
-                            htm+='<div class="g-select-input-input g-select-input-type'+this.type+'" style="line-height:'+height+'px;width:'+(width-20)+'px;">';
+                            htm+='<div class="g-select-input-input g-select-input-type'+this.type+'" style="width:'+(width-20)+'px;">';
                         }
                         if(this.type==3||this.type==4){
                             htm+='<input type="text" '+(this.tabIndex?'tabindex="'+this.tabIndex+'"':"")+'>';
@@ -171,11 +172,11 @@
                     Xl.Control.__Select__ListDom_Add(listdom);
                     $(listdom).css({top:paneltop+"px"});
 
-                    var border_width=parseInt($(inputdom).parent().css("border-left-width"))||0;
-                    if(border_width){
-
-                        $([ctrldom,listdom]).width(width+2*border_width);
-                    }
+                    // var border_width=parseInt($(inputdom).parent().css("border-left-width"))||0;
+                    // if(border_width){
+                    //
+                    //     $([ctrldom,listdom]).width(width+2*border_width);
+                    // }
 
 
                     __t.__initControl(callback);
@@ -527,6 +528,9 @@
                     Xl.Dom.focus(this.d_inputDom);
                 };
                 __t.popSelectPanel=function(tid,pid){
+                    if(Xl.isFunction(__t._beforeSdCallBack)){
+                        __t._beforeSdCallBack();
+                    }
                     if(__t.isInit){
                         if(__t.__isdisable){
                             return;
@@ -931,7 +935,6 @@
 
                 };
                 __t.selectItemForWSelect=function(tid,pid){
-
                     var value=Xl.sgData(tid,"value");
                     var name=$(tid).text();
                     __t.setItem({name:name,value:value});
@@ -992,7 +995,8 @@
 
                     var value=Xl.sgData(tid,"value");
                     var name=$(tid).text();
-                    __t.setItem({name:name,value:value});
+                    var objData={name:name,value:value,index:$(tid).index()};
+                    __t.setItemEx(objData);
                     if(Xl.isFunction(setCurrTipHook)){
                         name=setCurrTipHook(name);
                     }
@@ -1003,6 +1007,11 @@
                     }else{
                         $(inputdom).html(name);
                     }
+
+                    if(Xl.isFunction(sdCallback)){
+                        sdCallback(objData);
+                    }
+
                     __t.hideListPanel();
 
                 };
@@ -1076,6 +1085,13 @@
 
                     }
 
+                };
+
+                __t.setItemEx=function(v){
+                    __t.setParam("value",v.value);
+                    __t.setParam("name",v.name);
+
+                    $(inputdom).val(v.name);
                 };
                 __t.setItem=function(v){
                     __t.setParam("value",v.value);

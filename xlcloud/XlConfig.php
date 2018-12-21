@@ -99,7 +99,7 @@ class XlConfig{
     }
     public function exec(){
         //根据参数执行
-        if(!XlConfig::$configs[$this->file]){
+        if(!static::$configs[$this->file]){
             if($this->isopenmemcache){
 
                 $cachekey="config_file_".$this->file;
@@ -110,20 +110,20 @@ class XlConfig{
                     $fc=$imem->get($cachekey);
                 }
                 if($fc){
-                    XlConfig::$configs[$this->file] = $fc;
+                    static::$configs[$this->file] = $fc;
                 }else{
                     $path=CONFIG_PATH.$this->file.'.php';
                     if(file_exists($path)){
-                        XlConfig::$configs[$this->file] = include $path;
+                        static::$configs[$this->file] = include $path;
                         if($imem){
-                            $imem->set($cachekey,XlConfig::$configs[$this->file],$this->cachetime);
+                            $imem->set($cachekey,static::$configs[$this->file],$this->cachetime);
                         }
                     }
                 }
             }else{
                 $path=CONFIG_PATH.$this->file.'.php';
                 if(file_exists($path)){
-                    XlConfig::$configs[$this->file] = include $path;
+                    static::$configs[$this->file] = include $path;
                 }
             }
         }
@@ -141,9 +141,9 @@ class XlConfig{
 
 
         if(empty($this->key)){
-            return XlConfig::$configs[$this->file];  //返回整个数组
+            return static::$configs[$this->file];  //返回整个数组
         }
-        $data=XlConfig::$configs[$this->file];
+        $data=static::$configs[$this->file];
 
         $keyarr=explode('/',$this->key);
         $keylen=count($keyarr);
@@ -186,7 +186,7 @@ class XlConfig{
     public function _setvalue(){
 
         //设置数据
-        $data=XlConfig::$configs[$this->file];
+        $data=static::$configs[$this->file];
         $keyarr=$this->key?explode('/',$this->key):array();
         $keylen=count($keyarr);
         $data=$data?$data:array();
@@ -227,14 +227,14 @@ class XlConfig{
                 $data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]][$keyarr[7]][$keyarr[8]][$keyarr[10]]=$value;
                 break;
         }
-        XlConfig::$configs[$this->file]=$data; //重新赋值
+        static::$configs[$this->file]=$data; //重新赋值
         $this->_writeToFile($data);
 
     }
     public function _insertvalue(){
 
         //插入数组项目
-        $data=XlConfig::$configs[$this->file];
+        $data=static::$configs[$this->file];
 
         $keyarr=explode('/',$this->key);
         $keylen=count($keyarr);
@@ -308,14 +308,14 @@ class XlConfig{
                 break;
         }
 
-        XlConfig::$configs[$this->file]=$data; //重新赋值
+        static::$configs[$this->file]=$data; //重新赋值
         $this->_writeToFile($data);
 
 
     }
     public function _deletevalue(){
 
-        $data=XlConfig::$configs[$this->file];
+        $data=static::$configs[$this->file];
         $keyarr=explode('/',$this->key);
         $keylen=count($keyarr);
         $data=$data?$data:array();
@@ -352,7 +352,7 @@ class XlConfig{
                 unset($data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]][$keyarr[7]][$keyarr[8]][$keyarr[9]]);
                 break;
         }
-        XlConfig::$configs[$this->file]=$data; //重新赋值
+        static::$configs[$this->file]=$data; //重新赋值
 
         $this->_writeToFile($data);
 

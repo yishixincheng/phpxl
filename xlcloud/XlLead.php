@@ -174,7 +174,7 @@ class  XlLead{
             ob_start();
         }
 
-        config('system/errorlog') ? set_error_handler(array("\\xl\\base\\XlException","errorHandlerCallback")) : error_reporting(E_ERROR | E_WARNING | E_PARSE );
+        config('system/errorlog') ? set_error_handler(["\\xl\\base\\XlException","errorHandlerCallback"]) : error_reporting(E_ERROR | E_WARNING | E_PARSE );
 
 
     }
@@ -204,8 +204,9 @@ class  XlLead{
         }
         $r_path=ltrim($r_path,D_S);
         $class_name=null;
-        if(substr_compare ($r_path, '.php', strlen($r_path)-4,4,true) ==0){
-            $class_name = substr($r_path, 0, strlen($r_path)-4);
+        $offset=strlen($r_path)-4;
+        if(substr_compare ($r_path, '.php', $offset,4,true) ==0){
+            $class_name = substr($r_path, 0, $offset);
             $class_name = str_replace(D_S,'\\',$class_name);
             $class_name=$ns.'\\'.$class_name;
         }

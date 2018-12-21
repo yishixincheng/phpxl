@@ -16,13 +16,6 @@ class XlContainer{
     public $routes=[]; //['GET'=>[],'POST',....];
     public $class;
 
-    private $injected;
-
-    /**
-     * @inject("xlinjector")
-     */
-    private $factory;
-
     public $path;
 
     public function __construct($class, $method = null)

@@ -394,7 +394,7 @@ final class XlSqlviewFactory extends XlMvcBase
         $rt=$this->query($sqlstr);
 
         if($rt){
-            static::$db_checktableexist[$this->_database.$tablename]=1;
+            $this->staticCacheSet("tableexist",$this->_database.$tablename,1);
         }
 
         if($rt){

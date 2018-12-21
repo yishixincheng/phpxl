@@ -392,7 +392,7 @@ class XlMvcBase extends XlHookBase {
     /**
      * 注入的变量
      */
-    public $_Ns;
-    public $_Isplugin;
+    protected $_Ns;
+    protected $_Isplugin;
 
 }
