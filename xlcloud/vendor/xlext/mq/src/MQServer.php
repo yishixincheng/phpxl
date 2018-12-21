@@ -133,6 +133,7 @@ class MQServer{
                 }
                 //排序执行的情况
                 if($type==1){
+                    $controlparam=Queue::getQueueNameControlParam(static::$currqueuename); //重新获取
                     if($controlparam['lock']){
                         //已经上锁则等待
                         if($locktimeout&&$currtime-$lasttime>=$locktimeout){
