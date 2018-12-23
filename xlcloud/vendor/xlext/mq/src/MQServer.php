@@ -172,7 +172,7 @@ class MQServer{
                 }
 
                 if (static::$logger) {
-                    static::$logger->write("进程".$worker_id."取任务执行".print_r($msgStruct,true).PHP_EOL, true);
+                    static::$logger->write(date("Y-m-d H:i:s",time())."进程".$worker_id."取任务执行".print_r($msgStruct,true).PHP_EOL, true);
                 }
 
                 (static::$taskCallBack)($msgStruct); //调用任务处理方法
