@@ -82,15 +82,15 @@ class XlULogger{
         $this->_opfileobj=$obj;
 
     }
-    public function write($buff,$add=false){
+    public function write($buff,$add=false,$ismutex=false){
 
 
-        $this->_opfileobj->write($buff,$add);
+        $this->_opfileobj->write($buff,$add,$ismutex);
 
     }
-    public function read($one=false){
+    public function read($one=false,$sharelock=false){
 
-        return $this->_opfileobj->read($one);
+        return $this->_opfileobj->read($one,$sharelock);
 
     }
     public function delete(){
