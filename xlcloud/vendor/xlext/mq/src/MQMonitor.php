@@ -17,7 +17,7 @@ class MQMonitor{
 
          foreach($queuenamelist as $quname){
 
-             $html.="<li><div><span>队列名：</span><span>'.$quname.'</span></div>";
+             $html.="<li><div><span>队列名：</span><span>".$quname."</span></div>";
 
              $ctrlparam=Queue::getQueueNameControlParam($quname);
 

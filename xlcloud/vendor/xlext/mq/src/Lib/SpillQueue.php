@@ -9,7 +9,7 @@ class SpillQueue{
 
     public static function add($queuename,$msgstructstr){
 
-        $filepath=dirname(__DIR__)."spillqueue.ini"; //队列缓存文件
+        $filepath=__DIR__.DIRECTORY_SEPARATOR."spillqueue.ini"; //队列缓存文件
 
         $file=fopen($filepath,"a");
 
@@ -29,11 +29,11 @@ class SpillQueue{
             $linenum=MQConfig::getMaxQuequeTaskNum(); //每次获取的行数
         }
 
-        $filepath=dirname(__DIR__)."spillqueue.ini"; //队列缓存文件
+        $filepath=__DIR__.DIRECTORY_SEPARATOR."spillqueue.ini"; //队列缓存文件
 
         $file=fopen($filepath,"rw");
 
-        flock($file,LOCK_EX); //独占锁
+        flock($file,LOCK_SH); //独占锁
 
         $result=[];
         $remain="";
@@ -72,6 +72,10 @@ class SpillQueue{
             }
             unset($line);
         }
+
+        flock($file,LOCK_UN); //独占锁
+
+        flock($file,LOCK_EX);
 
         @fwrite($file,$remain);
 

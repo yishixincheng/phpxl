@@ -1,16 +1,16 @@
 <?php
 
-namespace lftsoft\module;
+namespace lftsoft\module\systool;
 use xl\base\XlModuleBase;
 
 import("@xl.vendor.autoload");
 
 /**
- * Class ToolModule
- * @package lftshuju\module
+ * Class SysToolModule
+ * @package lftsoft\module
  * @path("/systool")
  */
-class ToolModule extends XlModuleBase
+class SysToolModule extends XlModuleBase
 {
 
 
@@ -27,6 +27,14 @@ class ToolModule extends XlModuleBase
                </head>
                <body>
                ";
+
+        $config=config("mq");
+        if(empty($config['redisPre'])) {
+            $config['redisPre'] = md5(DOC_ROOT);
+        }
+
+        \Xl_MQ\MQConfig::setup($config);
+
         $html.=\Xl_MQ\MQMonitor::showHtml("/systool/mqunlock");
 
         $html.="</body></html>";
@@ -42,6 +50,13 @@ class ToolModule extends XlModuleBase
 
         $queuename=$getParam['queuename'];
         if($queuename){
+
+            $config=config("mq");
+            if(empty($config['redisPre'])) {
+                $config['redisPre'] = md5(DOC_ROOT);
+            }
+
+            \Xl_MQ\MQConfig::setup($config);
 
             \Xl_MQ\MQMonitor::delLock($queuename);
 
