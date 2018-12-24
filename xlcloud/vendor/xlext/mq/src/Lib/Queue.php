@@ -257,6 +257,26 @@ class Queue{
         return false;
     }
 
+    public static function lockByQueue($queuename,$expireTime=0){
+
+        $redis=static::getRedisObject();
+
+        $key="xl_mq_controlparam_lockqueue_".$queuename;
+
+        return $redis->lock($key,$expireTime);
+
+    }
+
+    public static function unLockByQueue($queuename){
+
+        $redis=static::getRedisObject();
+
+        $key="xl_mq_controlparam_lockqueue_".$queuename;
+
+        return $redis->unlock($key);
+
+    }
+
 
 
 }

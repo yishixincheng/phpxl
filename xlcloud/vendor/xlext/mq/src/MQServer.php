@@ -133,14 +133,11 @@ class MQServer{
                 }
                 //排序执行的情况
                 if($type==1){
-                    if($controlparam['lock']){
-                        //已经上锁则等待
-                        if($locktimeout&&$currtime-$lasttime>=$locktimeout){
-                            Queue::setQueueNameControlParam(static::$currqueuename,'lock',null); //解锁
-                        }
+
+                    if(!Queue::lockByQueue(static::$currqueuename,$locktimeout)){
                         return;
                     }
-                    Queue::setQueueNameControlParam(static::$currqueuename,'lock',1); //上锁
+
                 }
             }
 
@@ -172,7 +169,7 @@ class MQServer{
                 }
 
                 if (static::$logger) {
-                    static::$logger->write(date("Y-m-d H:i:s",time())."进程".$worker_id."取任务执行".print_r($msgStruct,true).PHP_EOL, true);
+                    static::$logger->write("进程".$worker_id."取任务执行".print_r($msgStruct,true).PHP_EOL, true);
                 }
 
                 (static::$taskCallBack)($msgStruct); //调用任务处理方法
@@ -180,8 +177,9 @@ class MQServer{
             }
 
             if ($havesetconfig&&isset($type)&&$type==1){
-                Queue::setQueueNameControlParam(static::$currqueuename,'lock',null); //释放锁
+                Queue::unLockByQueue(static::$currqueuename); //释放锁
             }
+
 
         }catch(\Exception $e){
 

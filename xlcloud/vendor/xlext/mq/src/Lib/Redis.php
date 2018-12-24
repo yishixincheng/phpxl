@@ -14,14 +14,14 @@ class Redis{
     public function __construct($host='localhost',$port='6379',$pre='',$pconnect=false)
     {
 
-           $this->_pre=$pre;
-           $this->_redisObj=new \Redis();
+        $this->_pre=$pre;
+        $this->_redisObj=new \Redis();
 
-           if($pconnect){
-               $this->_redisObj->pconnect($host,$port);
-           }else{
-               $this->_redisObj->connect($host,$port);
-           }
+        if($pconnect){
+            $this->_redisObj->pconnect($host,$port);
+        }else{
+            $this->_redisObj->connect($host,$port);
+        }
 
     }
 
@@ -42,9 +42,13 @@ class Redis{
     }
 
     //获取值
-    public function get($key){
+    public function get($key,$noserialize=false){
 
         $value=$this->_redisObj->get($this->_key($key));
+
+        if($noserialize){
+            return $value;
+        }
 
         return unserialize($value);
 
@@ -86,5 +90,54 @@ class Redis{
         $this->_redisObj->delete($this->_key($key));
     }
 
+    public function setnx($key,$value){
+
+        return $this->_redisObj->setnx($this->_key($key),$value);
+
+    }
+    public function getSet($key,$value){
+
+        return $this->_redisObj->getSet($this->_key($key),$value);
+
+    }
+
+    /**
+     * @param $key
+     * @param $expireTime
+     * 上锁
+     */
+    public function lock($key,$expireTime=0){
+
+        if(!$expireTime){
+            $expireTime=600;//默认阻塞10分钟
+        }
+        $i=0;
+        while($this->setnx($key,time()+$expireTime?:0)==0){
+
+            if(time()>$this->get($key,true)&&time()>$this->getSet($key,time()+$expireTime?:0)){
+                break;
+            }else{
+                usleep(20);
+                if($i>1){
+                    return false; //释放，防止阻塞整个进程
+                }
+                $i++;
+            }
+
+        }
+
+        //获得锁
+        return true;
+
+    }
+
+    /**
+     * 释放锁
+     */
+    public function unlock($key){
+
+        $this->delete($key); //释放锁
+
+    }
 
 }
