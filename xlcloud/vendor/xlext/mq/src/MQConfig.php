@@ -19,6 +19,7 @@ class MQConfig{
     public static $BeatSec=0.2;            //200毫秒检测一次有无新的队列
     public static $MaxProcessesNum=10;     //最多的进程数
     public static $MaxQuequeTaskNum=1000;  //每个队列里同时最多任务数
+    public static $maxMemory=31457280;
 
 
     /**

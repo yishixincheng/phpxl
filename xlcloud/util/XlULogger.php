@@ -18,21 +18,21 @@ class XlULogger{
 
     public static function getInstance($logname=''){
 
-         if(empty($logname)){
-             $logname=date("ymd"); //每天生成一个日志
-         }
-         if(static::$logger_instances[$logname]){
-             return static::$logger_instances[$logname];
-         }else{
+        if(empty($logname)){
+            $logname=date("ymd"); //每天生成一个日志
+        }
+        if(static::$logger_instances[$logname]){
+            return static::$logger_instances[$logname];
+        }else{
 
-             $obj=new XlULogger();
+            $obj=new XlULogger();
 
-             $obj->setName($logname);
+            $obj->setName($logname);
 
-             static::$logger_instances[$logname]=$obj;
+            static::$logger_instances[$logname]=$obj;
 
-             return $obj;
-         }
+            return $obj;
+        }
 
     }
     public function setExt($ext){

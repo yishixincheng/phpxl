@@ -12,6 +12,8 @@ namespace xl\base;
 final class XlSqlviewFactory extends XlMvcBase
 {
 
+    public static $db_checktableexist=[];
+
     private $_dbconfig=null;
     private $_tablepre=null;
 

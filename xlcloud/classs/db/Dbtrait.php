@@ -35,10 +35,14 @@ trait Dbtrait{
             }
             if(!$isreturn){
                 $msg = "<b>MySQL Query : </b> $sql <br /><b> MySQL Error : </b>".$errmsg." <br /> <b>MySQL Errno : </b>".$errno." <br /><b> Message : </b> $message <br />";
-                echo '<div style="font-size:12px;text-align:left; border:1px solid #9cc9e0;padding:1px 4px;"><span>'.$msg.'</span></div>';
-                if(!defined("ISCLI")&&ISCLI) {
+                $_errormsg='<div style="font-size:12px;text-align:left; border:1px solid #9cc9e0;padding:1px 4px;"><span>'.$msg.'</span></div>';
+                if(!(defined("ISCLI")&&ISCLI)){
                     //cli模式下不退出进程
+                    echo $_errormsg;
                     exit;
+                }else{
+                    //cli模式下，将错误信息输出到错误日志中
+                    logger("__cli_mysqlerrorlog")->write($_errormsg,true,true);
                 }
             }
 

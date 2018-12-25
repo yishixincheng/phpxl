@@ -19,6 +19,8 @@ class MQServer{
 
     public static $taskCallBack=null; //注入回调
     public static $logger=null;       //日志对象
+    public static $runTaskCountPointer=0;
+    public static $maxMemory=null; //超过30m自动重启
 
     public static $qNPSet=[];      //queuename参数设置
 
@@ -33,6 +35,7 @@ class MQServer{
 
         //启动
         static::$qNPSet=MQConfig::getQNPSet()?:[];  //赋值
+        static::$maxMemory=MQConfig::getMaxMemory()?:null;
 
         $worker=new \Workerman\Worker();
         $worker->count=MQConfig::getMaxProcessesNum(); //最多进程数
@@ -51,6 +54,7 @@ class MQServer{
 
     }
     public static function openTask($worker_id){
+
 
         try {
 
@@ -86,6 +90,8 @@ class MQServer{
             }
             if (empty(static::$queuenamelist)) {
                 //没有任务
+                unset($currtime);
+                unset($worker_id);
                 return;
             }
 
@@ -105,21 +111,49 @@ class MQServer{
             if (empty(static::$currqueuename)||!$isfind){
                 static::$currqueuename = static::$queuenamelist[0];
             }
+            unset($i);
+            unset($len);
+            unset($isfind);
 
             $havesetconfig=false;
-            if(static::$qNPSet&&is_array(static::$qNPSet)&&static::$qNPSet[static::$currqueuename]){
+            if(static::$qNPSet&&is_array(static::$qNPSet)&&is_array(static::$qNPSet[static::$currqueuename])){
 
                 $havesetconfig=true;
                 //定义了队列参数
-                $type=static::$qNPSet[static::$currqueuename]['type']?:0;           //0默认类型，1顺序执行
-                $interval=static::$qNPSet[static::$currqueuename]['interval']?:0;   //间隔执行
-                $settime=static::$qNPSet[static::$currqueuename]['settime']?:null; //指定时间执行
-                $locktimeout=static::$qNPSet[static::$currqueuename]['locktimeout']?:null; //超过多少时间则自动解锁
+
+                if(isset(static::$qNPSet[static::$currqueuename]['type'])){
+                    $type=static::$qNPSet[static::$currqueuename]['type'];
+                }else{
+                    $type=0;
+                }
+
+                if(isset(static::$qNPSet[static::$currqueuename]['interval'])){
+                    $interval=static::$qNPSet[static::$currqueuename]['interval']; //间隔执行
+                }else{
+                    $interval=0;
+                }
+                if(isset(static::$qNPSet[static::$currqueuename]['settime'])){
+                    $settime=static::$qNPSet[static::$currqueuename]['settime']; //指定时间执行
+                }else{
+                    $settime=0;
+                }
+                if(isset(static::$qNPSet[static::$currqueuename]['locktimeout'])){
+                    $locktimeout=static::$qNPSet[static::$currqueuename]['locktimeout']; //超过多少时间则自动解锁
+                }else{
+                    $locktimeout=null;
+                }
 
                 $controlparam=Queue::getQueueNameControlParam(static::$currqueuename); //队列参数
 
                 if($settime&&$settime-$currtime>0){
                     //未到指定的时间不执行
+                    unset($settime);
+                    unset($type);
+                    unset($locktimeout);
+                    unset($controlparam);
+                    unset($currtime);
+                    unset($havesetconfig);
+                    unset($interval);
                     return;
                 }
                 $lasttime=$controlparam['lasttime'];
@@ -128,6 +162,14 @@ class MQServer{
                     //有间隔的执行
                     if($currtime-$lasttime<=$interval){
                         //未到时间间隔不执行
+                        unset($settime);
+                        unset($type);
+                        unset($locktimeout);
+                        unset($lasttime);
+                        unset($controlparam);
+                        unset($currtime);
+                        unset($havesetconfig);
+                        unset($interval);
                         return;
                     }
                 }
@@ -135,13 +177,25 @@ class MQServer{
                 if($type==1){
 
                     if(!Queue::lockByQueue(static::$currqueuename,$locktimeout)){
+
+                        unset($settime);
+                        unset($type);
+                        unset($locktimeout);
+                        unset($lasttime);
+                        unset($controlparam);
+                        unset($currtime);
+                        unset($havesetconfig);
+                        unset($interval);
                         return;
                     }
 
                 }
+                unset($settime);
+                unset($locktimeout);
+                unset($lasttime);
+                unset($controlparam);
+                unset($interval);
             }
-
-
             if($havesetconfig){
                 Queue::setQueueNameControlParam(static::$currqueuename,'lasttime',$currtime); //设置执行时间
             }
@@ -161,6 +215,8 @@ class MQServer{
                             $queue->setMsgStruct($msgStruct); //消息结构体
                             Queue::addToList($queue); //添加到消息队列中
                             unset($queue);
+                            unset($msgStruct);
+                            unset($currtime);
                             //直接返回
                             return;
                         }
@@ -172,13 +228,42 @@ class MQServer{
                     static::$logger->write("进程".$worker_id."取任务执行".print_r($msgStruct,true).PHP_EOL, true);
                 }
 
+                static::$runTaskCountPointer++; //正在执行的任务
+
                 (static::$taskCallBack)($msgStruct); //调用任务处理方法
 
+                unset($msgStruct);
+
+                static::$runTaskCountPointer--; //执行完
+
+                if ($havesetconfig&&isset($type)&&$type==1){
+                    Queue::unLockByQueue(static::$currqueuename); //释放锁
+                }
+
+            }else{
+
+                //内存超过一定阶段则重启进程
+                if(static::$maxMemory){
+                    $mb=memory_get_usage();
+                    if(static::$runTaskCountPointer==0&&$mb>static::$maxMemory){
+                        if (static::$logger) {
+                            static::$logger->write("进程" . $worker_id ."在内存".$mb."B退出" . PHP_EOL, true);
+                        }
+                        if ($havesetconfig&&isset($type)&&$type==1){
+                            Queue::unLockByQueue(static::$currqueuename); //释放锁
+                        }
+                        \Workerman\Worker::stopAll();
+                    }
+
+                }
+                if ($havesetconfig&&isset($type)&&$type==1){
+                    Queue::unLockByQueue(static::$currqueuename); //释放锁
+                }
             }
 
-            if ($havesetconfig&&isset($type)&&$type==1){
-                Queue::unLockByQueue(static::$currqueuename); //释放锁
-            }
+            unset($havesetconfig);
+            unset($worker_id);
+            unset($currtime);
 
 
         }catch(\Exception $e){
