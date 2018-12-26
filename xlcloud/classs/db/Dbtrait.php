@@ -34,14 +34,24 @@ trait Dbtrait{
                 $isreturn=$hook($errid,$errno,$errmsg);
             }
             if(!$isreturn){
-                $msg = "<b>MySQL Query : </b> $sql <br /><b> MySQL Error : </b>".$errmsg." <br /> <b>MySQL Errno : </b>".$errno." <br /><b> Message : </b> $message <br />";
-                $_errormsg='<div style="font-size:12px;text-align:left; border:1px solid #9cc9e0;padding:1px 4px;"><span>'.$msg.'</span></div>';
+
                 if(!(defined("ISCLI")&&ISCLI)){
                     //cli模式下不退出进程
+                    $msg = "<b>MySQL Query : </b> $sql <br /><b> MySQL Error : </b>".$errmsg." <br /> <b>MySQL Errno : </b>".$errno." <br /><b> Message : </b> $message <br />";
+                    $_errormsg='<div style="font-size:12px;text-align:left; border:1px solid #9cc9e0;padding:1px 4px;"><span>'.$msg.'</span></div>';
                     echo $_errormsg;
                     exit;
                 }else{
                     //cli模式下，将错误信息输出到错误日志中
+
+                    $_errormsg="-------------------Begin--------------------".PHP_EOL;
+                    $_errormsg.='时间:'.date("Y-m-d H:i:s").PHP_EOL;
+                    $_errormsg.='MySQL Query:'.$sql.PHP_EOL;
+                    $_errormsg.="MySQL Error:".$errmsg.PHP_EOL;
+                    $_errormsg.="MySQL Errno:".$errno.PHP_EOL;
+                    $_errormsg.="Message:".$message.PHP_EOL;
+                    $_errormsg.="-------------------End---------------------".PHP_EOL.PHP_EOL;
+
                     logger("__cli_mysqlerrorlog")->write($_errormsg,true,true);
                 }
             }

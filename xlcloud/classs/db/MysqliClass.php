@@ -73,10 +73,15 @@ class MysqliClass extends XlClassBase implements DbInterface{
             $charset = isset($dbconfig['charset']) ? $dbconfig['charset'] : 'uft8';
             $this->mysqli->set_charset($charset);
 
-            if(!(defined("ISCLI")&&ISCLI)){
-                self::$dbhostlist[$linkey] = $this->mysqli;
+            if(defined("ISCLI")&&ISCLI){
+                if(count(self::$dbhostlist[$linkey])>10) {
+                    $_tmp_mysqli=array_shift(self::$dbhostlist[$linkey]);
+                    if($_tmp_mysqli){
+                        $_tmp_mysqli->close();
+                    }
+                }
             }
-
+            self::$dbhostlist[$linkey] = $this->mysqli;
 
         }else{
             $this->mysqli=static::$dbhostlist[$linkey];
@@ -513,6 +518,9 @@ class MysqliClass extends XlClassBase implements DbInterface{
                 static::$dbhostlist[$this->_linkkey]->close();
                 unset(static::$dbhostlist[$this->_linkkey]); //移除
             }
+        }
+        if($this->mysqli){
+            $this->mysqli->close();
         }
     }
 
