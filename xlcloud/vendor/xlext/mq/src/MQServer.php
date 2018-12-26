@@ -225,7 +225,7 @@ class MQServer{
                 }
 
                 if (static::$logger) {
-                    static::$logger->write("进程".$worker_id."取任务执行".print_r($msgStruct,true).PHP_EOL, true);
+                    static::$logger->write(date("Y-m-d H:i:s")."进程".$worker_id."取任务执行".print_r($msgStruct,true).PHP_EOL, true);
                 }
 
                 static::$runTaskCountPointer++; //正在执行的任务
@@ -247,7 +247,7 @@ class MQServer{
                     $mb=memory_get_usage();
                     if(static::$runTaskCountPointer==0&&$mb>static::$maxMemory){
                         if (static::$logger) {
-                            static::$logger->write("进程" . $worker_id ."在内存".$mb."B退出" . PHP_EOL, true);
+                            static::$logger->write(date("Y-m-d H:i:s")."进程" . $worker_id ."在内存".$mb."B退出" . PHP_EOL, true);
                         }
                         if ($havesetconfig&&isset($type)&&$type==1){
                             Queue::unLockByQueue(static::$currqueuename); //释放锁
