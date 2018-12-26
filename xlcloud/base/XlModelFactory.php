@@ -1461,7 +1461,7 @@ final class XlModelFactory extends XlMvcBase {
                 if($dealcolumnlen&&isset($v['size'])&&is_numeric($v['size'])){
                     $v['value']=strLeft(trim($v['value']),intval($v['size']));
                 }
-                $rt=$this->_checkV($v['name']?:$k,$v['value'],$ab['check'],$ab['range'],'');
+                $rt=$this->_checkV(isset($v['name'])?$v['name']:$k,$v['value'],$ab['check'],$ab['range'],'');
                 if($rt['status']=="fail"){
                     return $rt;
                 }
@@ -1539,7 +1539,7 @@ final class XlModelFactory extends XlMvcBase {
                 if($dealcolumnlen&&isset($v['size'])&&is_numeric($v['size'])){
                     $v['value']=strLeft(trim($v['value']),intval($v['size']));
                 }
-                $rt=$this->_checkV($v['name']?:$k,$v['value'],$ab['check'],$ab['range'],'');
+                $rt=$this->_checkV(isset($v['name'])?$v['name']:$k,$v['value'],$ab['check'],$ab['range'],'');
                 if($rt['status']=="fail"){
 
                     return $rt;
