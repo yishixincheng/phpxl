@@ -74,11 +74,8 @@ class MysqliClass extends XlClassBase implements DbInterface{
             $this->mysqli->set_charset($charset);
 
             if(defined("ISCLI")&&ISCLI){
-                if(count(self::$dbhostlist[$linkey])>10) {
-                    $_tmp_mysqli=array_shift(self::$dbhostlist[$linkey]);
-                    if($_tmp_mysqli){
-                        $_tmp_mysqli->close();
-                    }
+                if(count(self::$dbhostlist)>10) {
+                    array_shift(self::$dbhostlist);
                 }
             }
             self::$dbhostlist[$linkey] = $this->mysqli;

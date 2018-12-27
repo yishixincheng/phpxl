@@ -1627,8 +1627,8 @@ function AjaxPrint($data){
 }
 
 
-function logger($logname=''){
-    return \xl\XlLead::logger($logname);
+function logger($logname='',$filemaxsize=null){
+    return \xl\XlLead::logger($logname,$filemaxsize);
 }
 
 function encodeSqlStr($var){

@@ -111,8 +111,8 @@ class PdoClass extends XlClassBase implements DbInterface {
 
             }
             if(defined("ISCLI")&&ISCLI){
-                 if(count(self::$dbhostlist[$linkey])>10) {
-                     array_shift(self::$dbhostlist[$linkey]);
+                 if(count(self::$dbhostlist)>10) {
+                     array_shift(self::$dbhostlist);
                  }
             }
             self::$dbhostlist[$linkey] = $this->pdo;

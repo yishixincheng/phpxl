@@ -214,9 +214,9 @@ class  XlLead{
         return ['class'=>$class_name,'a_path'=>$a_path,'r_path'=>$r_path,'ns'=>$ns,'isplugin'=>$isplugin];
 
     }
-    public static function logger($logname=''){
+    public static function logger($logname='',$filemaxsize=null){
 
-        return XlULogger::getInstance($logname);
+        return XlULogger::getInstance($logname,$filemaxsize);
 
     }
     public static function hook(){

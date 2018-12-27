@@ -19,8 +19,6 @@ class IdhashClass extends XlClassBase {
         0=>array('C','c','I',0,'B'),
         '_'=>array('T','t')
     );
-    public static $shopcitycache=array();
-
 
     public static function getImgCodeByPicPath($path){
         if(strpos($path,'/')!==false){
@@ -82,34 +80,6 @@ class IdhashClass extends XlClassBase {
         return $str;
 
     }
-    public static function createIdByCitycode($citycode){
-
-        $ct=substr($citycode,0,4);
-        $rand=$ct.''.mt_rand(0,999).''.time().''.mt_rand(0,999); //最多20位
-
-        $maps=static::$hashmap;
-        $len=strlen($rand);
-        $str='';
-        for($i=0;$i<$len;$i++){
-            $ca=$maps[substr($rand,$i,1)];
-            $str.=$ca[array_rand($ca,1)];
-        }
-        return $str;
-    }
-    public static function getCitycodeById($id){
-
-        //id，是hashid
-        $id=trim($id);
-        $citycode=substr($id,0,4); //根据前四位判断
-
-        $nums='';
-        for($i=0;$i<4;$i++){
-            $nums.=static::codeToNum(substr($citycode,$i,1));
-        }
-
-        return $nums.'00'; //城市码6位补零
-
-    }
     public static function codeToNum($code){
 
         $maps=static::$hashmap;
@@ -121,19 +91,8 @@ class IdhashClass extends XlClassBase {
                     return $k;
                 }
             }
-
         }
-    }
-    public static function getCitycodeByShopuid($uid,$iscache=true){
-        if($iscache){
-            if($citycode=static::$shopcitycache[$uid]){
-                return $citycode;
-            }
-        }
-        $user=model("member")->getMember($uid);
-        $citycode=$user['shopcitycode'];
-        static::$shopcitycache[$uid]=$citycode;
-        return $citycode;
+        return 0;
     }
     public static function getuuid($workid=1){
 
@@ -159,7 +118,7 @@ class curr_inner_idwork
 
         if($workId > self::$maxWorkerId || $workId< 0 )
         {
-            throw new Exception("worker Id can't be greater than 1024 or less than 0");
+            throw new \Exception("worker Id can't be greater than 1024 or less than 0");
         }
         self::$workerId=$workId;
 
@@ -191,7 +150,7 @@ class curr_inner_idwork
             self::$sequence  = 0;
         }
         if ($timestamp < self::$lastTimestamp) {
-            throw new Exception("Clock moved backwards.  Refusing to generate id for ".(self::$lastTimestamp-$timestamp)." milliseconds");
+            throw new \Exception("Clock moved backwards.  Refusing to generate id for ".(self::$lastTimestamp-$timestamp)." milliseconds");
         }
         self::$lastTimestamp  = $timestamp;
         $nextId = ((sprintf('%.0f', $timestamp) - sprintf('%.0f', self::$twepoch)  )<< self::$timestampLeftShift ) | ( self::$workerId << self::$workerIdShift ) | self::$sequence;

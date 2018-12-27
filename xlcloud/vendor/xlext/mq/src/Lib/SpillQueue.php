@@ -83,6 +83,8 @@ class SpillQueue{
 
         fclose($file);
 
+        unset($remain);
+
         return $result;
 
     }

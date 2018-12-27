@@ -87,6 +87,9 @@ class OpfileClass extends XlClassBase {
             $b=@fwrite($file,$buff);
         }
         @fclose($file);
+
+        unset($buff);
+
         return $b;
     }
     public function mkdirm($path)
