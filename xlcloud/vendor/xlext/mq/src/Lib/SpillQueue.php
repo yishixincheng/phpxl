@@ -31,7 +31,7 @@ class SpillQueue{
 
         $filepath=__DIR__.DIRECTORY_SEPARATOR."spillqueue.ini"; //队列缓存文件
 
-        $file=fopen($filepath,"rw");
+        $file=fopen($filepath,"w+");
 
         flock($file,LOCK_SH); //独占锁
 
