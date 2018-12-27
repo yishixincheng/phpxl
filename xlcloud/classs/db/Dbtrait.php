@@ -52,7 +52,7 @@ trait Dbtrait{
                     $_errormsg.="Message:".$message.PHP_EOL;
                     $_errormsg.="-------------------End---------------------".PHP_EOL.PHP_EOL;
 
-                    logger("__cli_mysqlerrorlog")->write($_errormsg,true,true);
+                    logger("__cli_mysqlerrorlog",1024)->write($_errormsg,true,true);
                 }
             }
 
