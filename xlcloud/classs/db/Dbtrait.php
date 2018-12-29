@@ -22,7 +22,7 @@ trait Dbtrait{
         return $host.":".$port."@".$username;
 
     }
-    public function halt($message = '', $sql = '',$hook=null){
+    public function halt($message = '', $sql = '',$hook=null,$errhook=null){
 
         if($this->config['debug']) {
 
@@ -52,7 +52,13 @@ trait Dbtrait{
                     $_errormsg.="Message:".$message.PHP_EOL;
                     $_errormsg.="-------------------End---------------------".PHP_EOL.PHP_EOL;
 
-                    logger("__cli_mysqlerrorlog",1024)->write($_errormsg,true,true);
+                    $loggerObj=logger("__cli_mysqlerrorlog",1024);
+                    $loggerObj->write($_errormsg,true,true);
+
+                    if(is_callable($errhook)){
+                        $errhook($errno,$loggerObj);
+                    }
+
                 }
             }
 

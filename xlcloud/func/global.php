@@ -72,30 +72,25 @@ function GFormatTime($date)
 
     $h=floor($time/3600); //获得小时说
     $f=floor($time/60);
-    $year="";
     if($h>87600)
     {
-        $year=date("Y年m月d日 H:i",$time1);
+         return date("Y年m月d日 H:i",$time1);
     }
     if($h>24)
     {
-        $datastr=date("m月d日 H:i",$time1);
-        return $datastr;
+         return date("m月d日 H:i",$time1);
     }
     if($h>12)
     {
-        $datastr=date(" H:i",$time1);
-        return '昨天'.$datastr;
+        return '昨天'.date(" H:i",$time1);
     }
     else if($h>=1)
     {
-        $hf=$h.'小时前';
-        return $hf;
+        return $h.'小时前';
     }
     else if($f>=1)
     {
-        $hf=$f.'分钟前';
-        return $hf;
+        return $f.'分钟前';
     }
     else
     {
@@ -673,39 +668,6 @@ function is_char($s){
         return true;
     }
     return false;
-}
-
-
-/**
- * 检测输入中是否含有错误字符
- *
- * @param char $string 要检查的字符串名称
- * @return TRUE or FALSE
- */
-function is_badword($string) {
-    $badwords = array("\\",'&',' ',"'",'"','/','*',',','<','>',"\r","\t","\n","#");
-    foreach($badwords as $value){
-        if(strpos($string, $value) !== FALSE) {
-            return TRUE;
-        }
-    }
-    return FALSE;
-}
-
-/**
- * 检查用户名是否符合规定
- *
- * @param STRING $username 要检查的用户名
- * @return 	TRUE or FALSE
- */
-function is_username($username) {
-    $strlen = strlen($username);
-    if(is_badword($username) || !preg_match("/^[a-zA-Z0-9_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]+$/", $username)){
-        return false;
-    } elseif ( 20 < $strlen || $strlen < 2 ) {
-        return false;
-    }
-    return true;
 }
 
 /**

@@ -9,6 +9,7 @@ class PdoClass extends XlClassBase implements DbInterface {
     use Dbtrait;
 
     public static $dbhostlist=[];
+    public static $tryconnectnum=[];
     private $config = null;
     public $link = null;
     public $pdo=null;
@@ -352,7 +353,38 @@ class PdoClass extends XlClassBase implements DbInterface {
         if($aop){
             $beforeparam=call_user_func_array($aop,['before',$beforeparam]);
         }
-        $this->lastqueryid = $this->pdo->query($sql) or $this->halt($this->error(), $sql,$hook);
+        $this->lastqueryid = $this->pdo->query($sql) or $this->halt($this->error(), $sql,$hook,function ($errno,$logger) use($sql,$hook,$aop){
+
+            //cli模式下的错误回调
+            if($errno==2006){
+                //MySQL server has gone away 情况下，重新连接数据库
+                if (isset(static::$tryconnectnum[$this->_linkkey])){
+                     //重试三次
+                    if(isset(static::$tryconnectnum[$this->_linkkey])>3){
+                        return null;
+                    }
+                }else{
+                    static::$tryconnectnum[$this->_linkkey]=1;
+                }
+
+                unset(self::$dbhostlist[$this->_linkkey]);
+
+                $this->pdo=null;
+                $_errormsg="超时连接，已重新连接".PHP_EOL;
+                $_errormsg.="MySQL Query ".$sql.PHP_EOL;
+                $_errormsg.="重新执行第".static::$tryconnectnum[$this->_linkkey]."次";
+                $_errormsg.="--------------------------------";
+
+                if($logger){
+                    $logger->write($_errormsg,true,true);
+                }
+
+                static::$tryconnectnum[$this->_linkkey]++;
+
+                $this->execute($sql,$hook,$aop); //重新执行
+            }
+
+        });
 
         if($aop){
             if(is_array($beforeparam)){
