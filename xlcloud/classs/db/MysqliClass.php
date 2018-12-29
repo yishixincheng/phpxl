@@ -476,7 +476,7 @@ class MysqliClass extends XlClassBase implements DbInterface{
                 //MySQL server has gone away 情况下，重新连接数据库
                 if (isset(static::$tryconnectnum[$this->_linkkey])){
                     //重试三次
-                    if(isset(static::$tryconnectnum[$this->_linkkey])>3){
+                    if(static::$tryconnectnum[$this->_linkkey]>3){
                         return null;
                     }
                 }else{

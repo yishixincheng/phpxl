@@ -26,24 +26,19 @@ class DbfactoryClass extends XlClassBase{
      */
     protected $db_list = array();
 
-    /**
-     * 返回当前终级类对象的实例
-     * @param $db_config 数据库配置
-     * @return object
-     */
 
     public static function getInstance($dbconfig=null){
 
         $dbconfig=$dbconfig?:config("database");
-        if(!DbfactoryClass::$db_factory){
-            DbfactoryClass::$db_factory = new DbfactoryClass();
+        if(!static::$db_factory){
+            static::$db_factory = new DbfactoryClass();
         }
-        if(empty(DbfactoryClass::$db_factory->db_config)){
-            DbfactoryClass::$db_factory->db_config =$dbconfig;
+        if(empty(static::$db_factory->db_config)){
+            static::$db_factory->db_config =$dbconfig;
         }else{
-            DbfactoryClass::$db_factory->db_config = array_merge(DbfactoryClass::$db_factory->db_config,$dbconfig);
+            static::$db_factory->db_config = array_merge(static::$db_factory->db_config,$dbconfig);
         }
-        return DbfactoryClass::$db_factory;
+        return static::$db_factory;
 
     }
     public function getDbObj($dbname='default'){
