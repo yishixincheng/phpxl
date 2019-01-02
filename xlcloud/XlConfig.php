@@ -130,12 +130,13 @@ class XlConfig{
         if($this->op=="get"){
             return $this->_getvalue();
         }else if($this->op=="set"){
-            return $this->_setvalue();
+            $this->_setvalue();
         }else if($this->op=="insert"){
-            return $this->_insertvalue();
+            $this->_insertvalue();
         }else if($this->op=="delete"){
-            return $this->_deletevalue();
+            $this->_deletevalue();
         }
+        return null;
     }
     private function _getvalue(){
 
@@ -146,41 +147,8 @@ class XlConfig{
         $data=static::$configs[$this->file];
 
         $keyarr=explode('/',$this->key);
-        $keylen=count($keyarr);
-        $d=array();
-        switch($keylen){
-            case 1:
-                $d=$data[$keyarr[0]];
-                break;
-            case 2:
-                $d=$data[$keyarr[0]][$keyarr[1]];
-                break;
-            case 3:
-                $d=$data[$keyarr[0]][$keyarr[1]][$keyarr[2]];
-                break;
-            case 4:
-                $d=$data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]];
-                break;
-            case 5:
-                $d=$data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]];
-                break;
-            case 6:
-                $d=$data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]];
-                break;
-            case 7:
-                $d=$data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]];
-                break;
-            case 8:
-                $d=$data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]][$keyarr[7]];
-                break;
-            case 9:
-                $d=$data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]][$keyarr[7]][$keyarr[8]];
-                break;
-            case 10:
-                $d=$data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]][$keyarr[7]][$keyarr[8]][$keyarr[9]];
-                break;
-        }
-        return $d;
+
+        return Xl_Recursion_Get_Array_Value($data,$keyarr);
 
     }
     public function _setvalue(){
@@ -188,45 +156,11 @@ class XlConfig{
         //设置数据
         $data=static::$configs[$this->file];
         $keyarr=$this->key?explode('/',$this->key):array();
-        $keylen=count($keyarr);
         $data=$data?$data:array();
         $value=$this->value;
-        //最多支持10级
-        switch($keylen){
-            case 0:
-                $data=is_array($this->value)?$this->value:array();
-                break;
-            case 1:
-                $data[$keyarr[0]]=$value;
-                break;
-            case 2:
-                $data[$keyarr[0]][$keyarr[1]]=$value;
-                break;
-            case 3:
-                $data[$keyarr[0]][$keyarr[1]][$keyarr[2]]=$value;
-                break;
-            case 4:
-                $data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]]=$value;
-                break;
-            case 5:
-                $data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]]=$value;
-                break;
-            case 6:
-                $data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]]=$value;
-                break;
-            case 7:
-                $data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]]=$value;
-                break;
-            case 8:
-                $data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]][$keyarr[7]]=$value;
-                break;
-            case 9:
-                $data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]][$keyarr[7]][$keyarr[8]]=$value;
-                break;
-            case 10:
-                $data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]][$keyarr[7]][$keyarr[8]][$keyarr[10]]=$value;
-                break;
-        }
+
+        Xl_Recursion_Set_Array_Value($data,$keyarr,$value);
+
         static::$configs[$this->file]=$data; //重新赋值
         $this->_writeToFile($data);
 
@@ -235,79 +169,18 @@ class XlConfig{
 
         //插入数组项目
         $data=static::$configs[$this->file];
-
         $keyarr=explode('/',$this->key);
-        $keylen=count($keyarr);
         $data=$data?$data:array();
         $value=$this->value;
-        $d=array();
-        switch($keylen){
-            case 1:
-                $d=$data[$keyarr[0]];
-                break;
-            case 2:
-                $d=$data[$keyarr[0]][$keyarr[1]];
-                break;
-            case 3:
-                $d=$data[$keyarr[0]][$keyarr[1]][$keyarr[2]];
-                break;
-            case 4:
-                $d=$data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]];
-                break;
-            case 5:
-                $d=$data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]];
-                break;
-            case 6:
-                $d=$data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]];
-                break;
-            case 7:
-                $d=$data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]];
-                break;
-            case 8:
-                $d=$data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]][$keyarr[7]];
-                break;
-            case 9:
-                $d=$data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]][$keyarr[7]][$keyarr[8]];
-                break;
-
-        }
-        $d=$d?$d:array();
+        $d=Xl_Recursion_Get_Array_Value($data,$keyarr)?:[];
         $max=0;
         foreach($d as $k=>$v){
             $max=max((int)$k,$max);
         }
         $max++;
         $index=strval($max);
-        switch($keylen){
-            case 1:
-                $data[$keyarr[0]][$index]=$value;
-                break;
-            case 2:
-                $data[$keyarr[0]][$keyarr[1]][$index]=$value;
-                break;
-            case 3:
-                $data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$index]=$value;
-                break;
-            case 4:
-                $data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$index]=$value;
-                break;
-            case 5:
-                $data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$index]=$value;
-                break;
-            case 6:
-                $data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$index]=$value;
-                break;
-            case 7:
-                $data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]][$index]=$value;
-                break;
-            case 8:
-                $data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]][$keyarr[7]][$index]=$value;
-                break;
-            case 9:
-                $data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]][$keyarr[7]][$keyarr[8]][$index]=$value;
-                break;
-        }
-
+        array_push($keyarr,$index);
+        Xl_Recursion_Set_Array_Value($data,$keyarr,$value);
         static::$configs[$this->file]=$data; //重新赋值
         $this->_writeToFile($data);
 
@@ -317,41 +190,8 @@ class XlConfig{
 
         $data=static::$configs[$this->file];
         $keyarr=explode('/',$this->key);
-        $keylen=count($keyarr);
         $data=$data?$data:array();
-
-        switch($keylen){
-            case 1:
-                unset($data[$keyarr[0]]);
-                break;
-            case 2:
-                unset($data[$keyarr[0]][$keyarr[1]]);
-                break;
-            case 3:
-                unset($data[$keyarr[0]][$keyarr[1]][$keyarr[2]]);
-                break;
-            case 4:
-                unset($data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]]);
-                break;
-            case 5:
-                unset($data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]]);
-                break;
-            case 6:
-                unset($data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]]);
-                break;
-            case 7:
-                unset($data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]]);
-                break;
-            case 8:
-                unset($data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]][$keyarr[7]]);
-                break;
-            case 9:
-                unset($data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]][$keyarr[7]][$keyarr[8]]);
-                break;
-            case 10:
-                unset($data[$keyarr[0]][$keyarr[1]][$keyarr[2]][$keyarr[3]][$keyarr[4]][$keyarr[5]][$keyarr[6]][$keyarr[7]][$keyarr[8]][$keyarr[9]]);
-                break;
-        }
+        Xl_Recursion_Del_Array_Value($data,$keyarr);
         static::$configs[$this->file]=$data; //重新赋值
 
         $this->_writeToFile($data);
@@ -376,6 +216,7 @@ class XlConfig{
                 return file_put_contents($path, $inputstr);
             }
         }
+        return null;
 
     }
 

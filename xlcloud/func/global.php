@@ -4,32 +4,66 @@
  *
  */
 
-$G=array();
+$__Xl_V_G=array();
 function SetG($key , $value, $group = null) {
-    global $G;
+    global $__Xl_V_G;
     $k = explode('/', $group === null ? $key : $group.'/'.$key);
-    switch (count($k)) {
-        case 1: $G[$k[0]] = $value; break;
-        case 2: $G[$k[0]][$k[1]] = $value; break;
-        case 3: $G[$k[0]][$k[1]][$k[2]] = $value; break;
-        case 4: $G[$k[0]][$k[1]][$k[2]][$k[3]] = $value; break;
-        case 5: $G[$k[0]][$k[1]][$k[2]][$k[3]][$k[4]] =$value; break;
-    }
+    Xl_Recursion_Set_Array_Value($__Xl_V_G,$k,$value);
     return true;
 }
 
 function GetG($key, $group = null) {
-    global $G;
+    global $__Xl_V_G;
     $k = explode('/', $group === null ? $key : $group.'/'.$key);
-    switch (count($k)) {
-        case 1: return isset($G[$k[0]]) ? $G[$k[0]] : null; break;
-        case 2: return isset($G[$k[0]][$k[1]]) ? $G[$k[0]][$k[1]] : null; break;
-        case 3: return isset($G[$k[0]][$k[1]][$k[2]]) ? $G[$k[0]][$k[1]][$k[2]] : null; break;
-        case 4: return isset($G[$k[0]][$k[1]][$k[2]][$k[3]]) ? $G[$k[0]][$k[1]][$k[2]][$k[3]] : null; break;
-        case 5: return isset($G[$k[0]][$k[1]][$k[2]][$k[3]][$k[4]]) ? $G[$k[0]][$k[1]][$k[2]][$k[3]][$k[4]] : null; break;
-    }
-    return null;
+    return Xl_Recursion_Get_Array_Value($__Xl_V_G,$k);
 }
+
+function Xl_Recursion_Set_Array_Value(&$parent,&$keys,$value){
+
+    $len=count($keys);
+    if($len==1){
+        $parent[$keys[0]]=$value;
+    }else{
+        $currkey=array_shift($keys);
+        if(!isset($parent[$currkey])||!is_array($parent[$currkey])){
+            $parent[$currkey]=[];
+        }
+        Xl_Recursion_Set_Array_Value($parent[$currkey],$keys,$value);
+    }
+    return $parent;
+}
+function Xl_Recursion_Get_Array_Value(&$parent,&$keys){
+
+    $len=count($keys);
+    if($len==1){
+        return $parent[$keys[0]];
+    }else{
+        $currkey=array_shift($keys);
+        if(!isset($parent[$currkey])||!is_array($parent[$currkey])){
+            return null;
+        }
+        return Xl_Recursion_Get_Array_Value($parent[$currkey],$keys);
+    }
+
+}
+
+function Xl_Recursion_Del_Array_Value(&$parent,&$keys){
+
+    $len=count($keys);
+    if($len==1){
+        unset($parent[$keys[0]]);
+    }else{
+        $currkey=array_shift($keys);
+        if(!isset($parent[$currkey])||!is_array($parent[$currkey])){
+            return null;
+        }
+        Xl_Recursion_Del_Array_Value($parent[$currkey],$keys);
+    }
+
+}
+
+
+
 function GDelFile($src){
     if(file_exists($src)){
         if(@chmod($src,0777)){

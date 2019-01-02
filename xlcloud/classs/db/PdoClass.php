@@ -372,8 +372,8 @@ class PdoClass extends XlClassBase implements DbInterface {
                 $this->pdo=null;
                 $_errormsg="超时连接，已重新连接".PHP_EOL;
                 $_errormsg.="MySQL Query ".$sql.PHP_EOL;
-                $_errormsg.="重新执行第".static::$tryconnectnum[$this->_linkkey]."次";
-                $_errormsg.="--------------------------------";
+                $_errormsg.="重新执行第".static::$tryconnectnum[$this->_linkkey]."次".PHP_EOL;
+                $_errormsg.="--------------------------------".PHP_EOL;
 
                 if($logger){
                     $logger->write($_errormsg,true,true);
