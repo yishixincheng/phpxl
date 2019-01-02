@@ -510,6 +510,7 @@ class MysqliClass extends XlClassBase implements DbInterface{
             }
             call_user_func_array($aop,['after',$beforeparam]);
         }
+        unset(static::$tryconnectnum[$this->_linkkey]);
         $this->querycount++;
         return $this->lastqueryid;
     }
