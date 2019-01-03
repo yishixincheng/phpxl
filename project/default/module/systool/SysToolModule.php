@@ -19,14 +19,6 @@ class SysToolModule extends XlModuleBase
      */
     public function mqMonitor(){
 
-        $html="<!DOCTYPE HTML>
-                <html>
-               <head>
-               <meta charset=\"utf-8\">
-                   <title></title>
-               </head>
-               <body>
-               ";
 
         $config=config("mq");
         if(empty($config['redisPre'])) {
@@ -35,20 +27,28 @@ class SysToolModule extends XlModuleBase
 
         \Xl_MQ\MQConfig::setup($config);
 
-        $html.=\Xl_MQ\MQMonitor::showHtml("/systool/mqunlock");
+        $html=\Xl_MQ\MQMonitor::showHtml("/systool/mqunlock");
 
-        $html.="</body></html>";
 
         GW($html);
 
     }
 
     /**
-     * @path({"/systool/mqunlock","GET"})
+     * @path({"/mqunlock","GET"})
      */
     public function mqDelLock($getParam){
 
         $queuename=$getParam['queuename'];
+
+        $username=$getParam['username'];
+        $password=$getParam['password'];
+
+        if(empty($username)||empty($password)){
+            GW("抱歉，你没有权限操作！");
+            exit;
+        }
+
         if($queuename){
 
             $config=config("mq");
