@@ -26,7 +26,7 @@ class MQMonitor{
                          list-style: none;
                       }
                       .wrap{
-                           width: 550px;
+                           width: 650px;
                            margin: auto;
                            padding-top: 50px;
                       }
@@ -46,6 +46,9 @@ class MQMonitor{
                       }
                       dl dt{
                          font-weight: bold;
+                      }
+                      .c0{
+                          width: 80px;
                       }
                       .c1{
                          width: 120px;
@@ -69,16 +72,18 @@ class MQMonitor{
                <div class='wrap'>
                <dl>
                   <dt>
-                      <ul><li class='c1'>队列名</li><li class='c2'>性质</li><li class='c3'>锁定</li><li class='c4'>任务剩余个数</li><li class='c5'>操作</li></ul>
+                      <ul><li class='c0'>序号</li><li class='c1'>队列名</li><li class='c2'>性质</li><li class='c3'>锁定</li><li class='c4'>任务剩余个数</li><li class='c5'>操作</li></ul>
                   </dt>
                         
                ";
 
          $qNPSet=MQConfig::getQNPSet()?:[];  //赋值
 
+         $i=0;
          foreach($queuenamelist as $quname){
 
-             $html.="<dd><ul>";
+             $i++;
+             $html.="<dd><ul><li class='c0'>".$i."</li>";
              $html.="<li class='c1'>".$quname."</li>";
              $typename='随机';
              if(isset($qNPSet[$quname])&&is_array($qNPSet[$quname])){
