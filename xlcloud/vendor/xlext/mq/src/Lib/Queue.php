@@ -277,6 +277,34 @@ class Queue{
 
     }
 
+    public static function isLockedByQueue($queuename){
+
+        $redis=static::getRedisObject();
+        $key="xl_mq_controlparam_lockqueue_".$queuename;
+        $expireTime=$redis->get($key,true);
+
+        return $expireTime;
+
+    }
+
+    /**
+     * 获取队列当前长度
+     */
+    public static function getQueueSize($queuename){
+
+        $redis=static::getRedisObject();
+
+        $key="xl_mq_".$queuename;
+
+        $len=$redis->lLen($key); //设置到队列中
+
+        if(is_numeric($len)){
+            return $len;
+        }
+        return 0;
+
+    }
+
 
 
 }

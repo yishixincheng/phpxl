@@ -79,6 +79,13 @@ class Redis{
         return $this->_redisObj->rPop($this->_key($key));
     }
 
+
+    public function lLen($key){
+
+        return $this->_redisObj->lLen($this->_key($key));
+
+    }
+
     public function close(){
 
         $this->_redisObj->close();
