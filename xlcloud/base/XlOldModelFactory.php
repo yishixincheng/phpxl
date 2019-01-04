@@ -175,10 +175,10 @@ final class XlOldModelFactory extends XlMvcBase {
             }
         }
         try {
-            if ($this->_model->alias) {
-                $this->_tablename = $this->_model->alias;
-            } else {
+            if (empty($this->_model->alias)) {
                 $this->_tablename = strtolower($model_name?:$modelname); //表名即是model类名
+            } else {
+                $this->_tablename = $this->_model->alias;
             }
             if ($this->_model->database) {
                 $this->_database = $this->_model->database;
@@ -186,39 +186,31 @@ final class XlOldModelFactory extends XlMvcBase {
             if ($this->_model->isneedcreate) {
                 $this->_isneedcreate = $this->_model->isneedcreate;
             }
-            if ($this->_model->isautorepairstruct){
+            if (!empty($this->_model->isautorepairstruct)){
                 $this->_isautorepairstruct=$this->_model->isautorepairstruct;
             }
-            if ($this->_model->tablepre){
+            if (!empty($this->_model->tablepre)){
                 $this->_tablepre=$this->_model->tablepre;
             }
-            if ($this->_model->opencache){
+            if (!empty($this->_model->opencache)){
                 $this->_opencache=$this->_model->opencache;
             }
-            if ($this->_model->cachetime){
+            if (!empty($this->_model->cachetime)){
                 $this->_cachetime=$this->_model->cachetime;
             }
-            if ($this->_model->cachetype){
+            if (!empty($this->_model->cachetype)){
                 $this->_cachetype=$this->_model->cachetype;
             }
-            if ($this->_model->cachepre){
+            if (!empty($this->_model->cachepre)){
                 $this->_cachepre=$this->_model->cachepre;
             }
-            $this->_openslowlog=$this->_model->openslowlog?:$this->_openslowlog;
-            $this->_longquerytime=$this->_model->longquerytime?:$this->_longquerytime;
-            $this->_slowlogfile=$this->_model->slowlogfile?:$this->_slowlogfile;
+            $this->_openslowlog=$this->_model->openslowlog??$this->_openslowlog;
+            $this->_longquerytime=$this->_model->longquerytime??$this->_longquerytime;
+            $this->_slowlogfile=$this->_model->slowlogfile??$this->_slowlogfile;
 
-            if ($this->_model->sharding) {
-                $this->_sharding = $this->_model->sharding;
-            }
-
-            if ($this->_model->master){
-                $this->_master = $this->_model->master;
-            }
-
-            if($this->_model->slaves){
-                $this->_slaves = $this->_model->slaves;
-            }
+            $this->_sharding=$this->_model->sharding??$this->_sharding;
+            $this->_master=$this->_model->master??$this->_master;
+            $this->_slaves=$this->_model->slaves??$this->_slaves;
 
             if($this->_sharding){
 
@@ -233,18 +225,18 @@ final class XlOldModelFactory extends XlMvcBase {
                 }
 
             }
-            if ($this->_model->partition) {
+            if (isset($this->_model->partition)) {
                 $this->_partition = $this->_model->partition;
             }
-            if ($this->_model->fields) {
+            if (isset($this->_model->fields)) {
                 $this->_fields = $this->_model->fields;
             }
             if(empty($this->_fields)){
                 throw new XlException("Table　".$this->_tablename." fields is not set");
             }
 
-            $this->_engin=$this->_model->engin?:"MyISAM";
-            $this->_charset=$this->_model->charset?:"utf8";
+            $this->_engin=$this->_model->engin??"MyISAM";
+            $this->_charset=$this->_model->charset??"utf8";
 
             //parse _fields 获取主键
             $this->_primarykeys=[];
@@ -259,18 +251,18 @@ final class XlOldModelFactory extends XlMvcBase {
                 if(!$v){
                     continue;
                 }
-                if($v['primarykey']){
+                if(!empty($v['primarykey'])){
                     $this->_primarykeys[]=$key; //主键
                     $this->_primarykey_types[$key]=strtolower($v['type']?:"");
-                    $this->_increments[$key]=$v['increment']?:null;
+                    $this->_increments[$key]=$v['increment']??null;
                 }
-                if($v['key']){
+                if(!empty($v['key'])){
                     $this->_keys[]=$key;
                 }
                 if(!$this->_hashfield){
-                    if($v['hash']){
+                    if(!empty($v['hash'])){
                         $this->_hashfield=$key;
-                        $this->_hashkey_type=strtolower($v['type']?:"");
+                        $this->_hashkey_type=strtolower($v['type']??"");
                     }
                 }
 
@@ -344,7 +336,7 @@ final class XlOldModelFactory extends XlMvcBase {
 
         $this->_database=$this->_dbconfig['database'];
         $this->_tablepre=$this->_dbconfig['tablepre'];
-        $this->_workid=$this->_dbconfig['workid']?:1; //主机编号，为了生成唯一的uuid
+        $this->_workid=$this->_dbconfig['workid']??1; //主机编号，为了生成唯一的uuid
 
         if(!$this->_master){
             $this->_master=$this->_dbconfig['master'];
@@ -1156,7 +1148,7 @@ final class XlOldModelFactory extends XlMvcBase {
                         }
                     }
                 }else{
-                    if(!$columns[$this->_primarykeys[0]]){
+                    if(empty($columns[$this->_primarykeys[0]])){
                         $id=$this->createId(); //获取id值
                         if($id){
                             //id不存在
@@ -1510,7 +1502,7 @@ final class XlOldModelFactory extends XlMvcBase {
         $needfileds=array();
         foreach($params as $key=>$value){
             if($fileds[$key]){
-                if($fileds[$key]['forbit_add']){
+                if(!empty($fileds[$key]['forbit_add'])){
                     return $this->ErrorInf($key."为禁止添加字段");
                 }
                 $needfileds[$key]=$fileds[$key];
@@ -2337,8 +2329,8 @@ final class XlOldModelFactory extends XlMvcBase {
 
     private function _getcheckdatatype($type,$v){
 
-        $range=$v['range'];
-        $size=$v['size'];
+        $range=$v['range']??null;
+        $size=$v['size']??null;
         if(!$range){
             if(is_numeric($v['size'])){
                 $range="0-".$v['size'];

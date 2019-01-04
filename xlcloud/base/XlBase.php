@@ -81,7 +81,7 @@ class XlBase{
 
         //静态缓存
         $this->_staticCacheCheck($staticname);
-        $data=static::$__staticCache[$staticname][$key];
+        $data=static::$__staticCache[$staticname][$key]??null;
 
         unset($staticname);
 

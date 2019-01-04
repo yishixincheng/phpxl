@@ -6,13 +6,13 @@ use xl\base\XlClassBase;
 
 class XmlClass extends XlClassBase {
 
-    var $parser;
-    var $document;
-    var $parent;
-    var $stack;
-    var $last_opened_tag;
+    private $parser;
+    private $document;
+    private $parent;
+    private $stack;
+    private $last_opened_tag;
 
-    public function xml() {
+    public function __construct() {
         $this->parser = xml_parser_create();
         xml_parser_set_option($this->parser, XML_OPTION_CASE_FOLDING, false);
         xml_set_object($this->parser, $this);
@@ -29,7 +29,7 @@ class XmlClass extends XlClassBase {
      * @param xml字符串
      * @return array
      */
-    public function xml_unserialize($xml) {
+    public function unserialize(&$xml) {
         $data = $this->parse($xml);
         $this->destruct();
         return $data;
@@ -40,7 +40,7 @@ class XmlClass extends XlClassBase {
      * @param $data 数组
      * @return string
      */
-    public function xml_serialize(&$data, $level = 0, $prior_key = NULL) {
+    public function serialize(&$data, $level = 0, $prior_key = NULL) {
         if($level == 0) {
             ob_start();
             echo "<?xml version=\"1.0\" encoding=\"".CHARSET."\"?>\n<root>","\n";
@@ -48,7 +48,7 @@ class XmlClass extends XlClassBase {
         while(list($key, $value) = each($data)) {
             if(!strpos($key, ' attr')) {
                 if(is_array($value) and array_key_exists(0, $value)) {
-                    $this->xml_serialize($value, $level, $key);
+                    $this->serialize($value, $level, $key);
                 } else {
                     $tag = $prior_key ? $prior_key : (is_numeric($key) ? 'item' : $key);
                     echo str_repeat("\t", $level),'<',$tag;
@@ -63,7 +63,7 @@ class XmlClass extends XlClassBase {
                     } elseif(!is_array($value)) {
                         echo '>',htmlspecialchars($value),"</$tag>\n";
                     } else {
-                        echo ">\n",$this->xml_serialize($value, $level+1),str_repeat("\t", $level),"</$tag>\n";
+                        echo ">\n",$this->serialize($value, $level+1),str_repeat("\t", $level),"</$tag>\n";
                     }
                 }
             }
@@ -76,7 +76,7 @@ class XmlClass extends XlClassBase {
         }
     }
 
-    public function parse(&$data){
+    public function parse($data){
         $this->document = array();
         $this->stack = array();
         $this->parent = &$this->document;

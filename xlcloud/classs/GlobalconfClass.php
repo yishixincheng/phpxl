@@ -77,8 +77,7 @@ class GlobalconfClass extends XlClassBase{
                                   'name'=>$node['name'],
                                   'masterhost'=>$this->getDbHostConfByHostName($node['masterhost']),
                                   'slavehost'=>$this->getDbHostConfByHostName($node['slavehost']?:$node['masterhost'])];
-            if($node['branch']&&is_array($node['branch'])){
-
+            if(isset($node['branch'])&&is_array($node['branch'])&&$node['branch']){
 
                 foreach ($node['branch'] as $b_dbkey=>$b_node){
 
@@ -97,7 +96,7 @@ class GlobalconfClass extends XlClassBase{
                 }
 
             }
-            if($node['tables']&&is_array($node['tables'])){
+            if(isset($node['tables'])&&is_array($node['tables'])&&$node['tables']){
 
                 $this->_attachTablesHosts($schemehosts,$node['tables'],$dbkey);
 
@@ -172,7 +171,7 @@ class GlobalconfClass extends XlClassBase{
             $this->_dbhostcache=[];
         }
 
-        if($this->_dbhostcache[$hostname]){
+        if(!empty($this->_dbhostcache[$hostname])){
             return $this->_dbhostcache[$hostname];
         }
 
@@ -210,7 +209,7 @@ class GlobalconfClass extends XlClassBase{
                 }
             })();
         }
-        $hostnode=$this->_schemeHosts[$database.":".$tablename];
+        $hostnode=$this->_schemeHosts[$database.":".$tablename]??null;
         if(!$hostnode){
             return $this->_schemeHosts[$database]?:(function() use($database){
                 if(preg_match("/(.+)_(.+)/",$database,$mch)){

@@ -7,8 +7,9 @@
  */
 namespace xl;
 use xl\base\XlHookBase;
-use xl\util\XlUException;
-use xl\util\XlULogger;
+use xl\util\{XlUException,XlULogger};
+
+//error_reporting(E_ALL);
 
 class  XlLead{
 
@@ -16,7 +17,7 @@ class  XlLead{
     public static $hook=null;
 
     public static function checkPhpVersion(){
-        if (version_compare(PHP_VERSION, '5.6.0', '<') ) exit("Sorry, Xl will only run on PHP version 5.6.0 or greater!\n");
+        if (version_compare(PHP_VERSION, '7.0.0', '<') ) exit("Sorry, Xl will only run on PHP version 7.0.0 or greater!\n");
     }
     /**
      * @param $file

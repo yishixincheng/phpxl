@@ -1208,7 +1208,7 @@ function sysclass($classname,$initialize=1,$binds=null,$iscache=1){
     $classname=ucfirst($classname); //首字母大写
     $classname.='Class';
     if($initialize==1){
-        if(!$sysclasscache[$classname]||!$iscache) {
+        if(empty($sysclasscache[$classname])||!$iscache) {
             $cls="xl\\classs\\".$classname;
             if(\xl\XlLead::$factroy){
                 $sysclasscache[$classname]=\xl\XlLead::$factroy->binds($binds)->getInstance($cls);

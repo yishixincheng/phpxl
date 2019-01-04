@@ -2,9 +2,7 @@
 
 namespace xl;
 use xl\base\XlBase;
-use xl\util\XlURequest;
-use xl\util\XlURouterEntries;
-use xl\util\XlUVerify;
+use xl\util\{XlURequest,XlURouterEntries,XlUVerify};
 
 /**
  * Class XlRouter
@@ -88,7 +86,7 @@ class XlRouter extends XlBase{
                 $request['_Ns']=$cam['ns'];
                 $request['_Isplugin']=$cam['isplugin'];
                 //找到路由
-                $this->callModule($cam['class'],$cam['method'],isset($cam['param'])?$cam['param']:null,$request,$cam['route']);
+                $this->callModule($cam['class'],$cam['method'],$cam['param']??null,$request,$cam['route']);
                 return true;
             }
         }
@@ -103,7 +101,7 @@ class XlRouter extends XlBase{
         $request['_Ns']=$cam['ns'];
         $request['_Isplugin']=$cam['isplugin'];
 
-        $this->callModule($cam['class'],$cam['method'],isset($cam['param'])?$cam['param']:null,$request,$cam['route']);
+        $this->callModule($cam['class'],$cam['method'],$cam['param']??null,$request,$cam['route']);
 
         return true;
     }
@@ -111,14 +109,14 @@ class XlRouter extends XlBase{
     private function callModule($class,$method,$regParam=null,$request,$route=null){
 
         $properties=[
-           '_Post'=>isset($request['_POST'])?$request['_POST']:null,
-           '_Get'=>isset($request['_GET'])?$request['_GET']:null,
-           '_Cookie'=>isset($request['COOKIE'])?$request['COOKIE']:null,
-           '_Session'=>isset($request['Session'])?$request['Session']:null,
-           '_Files'=>isset($request['FILES'])?$request['FILES']:null,
+           '_Post'=>$request['_POST']??null,
+           '_Get'=>$request['_GET']??null,
+           '_Cookie'=>$request['COOKIE']??null,
+           '_Session'=>$request['Session']??null,
+           '_Files'=>$request['FILES']??null,
            '_Genv'=>$request,
-           '_Ns'=>isset($request['_Ns'])?$request['_Ns']:null,
-           '_Isplugin'=>isset($request['_Isplugin'])?$request['_Isplugin']:null
+           '_Ns'=>$request['_Ns']??null,
+           '_Isplugin'=>$request['_Isplugin']??null
         ];
 
         if(XlLead::$hook){

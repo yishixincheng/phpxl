@@ -2,8 +2,7 @@
 
 namespace xl;
 
-use xl\util\XlUAnnotationReader;
-use xl\util\XlUVerify;
+use xl\util\{XlUAnnotationReader,XlUVerify};
 
 /**
  * 类容器
@@ -61,7 +60,7 @@ class XlContainer{
 
                 $route=$ann['value'];
                 XlUVerify::isTrue(is_array($route) && (count($route)==2 || count($route)==3),
-                    "$class::{$method->getName()} syntax error @route, example: @route({\"api?a=2\",\"GET\"}) or @route({\"api?a=2\",\"GET\",true})"
+                    "$class::{$method->getName()} syntax error @path, example: @path({\"routes\",\"GET\"})"
                 );
                 list($uri,$http_method,$strict) = $route+[null,null,null];
                 $this->routes[$http_method][]=["class"=>$class, //对应的类

@@ -129,9 +129,9 @@ class Timingplan extends XlApiBase{
 
         if(preg_match("/\d{2}:\d{2}:\d{2}/",$time)){
             $time=date("Y-m-d")." ".$time;
-        }else if(preg_match("\d{2}\s+\d{2}:\d{2}:\d{2}",$time)){
+        }else if(preg_match("/\d{2}\s+\d{2}:\d{2}:\d{2}/",$time)){
             $time=date("Y-m-").$time;
-        }else if(preg_match("\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}",$time)){
+        }else if(preg_match("/\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2}/",$time)){
             $time=date("Y-").$time;
         }
         return $time;

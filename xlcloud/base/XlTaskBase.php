@@ -42,7 +42,7 @@ abstract class XlTaskBase extends XlMvcBase
         $result=$rt['result'];
         $isbreak=false;
         if(is_array($rt)){
-            if($rt['__']==1){
+            if(isset($rt['__'])&&$rt['__']==1){
                 if($rt['status']=="fail"){
                     $isbreak=true;
                 }

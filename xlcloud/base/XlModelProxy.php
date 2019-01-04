@@ -52,7 +52,7 @@ final class XlModelProxy
             throw new XlException($classname . " is not defined");
         }
 
-        if($model->database&&!$model->oldversion){
+        if($model->database&&empty($model->oldversion)){
             return $this->factory->bind("properties",['_Isplugin'=>$this->_Isplugin,'_Ns'=>$this->_Ns])->bind("construct_args",[$this->_modelname,$this->_config,$model,$modelname])->getInstance("xl\\base\\XlModelFactory");//构造基类
         }else{
             return $this->factory->bind("properties",['_Isplugin'=>$this->_Isplugin,'_Ns'=>$this->_Ns])->bind("construct_args",[$this->_modelname,$this->_config,$model,$modelname])->getInstance("xl\\base\\XlOldModelFactory");//构造基类

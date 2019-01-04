@@ -38,10 +38,10 @@ class PdoClass extends XlClassBase implements DbInterface {
     }
     private function _getDsn($config){
 
-        if($config['dsn']){
+        if(!empty($config['dsn'])){
             return $config['dsn'];
         }
-        $dblib=$config['driver']?:"mysql"; //默认是mysql引擎
+        $dblib=$config['driver']??"mysql"; //默认是mysql引擎
 
         $dsn=$dblib.":host=".$config['hostname'];
         if($config['port']){
@@ -88,7 +88,7 @@ class PdoClass extends XlClassBase implements DbInterface {
         if(!($linkey=$this->_linkkey)){
             $this->_linkkey=$linkey=md5($this->getLinkKey($dbconfig));
         }
-        if(!static::$dbhostlist[$linkey]){
+        if(empty(static::$dbhostlist[$linkey])){
 
             try{
 

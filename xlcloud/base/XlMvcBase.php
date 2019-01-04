@@ -210,19 +210,14 @@ class XlMvcBase extends XlHookBase {
 
         //根据表名返回结构,不同的模型创建不同的对象
         $key=$tbname;
-
         if($config){
             $key.="_".serialize($config);
         }
         $key=md5($key);
-
-        if(static::$_modellist[$key]){
-
+        if(isset(static::$_modellist[$key])){
             if (is_callable(static::$_modellist[$key])) {
                 (static::$_modellist[$key])();
             }
-
-
             return static::$_modellist[$key];
         }
 

@@ -86,9 +86,9 @@ final class XlOldSqlviewFactory extends XlMvcBase
             }
         }
 
-        $this->_database=$config['database']?:null;
-        $this->_master=$config['master']?:null;
-        $this->_slaves=$config['slaves']?:null;
+        $this->_database=$config['database']??null;
+        $this->_master=$config['master']??null;
+        $this->_slaves=$config['slaves']??null;
 
     }
 
@@ -127,24 +127,24 @@ final class XlOldSqlviewFactory extends XlMvcBase
             }
         }
         try {
-            if ($this->_model->alias) {
-                $this->_tablename = $this->_model->alias;
-            } else {
+            if (empty($this->_model->alias)) {
                 $this->_tablename = strtolower($model_name?:$modelname).'_view'; //表名加后缀
+            } else {
+                $this->_tablename = $this->_model->alias;
             }
-            if ($this->_model->database) {
+            if (!empty($this->_model->database)) {
                 $this->_database = $this->_model->database;
             }
-            if ($this->_model->master){
+            if (!empty($this->_model->master)){
                 $this->_master = $this->_model->master;
             }
-            if($this->_model->slaves){
+            if(!empty($this->_model->slaves)){
                 $this->_slaves = $this->_model->slaves;
             }
-            if($this->_model->fields){
+            if(!empty($this->_model->fields)){
                 $this->_fields = $this->_model->fields;
             }
-            if ($this->_model->tablepre){
+            if (!empty($this->_model->tablepre)){
                 $this->_tablepre=$this->_model->tablepre;
             }
             //解析配置参数
