@@ -88,7 +88,7 @@ class XlRouter extends XlBase{
                 $request['_Ns']=$cam['ns'];
                 $request['_Isplugin']=$cam['isplugin'];
                 //找到路由
-                $this->callModule($cam['class'],$cam['method'],$cam['param'],$request,$cam['route']);
+                $this->callModule($cam['class'],$cam['method'],isset($cam['param'])?$cam['param']:null,$request,$cam['route']);
                 return true;
             }
         }
@@ -103,7 +103,7 @@ class XlRouter extends XlBase{
         $request['_Ns']=$cam['ns'];
         $request['_Isplugin']=$cam['isplugin'];
 
-        $this->callModule($cam['class'],$cam['method'],$cam['param'],$request,$cam['route']);
+        $this->callModule($cam['class'],$cam['method'],isset($cam['param'])?$cam['param']:null,$request,$cam['route']);
 
         return true;
     }
@@ -111,14 +111,14 @@ class XlRouter extends XlBase{
     private function callModule($class,$method,$regParam=null,$request,$route=null){
 
         $properties=[
-           '_Post'=>$request['_POST'],
-           '_Get'=>$request['_GET'],
-           '_Cookie'=>$request['COOKIE'],
-           '_Session'=>$request['Session'],
-           '_Files'=>$request['FILES'],
+           '_Post'=>isset($request['_POST'])?$request['_POST']:null,
+           '_Get'=>isset($request['_GET'])?$request['_GET']:null,
+           '_Cookie'=>isset($request['COOKIE'])?$request['COOKIE']:null,
+           '_Session'=>isset($request['Session'])?$request['Session']:null,
+           '_Files'=>isset($request['FILES'])?$request['FILES']:null,
            '_Genv'=>$request,
-           '_Ns'=>$request['_Ns'],
-           '_Isplugin'=>$request['_Isplugin']
+           '_Ns'=>isset($request['_Ns'])?$request['_Ns']:null,
+           '_Isplugin'=>isset($request['_Isplugin'])?$request['_Isplugin']:null
         ];
 
         if(XlLead::$hook){

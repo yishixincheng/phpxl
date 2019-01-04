@@ -35,7 +35,7 @@ class XlContainer{
         $reader= new XlUAnnotationReader($reflClass);
         $class_ann = $reader->getClassAnnotations($reflClass);
 
-        if(!$class_ann['path']){
+        if(empty($class_ann['path'])){
             //没有设置path的module直接跳过
             return null;
         }

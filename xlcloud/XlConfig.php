@@ -99,7 +99,7 @@ class XlConfig{
     }
     public function exec(){
         //根据参数执行
-        if(!static::$configs[$this->file]){
+        if(empty(static::$configs[$this->file])){
             if($this->isopenmemcache){
 
                 $cachekey="config_file_".$this->file;

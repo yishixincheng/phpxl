@@ -44,7 +44,10 @@ class XlInjector{
     }
     public function getBinParam($name){
 
-        return $this->_bindParam[$name]?:null;
+        if(isset($this->_bindParam[$name])){
+            return $this->_bindParam[$name];
+        }
+        return null;
     }
     public function unbind($name=null){
 

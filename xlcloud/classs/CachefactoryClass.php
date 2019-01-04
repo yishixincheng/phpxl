@@ -154,11 +154,10 @@ class CachefactoryClass extends XlClassBase{
         } else {
             $cls=sysclass("cachefile",0);
         }
-
         $config=$this->cache_config[$cache_name?:'file'];
         $__pre=$this->cache_config['__pre']?:"";
         if($__pre){
-            $config['pre']=$__pre."_".$config['pre'];
+            $config['pre']=$__pre."_".(isset($config['pre'])?$config['pre']:'');
         }
 
         $object=new $cls($config);

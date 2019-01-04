@@ -1219,7 +1219,6 @@ function sysclass($classname,$initialize=1,$binds=null,$iscache=1){
         return $sysclasscache[$classname];
     }else{
         $cls="xl\\classs\\".$classname;
-        $cls::loadClass();
         return $cls;
     }
 }
@@ -1275,7 +1274,7 @@ function import($path){
 
     $pathkey=$path;
     static $static_importcache=[];
-    if($static_importcache[$pathkey]){
+    if(isset($static_importcache[$pathkey])){
         return;
     }
     if(strpos($path,'@')===0){
