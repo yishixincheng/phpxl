@@ -18,8 +18,20 @@ function GetG($key, $group = null) {
     return Xl_Recursion_Get_Array_Value($__Xl_V_G,$k);
 }
 
-function Xl_Recursion_Set_Array_Value(&$parent,&$keys,$value){
+function Xl_Recursion_Set_Array_Value(&$parent,&$keys,$value,$depth=0){
 
+    if(empty($keys)&&$depth==0){
+        if(is_array($value)){
+            //保证根节点永远为数组
+            $parent=$value;
+        }
+        return null;
+    }
+    $depth++;
+    if($depth>1024){
+        //避免无限递归
+        return null;
+    }
     $len=count($keys);
     if($len==1){
         $parent[$keys[0]]=$value;
@@ -30,10 +42,13 @@ function Xl_Recursion_Set_Array_Value(&$parent,&$keys,$value){
         }
         Xl_Recursion_Set_Array_Value($parent[$currkey],$keys,$value);
     }
-    return $parent;
+    return null;
 }
 function Xl_Recursion_Get_Array_Value(&$parent,&$keys){
 
+    if(empty($keys)){
+        return $parent;
+    }
     $len=count($keys);
     if($len==1){
         return $parent[$keys[0]];
@@ -48,6 +63,10 @@ function Xl_Recursion_Get_Array_Value(&$parent,&$keys){
 }
 
 function Xl_Recursion_Del_Array_Value(&$parent,&$keys){
+
+    if(empty($keys)){
+        return null;
+    }
 
     $len=count($keys);
     if($len==1){
