@@ -227,7 +227,6 @@ class XlRouter extends XlBase{
 
         $dir = null;
         if(is_dir($mdl_dir) && $class === null){
-            XlUVerify::isTrue(is_dir($mdl_dir),$mdl_dir." not a dir");
             $dir = @dir($mdl_dir);
             XlUVerify::isTrue($dir !== null, "open dir $mdl_dir failed");
             $geteach = function ()use($dir){
@@ -249,7 +248,7 @@ class XlRouter extends XlBase{
                     }
                     $files = $class;
                 }else{
-                    $files = array($class.'.php');
+                    $files = [$class.'.php'];
                 }
             }
             $geteach = function ()use(&$files){
@@ -289,17 +288,43 @@ class XlRouter extends XlBase{
      */
     private function _fetchRoutesFromFile(&$routes, $class_file, $method=null){
 
-        XlUVerify::isTrue(is_file($class_file), $class_file.' is not an exist file');
+        //读缓存
+
+        $key=$this->_getRouterCacheKey()."_".$class_file;
+        $cacheArr=$this->cache->get($key);
+
+        if($cacheArr&&is_array($cacheArr)){
+
+            $cachelasttime=$cacheArr['filemtime'];
+
+            if($cachelasttime&&$cachelasttime==filemtime($class_file)){
+
+                //文件没有改变需要从缓存中获取
+                $this->_fillRoutesFromParseFile($routes,$cacheArr['routes'],$cacheArr['ns'],$cacheArr['isplugin']);
+                return;
+            }
+
+        }
 
         $ara=XlLead::AtoRArray($class_file);
         if($ara==null||!$ara['class']){
             //类未找到
-            return null;
+            return;
         }
         $class_name=$ara['class'];
         $container = $this->factory->bind("construct_args",[$class_name,$method])->getInstance('xl\\XlContainer');
 
-        foreach ($container->routes as $http_method=>$route){
+        $this->cache->set($key,['filemtime'=>filemtime($class_file),
+                                 'ns'=>$ara['ns'],
+                                 'isplugin'=>$ara['isplugin'],
+                                 'routes'=>$container->routes],$this->_cachesec); //设置缓存
+
+        $this->_fillRoutesFromParseFile($routes,$container->routes,$ara['ns'],$ara['isplugin']);
+
+    }
+    private function _fillRoutesFromParseFile(&$routes,$classroutes,$ns=null,$isplugin=null){
+
+        foreach ($classroutes as $http_method=>$route){
             if(!isset($routes[$http_method])){
                 $routes[$http_method] = new XlURouterEntries();
             }
@@ -311,7 +336,7 @@ class XlRouter extends XlBase{
                 $strict=$entry['strict'];
                 $realpath = preg_replace('/\/+/', '/', '/'.$path);
                 $strict = ($strict===null)?$this->default_strict_matching:$strict;
-                $cur->insert($realpath,['class'=>$class,'method'=>$method,'route'=>$realpath,'ns'=>$ara['ns'],'isplugin'=>$ara['isplugin']],$strict);
+                $cur->insert($realpath,['class'=>$class,'method'=>$method,'route'=>$realpath,'ns'=>$ns,'isplugin'=>$isplugin],$strict);
             }
         }
 
