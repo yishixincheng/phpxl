@@ -37,9 +37,8 @@ class AutoLoad
             }
 
             if($pluginspathlist){
-
                 define("PLUGIN_PATH",PROROOT_PATH."plugin".D_S);
-                define("PLUGINS_PATH",serialize($pluginspathlist)); //定义插件路径常量
+                define("PLUGINS_PATH",$pluginspathlist); //定义插件路径常量数组,php7支持常量数组
             }
 
         }

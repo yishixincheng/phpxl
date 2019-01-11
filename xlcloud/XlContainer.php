@@ -49,6 +49,9 @@ class XlContainer{
             if($specified !== null && $specified !== $methodName){
                 continue;
             }
+            if($method->getDeclaringClass()->getName()!=$reflClass->getName()){
+                continue;
+            }
             $anns = $reader->getMethodAnnotations($method, false);
             if(!isset($anns['path'])){
                 continue;

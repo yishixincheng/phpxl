@@ -21,8 +21,8 @@ class XlConfig{
     private $op;
     private $iswrite;
     public static $configs=[];
-    private $cachetime=1; //缓存时间
-    private $isopenmemcache=30;//是否开启内存缓存
+    private $cachetime=10; //缓存时间
+    private $isopenmemcache=1;//是否开启内存缓存
     protected static $_imem=null;
 
     function __construct($key,$value='null',$iswrite=false){

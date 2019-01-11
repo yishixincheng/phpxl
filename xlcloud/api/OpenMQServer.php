@@ -1,6 +1,7 @@
 <?php
 
 namespace xl\api;
+use xl\XlLead;
 
 import("@xl.vendor.autoload");
 
@@ -31,19 +32,32 @@ class OpenMQServer extends XlApiBase{
             $params=$msgStruct['params'];   //参数
 
             $ns=null;
-            if(($pos=strpos($task,":"))===false){
-                //全局方法
-                $ns=defined("ROOT_NS")?ROOT_NS:'';
-                $methodname=$task;
-                $isplugin=false;
+            if($task){
+                if(($pos=strpos($task,":"))===false){
+                    //全局方法
+                    $ns=defined("ROOT_NS")?ROOT_NS:'';
+                    $methodname=$task;
+                    $isplugin=false;
+                }else{
+                    //插件
+                    $ns=substr($task,0,$pos);
+                    $methodname=substr($task,$pos+1);
+                    $isplugin=true;
+                }
+                TS("消息队列任务",$params,$isplugin,$ns)->task($methodname)->done(); //调用task任务
             }else{
-                //插件
-                $ns=substr($task,0,$pos);
-                $methodname=substr($task,$pos+1);
-                $isplugin=true;
-            }
 
-            TS("消息队列任务",$params,$isplugin,$ns)->task($methodname)->done(); //调用task任务
+                $class=$msgStruct['class'];
+                $method=$msgStruct['method'];
+                $ns=$msgStruct['ns'];
+                $isplugin=$msgStruct['isplugin'];
+
+                if($class&&$method){
+                    $ins=XlLead::$factroy->bind("properties",['_Isplugin'=>$isplugin,'_Ns'=>$ns])->getInstance($class);
+                    call_user_func([$ins,$method],$params);
+                }
+
+            }
 
         });
 

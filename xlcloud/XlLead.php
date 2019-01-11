@@ -9,8 +9,6 @@ namespace xl;
 use xl\base\XlHookBase;
 use xl\util\{XlUException,XlULogger};
 
-//error_reporting(E_ALL);
-
 class  XlLead{
 
     public static $factroy=null;
@@ -84,12 +82,10 @@ class  XlLead{
         }
 
         try {
-            $ins = $ioc->bind("construct_args", [$file])->getInstance("xl\\XlRouter");
-
+            $ins = $ioc->getInstance("xl\\XlRouter");
             if (is_callable($ins)) {
                 $ins();
             }
-
         }catch (XlUException $e){
 
             //异常
@@ -107,7 +103,6 @@ class  XlLead{
     public static function entInit($file='',$conf=[]){
 
         static::checkPhpVersion();
-
         if(defined("TIME_LIMIT")){
             set_time_limit(TIME_LIMIT);
         }else{
@@ -116,18 +111,18 @@ class  XlLead{
         ini_set("arg_seperator.output", "&amp;");
         ini_set("magic_quotes_runtime", 0);
         //程序统一入口，初始化到分支处理
-        define('IN_XL', true);
-        define("DOC_ROOT",dirname($file)); //项目路径
-
-        define("PRO_ROOT",dirname(DOC_ROOT)); //项目地址
-
         if($conf&&$conf['namespace']){
             define("ROOT_NS",$conf['namespace']);
         }
+        define('IN_XL', true);
+        define("DOC_ROOT",dirname($file)); //项目路径
+        define("PRO_ROOT",dirname(DOC_ROOT)); //项目地址
         define("D_S",DIRECTORY_SEPARATOR);
+        $projectarr=explode(D_S,PRO_ROOT);
+        define("PROR_NAME",array_pop($projectarr));
+        unset($projectarr);
         define("ROOT_PATH",DOC_ROOT.D_S);  //根目录
         define("PROROOT_PATH",PRO_ROOT.D_S); //项目根
-
         define("XL_ROOT",dirname(__FILE__)); //xl框架路径
 
         define("XLROOT_PATH",XL_ROOT.D_S);
@@ -155,7 +150,7 @@ class  XlLead{
             if(is_array($plugins_conf)){
                 //处理插件
                 $plugins_conf=array_filter($plugins_conf,function ($v){
-                    if($v['isclose']){
+                    if(isset($v['isclose'])&&$v['isclose']){
                         return false; //过滤掉
                     }
                     return true;

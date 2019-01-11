@@ -15,25 +15,15 @@ class XlRouter extends XlBase{
      */
     private $factory;
 
-    private $_cachesec=TIMEOUT_ROUTETIME; //缓存时间
     /**
      * @property
      */
-    private $projectname="default";
     private $default_strict_matching=true;
     private $routes=null;
 
-    public function __construct($projectname='') {
-
-        parent::__construct();
+    public function __construct() {
 
         //注册所有Moudle模块并解析参数，找到对应的方法调用
-        if($projectname){
-            $projectarr=explode('/',dirname(dirname($projectname)));
-            $projectname=array_pop($projectarr);
-            $this->projectname=$projectname;
-        }
-
         if(!$this->cache=XlInjector::$cache){
             $cls = sysclass("cachefactory", 0);
             $this->cache = $cls::priority(['apc','xcache','eaccelerator','memcache','file']);
@@ -138,9 +128,7 @@ class XlRouter extends XlBase{
             $param=null;
         }
 
-
         ob_start();
-
 
         call_user_func_array([$ins,$method],[$param,$regParam]);
 
@@ -160,7 +148,7 @@ class XlRouter extends XlBase{
 
     private function _getRouterCacheKey(){
 
-        return "@xl_router_".$this->projectname;
+        return "@xl_router_".PROR_NAME;
 
     }
     public function getRouterFromCache(){
@@ -190,8 +178,7 @@ class XlRouter extends XlBase{
         if(defined("PLUGINS_PATH")){
 
             //定义了插件
-            $plugins_path=unserialize(PLUGINS_PATH);
-
+            $plugins_path=PLUGINS_PATH;
             if($plugins_path&&is_array($plugins_path)){
 
                 foreach ($plugins_path as $ns=>$path){
@@ -211,7 +198,7 @@ class XlRouter extends XlBase{
         }
 
         $key=$this->_getRouterCacheKey();
-        $this->cache->set($key,$rMap,$this->_cachesec); //设置到缓存中
+        $this->cache->set($key,$rMap,TIMEOUT_ROUTETIME); //设置到缓存中
 
     }
 
@@ -290,7 +277,7 @@ class XlRouter extends XlBase{
 
         //读缓存
 
-        $key=$this->_getRouterCacheKey()."_".$class_file;
+        $key=$this->_getRouterCacheKey()."_".md5($class_file);
         $cacheArr=$this->cache->get($key);
 
         if($cacheArr&&is_array($cacheArr)){
@@ -317,7 +304,7 @@ class XlRouter extends XlBase{
         $this->cache->set($key,['filemtime'=>filemtime($class_file),
                                  'ns'=>$ara['ns'],
                                  'isplugin'=>$ara['isplugin'],
-                                 'routes'=>$container->routes],$this->_cachesec); //设置缓存
+                                 'routes'=>$container->routes],TIMEOUT_ROUTETIME); //设置缓存
 
         $this->_fillRoutesFromParseFile($routes,$container->routes,$ara['ns'],$ara['isplugin']);
 

@@ -123,7 +123,7 @@ function GFormatTime($date)
     }
     $time=($timenow-$time1); //获得秒数
 
-    $h=floor($time/3600); //获得小时说
+    $h=floor($time/3600); //获得小时数
     $f=floor($time/60);
     if($h>87600)
     {
@@ -336,73 +336,13 @@ function get_url() {
     $relate_url = isset($_SERVER['REQUEST_URI']) ? safe_replace($_SERVER['REQUEST_URI']) : $php_self.(isset($_SERVER['QUERY_STRING']) ? '?'.safe_replace($_SERVER['QUERY_STRING']) : $path_info);
     return $sys_protocal.(isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '').$relate_url;
 }
-/**
- * 字符截取 支持UTF8/GBK
- * @param $string
- * @param $length
- * @param $dot
- */
-function str_cut($string, $length, $dot = '...') {
-    $strlen = strlen($string);
-    if($strlen <= $length) return $string;
-    $string = str_replace(array(' ','&nbsp;', '&amp;', '&quot;', '&#039;', '&ldquo;', '&rdquo;', '&mdash;', '&lt;', '&gt;', '&middot;', '&hellip;'), array('∵',' ', '&', '"', "'", '“', '”', '—', '<', '>', '·', '…'), $string);
-    $strcut = '';
-    if(strtolower(CHARSET) == 'utf-8') {
-        $length = intval($length-strlen($dot)-$length/3);
-        $n = $tn = $noc = 0;
-        while($n < strlen($string)) {
-            $t = ord($string[$n]);
-            if($t == 9 || $t == 10 || (32 <= $t && $t <= 126)) {
-                $tn = 1; $n++; $noc++;
-            } elseif(194 <= $t && $t <= 223) {
-                $tn = 2; $n += 2; $noc += 2;
-            } elseif(224 <= $t && $t <= 239) {
-                $tn = 3; $n += 3; $noc += 2;
-            } elseif(240 <= $t && $t <= 247) {
-                $tn = 4; $n += 4; $noc += 2;
-            } elseif(248 <= $t && $t <= 251) {
-                $tn = 5; $n += 5; $noc += 2;
-            } elseif($t == 252 || $t == 253) {
-                $tn = 6; $n += 6; $noc += 2;
-            } else {
-                $n++;
-            }
-            if($noc >= $length) {
-                break;
-            }
-        }
-        if($noc > $length) {
-            $n -= $tn;
-        }
-        $strcut = substr($string, 0, $n);
-        $strcut = str_replace(array('∵', '&', '"', "'", '“', '”', '—', '<', '>', '·', '…'), array(' ', '&amp;', '&quot;', '&#039;', '&ldquo;', '&rdquo;', '&mdash;', '&lt;', '&gt;', '&middot;', '&hellip;'), $strcut);
-    } else {
-        $dotlen = strlen($dot);
-        $maxi = $length - $dotlen - 1;
-        $current_str = '';
-        $search_arr = array('&',' ', '"', "'", '“', '”', '—', '<', '>', '·', '…','∵');
-        $replace_arr = array('&amp;','&nbsp;', '&quot;', '&#039;', '&ldquo;', '&rdquo;', '&mdash;', '&lt;', '&gt;', '&middot;', '&hellip;',' ');
-        $search_flip = array_flip($search_arr);
-        for ($i = 0; $i < $maxi; $i++) {
-            $current_str = ord($string[$i]) > 127 ? $string[$i].$string[++$i] : $string[$i];
-            if (in_array($current_str, $search_arr)) {
-                $key = $search_flip[$current_str];
-                $current_str = str_replace($search_arr[$key], $replace_arr[$key], $current_str);
-            }
-            $strcut .= $current_str;
-        }
-    }
-    return $strcut.$dot;
-}
-
-
 
 /**
- * 获取请求ip
- *
- * @return ip地址
+ * 获取ip
+ * @return
  */
 function ip() {
+    $ip='';
     if(getenv('HTTP_CLIENT_IP') && strcasecmp(getenv('HTTP_CLIENT_IP'), 'unknown')) {
         $ip = getenv('HTTP_CLIENT_IP');
     } elseif(getenv('HTTP_X_FORWARDED_FOR') && strcasecmp(getenv('HTTP_X_FORWARDED_FOR'), 'unknown')) {
@@ -600,32 +540,6 @@ function getcachetime($key, $type='file'){
 
 }
 
-
-/**
-设置内存存储
- */
-
-function getredisobj(){
-
-    if(!class_exists("Redis")){return null;}
-    $cacheconfig=config("cache");
-    $cls=sysclass('cachefactory',0);
-    $cache = $cls::get_instance($cacheconfig)->get_cache("redis");
-
-    return $cache;
-}
-
-function getmemcacheobj(){
-
-    if(!extension_loaded("memcache")){return null;}
-
-    $cacheconfig=config("cache");
-    $cls=sysclass('cachefactory',0);
-    $cache = $cls::get_instance($cacheconfig)->get_cache("memcache");
-
-    return $cache;
-}
-
 /**
  * IE浏览器判断
  */
@@ -783,6 +697,7 @@ function __json_encode($data,$isprint=false){
     }
     if($isprint){
         echo json_encode($data);
+        return null;
     }else{
         return json_encode($data);
     }
@@ -813,11 +728,12 @@ function ___json_encode($data,$options=0,$isprint=false){
     }
     if($isprint){
         echo $r;
+        return null;
     }else{
         return $r;
     }
-
 }
+
 function arrayrecursive(&$array, $function, $apply_to_keys_also = false)
 {
     static $recursive_counter = 0;
@@ -870,11 +786,11 @@ function referer($islocal=false){
 
 
 /**
- * Function dataformat
+ * Function dateformat
  * 时间转换
  * @param $n INT时间
  */
-function dataformat($n) {
+function dateformat($n) {
     $hours = floor($n/3600);
     $minite	= floor($n%3600/60);
     $secend = floor($n%3600%60);
@@ -919,6 +835,8 @@ function allin_array($v,$a,$t='value'){
         }
         return in_array($v,array_keys($a));
     }
+
+    return null;
 
 }
 
@@ -1162,7 +1080,6 @@ function request_uri(){
  * @return mixed
  * 客户端调用
  */
-
 function rpc($methodname,$param=null,$conf=null){
 
     $apiClass="rpc\\ApiFactory";
@@ -1575,10 +1492,10 @@ function emptyToZero(&$pm,$keys,$zero=0){
         $keys=explode(',',$keys);
     }
     if(!is_array($keys)){
-        return;
+        return null;
     }
     if(!is_array($pm)){
-        return;
+        return null;
     }
     foreach($pm as $k=>&$v){
         if(in_array($k,$keys)){
@@ -1735,5 +1652,12 @@ function iapi($methodname,$params){
     $obj->setParams($params);
 
     return $obj->getResult($obj->getParams());
+
+}
+
+//埋点
+function burypoint($name,$params=null,$async=false,$filter=null){
+
+    return \xl\core\XlPointEntry::buryPointAndCall($name,$params,$async,$filter);
 
 }
