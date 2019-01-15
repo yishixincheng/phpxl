@@ -46,33 +46,6 @@ class  XlLead{
         $ioc = new XlInjector();
         static::$factroy=$ioc; //赋值供全局使用
         //注册钩子
-        try{
-            $count=0;
-            $rhook=str_replace(PROROOT_PATH,"",HOOK_PATH,$count);
-            if($count>1){
-                $rootpathlen=strlen(PROROOT_PATH);
-                if(substr(HOOK_PATH,0,$rootpathlen)==PROROOT_PATH){
-                    $rhook=substr(HOOK_PATH,$rootpathlen);
-                }else{
-                    $rhook=HOOK_PATH;
-                }
-            }
-            $rhook=str_replace(D_S,"\\",$rhook);
-            $ins=$ioc->getInstance(ROOT_NS."\\".$rhook."InitHook");
-            if (is_callable($ins)) {
-                $ins();
-            }
-
-            if(method_exists($ins,"init")){
-
-                $ins->init();//注册事件
-            }
-
-            static::$hook=$ins;
-
-        }catch (\Exception $e){
-            //nothing to do
-        }
         if(defined("ISCLIPURE")&&ISCLIPURE){
             //cli模式或者回调模式
             static::cli();

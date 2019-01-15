@@ -384,10 +384,5 @@ class XlMvcBase extends XlHookBase {
      */
     protected $factory;
 
-    /**
-     * 注入的变量
-     */
-    protected $_Ns;
-    protected $_Isplugin;
 
 }

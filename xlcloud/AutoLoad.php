@@ -122,7 +122,7 @@ class AutoLoad
 
         //注册钩子事件
 
-        XlLead::hook()->registEventHook("system_shutdownpage",function(){
+        XlLead::hook()->registEvent("system_shutdownpage",function(){
 
             $_error = error_get_last();
 
