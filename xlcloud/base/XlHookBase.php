@@ -7,18 +7,6 @@ use xl\core\XlEventRegist;
 class XlHookBase extends XlBase {
 
 
-    final public function triggerRequestEvent($route,$param=null){
-
-        XlEventRegist::autoRegistAndTrigger("request",$route,$param,$this->_Isplugin,$this->_Ns);
-
-    }
-
-    final public function triggerResponseEvent($route,$param=null){
-
-        XlEventRegist::autoRegistAndTrigger("response",$route,$param,$this->_Isplugin,$this->_Ns);
-
-    }
-
     final public function registEvent($eventname,$handler,$order=0){
         XlEventRegist::registEvent("event",$eventname,$handler,$order,$this->_Isplugin,$this->_Ns);
     }

@@ -109,12 +109,7 @@ class XlRouter extends XlBase{
            '_Isplugin'=>$request['_Isplugin']??null
         ];
 
-        if(XlLead::$hook){
-
-            //钩子存在
-            XlLead::$hook->triggerRequestEvent($route,['request'=>$request,'regparam'=>$regParam,'route'=>$route]); //触发钩子事件
-
-        }
+        \xl\core\XlEventRegist::autoRegistAndTrigger("request",$route,['request'=>$request,'regparam'=>$regParam,'route'=>$route],$properties['_Isplugin'],$properties['_Ns']);
 
         $ins=$this->factory->bind("properties",$properties)->getInstance($class);
 
@@ -133,11 +128,8 @@ class XlRouter extends XlBase{
         call_user_func_array([$ins,$method],[$param,$regParam]);
 
         //响应钩子
-        if(XlLead::$hook){
 
-            XlLead::$hook->triggerResponseEvent($route,['request'=>$request,'regparam'=>$regParam,'route'=>$route,'response'=>ob_get_contents()]); //触发钩子事件
-
-        }
+        \xl\core\XlEventRegist::autoRegistAndTrigger("response",$route,['request'=>$request,'regparam'=>$regParam,'route'=>$route,'response'=>ob_get_contents()],$properties['_Isplugin'],$properties['_Ns']);
 
         ob_end_flush();
 
