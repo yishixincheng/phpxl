@@ -35,6 +35,8 @@ class XlEventRegist{
 
     public static function registEvent($eventtype,$eventname,$handler,$order=0,$isplugin=false,$ns=null){
 
+        XlUVerify::isTrue($handler,"parameter[handler] not empty!");
+
         $staticName="___".$eventtype."Hooks";
         if(!isset(static::${$staticName}[$ns])){
             static::${$staticName}[$ns]=[];
@@ -66,13 +68,21 @@ class XlEventRegist{
 
         //过滤掉同排序下相同的事件响应函数
         static::${$staticName}[$ns][$eventname][$order]=array_filter(static::${$staticName}[$ns][$eventname][$order],function($v) use($eventnode){
-            if(isset($v['class'])&&isset($v['method'])){
+            if(isset($v['class'])&&isset($eventnode['class'])){
                 if($v['class']==$eventnode['class']&&$v['method']==$eventnode['method']){
                     return false;
                 }
-            }else if(isset($v['handler'])&&is_string($v['handler'])&&isset($eventnode['handler'])&&is_string($eventnode['handler'])){
-                if($v['handler']==$eventnode['handler']){
-                    return false;
+            }else if(isset($v['handler'])&&isset($eventnode['handler'])){
+
+                if(is_string($v['handler'])&&$eventnode['handler']){
+                    if($v['handler']==$eventnode['handler']){
+                        return false;
+                    }
+                }else{
+                    //匿名函数也只能绑定一个，防止调用者非单例模式重复绑定和调用问题
+                    if(is_callable($v['handler'])&&is_callable($eventnode['handler'])){
+                        return false;
+                    }
                 }
             }
             return true;
