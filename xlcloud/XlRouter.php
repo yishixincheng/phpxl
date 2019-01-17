@@ -3,6 +3,7 @@
 namespace xl;
 use xl\base\XlBase;
 use xl\util\{XlURequest,XlURouterEntries,XlUVerify};
+use xl\core\XlEventRegist;
 
 /**
  * Class XlRouter
@@ -51,12 +52,7 @@ class XlRouter extends XlBase{
         $requstdata=$requst->getData();
 
         XlUVerify::isTrue($this->invokeRoute($routes,$requstdata),"NotFound",function() use($requstdata){
-
-            if(XlLead::$hook){
-                //钩子存在
-                XlLead::$hook->triggerRequestEvent("_notfoundroute",['path'=>$requstdata['path'],'request'=>$requstdata]); //触发钩子事件
-            }
-
+            XlEventRegist::autoRegistAndTrigger("request","_notfoundroute",['path'=>$requstdata['path'],'request'=>$requstdata]);
         });
 
     }
@@ -109,7 +105,7 @@ class XlRouter extends XlBase{
            '_Isplugin'=>$request['_Isplugin']??null
         ];
 
-        \xl\core\XlEventRegist::autoRegistAndTrigger("request",$route,['request'=>$request,'regparam'=>$regParam,'route'=>$route],$properties['_Isplugin'],$properties['_Ns']);
+        XlEventRegist::autoRegistAndTrigger("request",$route,['request'=>$request,'regparam'=>$regParam,'route'=>$route],$properties['_Isplugin'],$properties['_Ns']);
 
         $ins=$this->factory->bind("properties",$properties)->getInstance($class);
 
@@ -129,7 +125,7 @@ class XlRouter extends XlBase{
 
         //响应钩子
 
-        \xl\core\XlEventRegist::autoRegistAndTrigger("response",$route,['request'=>$request,'regparam'=>$regParam,'route'=>$route,'response'=>ob_get_contents()],$properties['_Isplugin'],$properties['_Ns']);
+        XlEventRegist::autoRegistAndTrigger("response",$route,['request'=>$request,'regparam'=>$regParam,'route'=>$route,'response'=>ob_get_contents()],$properties['_Isplugin'],$properties['_Ns']);
 
         ob_end_flush();
 
