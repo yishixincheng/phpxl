@@ -130,7 +130,7 @@ final class XlEventRegist{
         $currmethods=[];
         $iseventtype=true;
         if($eventtype=="request"||$eventtype=="response"){
-            $eventname=rtrim($eventname,"/");
+            $eventname=trim($eventname,"/");
             $iseventtype=false;
         }
         if($isplugin){
@@ -202,7 +202,7 @@ final class XlEventRegist{
 
         if($m0){
             $rt=static::triggerEvent($m0,$params,$eventtype);
-            if($rt===false||$rt==="__break"){
+            if($rt==="__breakall"){
                 //跳出
                 return;
             }
@@ -373,7 +373,7 @@ final class XlEventRegist{
 
                 $rt=call_user_func($eventnode['handler'],$params);
 
-                if($rt===false||$rt==="__break"){
+                if($rt===false||$rt==="__break"||$rt==="__breakall"){
                     break 2;
                 }
 
