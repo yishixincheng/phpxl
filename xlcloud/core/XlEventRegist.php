@@ -118,7 +118,6 @@ class XlEventRegist{
 
         $maintiermethods=[];
         $currmethods=[];
-        $methods=[];
         $iseventtype=true;
         if($eventtype=="request"||$eventtype=="response"){
             $eventname=rtrim($eventname,"/");
