@@ -9,7 +9,7 @@ use xl\core\XlEventRegist;
  * Class XlRouter
  * @author("xincheng")
  */
-class XlRouter extends XlBase{
+final class XlRouter extends XlBase{
 
     /**
      * @inject("xlinjector")

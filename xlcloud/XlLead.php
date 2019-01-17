@@ -9,7 +9,7 @@ namespace xl;
 use xl\base\XlHookBase;
 use xl\util\{XlUException,XlULogger};
 
-class  XlLead{
+final class  XlLead{
 
     public static $factroy=null;
     public static $hook=null;

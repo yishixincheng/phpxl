@@ -10,7 +10,7 @@ use xl\util\{XlUAnnotationReader,XlUVerify};
  * @param string $method 方法名, 如果为空, 则加载此类的所有方法
  */
 
-class XlContainer{
+final class XlContainer{
 
     public $routes=[]; //['GET'=>[],'POST',....];
     public $class;

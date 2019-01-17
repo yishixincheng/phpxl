@@ -2,7 +2,7 @@
 
 namespace xl;
 
-class AutoLoad
+final class AutoLoad
 {
 
     public static $classFiles = [];

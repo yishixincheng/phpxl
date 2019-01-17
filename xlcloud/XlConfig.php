@@ -13,7 +13,7 @@ config("system/opp",1);
 */
 
 
-class XlConfig{
+final class XlConfig{
 
     private $file;
     private $key;

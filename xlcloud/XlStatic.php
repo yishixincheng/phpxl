@@ -2,7 +2,7 @@
 
 namespace xl;
 
-class XlStatic{
+final class XlStatic{
 
     public static function noDfSet($dfname,$value){
 

@@ -10,7 +10,7 @@ use xl\util\{XlUAnnotationReader,XlUVerify};
  * @package xl\core
  * 埋点调用入口
  */
-class XlPointEntry{
+final class XlPointEntry{
 
     private static $_isopenmq=null;
 

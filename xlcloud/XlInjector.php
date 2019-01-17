@@ -10,7 +10,7 @@ use xl\util\XlUMeta;
  * 注入依赖工厂
  */
 
-class XlInjector{
+final class XlInjector{
 
     private $_bindParam=[];
     private $_insStack=[];

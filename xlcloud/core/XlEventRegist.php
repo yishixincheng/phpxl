@@ -9,7 +9,7 @@ use xl\util\{XlUAnnotationReader,XlUVerify};
  * @package xl\core
  * 钩子事件手柄注册映射
  */
-class XlEventRegist{
+final class XlEventRegist{
 
 
     //"lftsoft"=>["*"=>[
