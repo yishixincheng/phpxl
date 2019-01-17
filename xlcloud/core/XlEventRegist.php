@@ -64,6 +64,20 @@ class XlEventRegist{
         $eventnode['isplugin']=$isplugin; //不允许夸插件调用
         $eventnode['ns']=$ns;
 
+        //过滤掉同排序下相同的事件响应函数
+        static::${$staticName}[$ns][$eventname][$order]=array_filter(static::${$staticName}[$ns][$eventname][$order],function($v) use($eventnode){
+            if(isset($v['class'])&&isset($v['method'])){
+                if($v['class']==$eventnode['class']&&$v['method']==$eventnode['method']){
+                    return false;
+                }
+            }else if(isset($v['handler'])&&is_string($v['handler'])&&isset($eventnode['handler'])&&is_string($eventnode['handler'])){
+                if($v['handler']==$eventnode['handler']){
+                    return false;
+                }
+            }
+            return true;
+        });
+
         static::${$staticName}[$ns][$eventname][$order][]=$eventnode;
 
     }
