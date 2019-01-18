@@ -55,8 +55,11 @@ final class XlEventRegist{
         if(is_array($handler)){
             XlUVerify::isTrue(count($handler), "handler parameter invalid");
             if(is_object($handler[0])){
-                //如果是对象,需要通过依赖注入实现
-                $handler[0]=get_class($handler[0]);
+                //如果是对象,判断是否是当前的插件
+                if($handler[0] instanceof \xl\base\XlHookBase){
+                    XlUVerify::isTrue($handler[0]->get_Isplugin()==$isplugin,"处理函数，不能跨插件注册！");
+                    XlUVerify::isTrue($handler[0]->get_Ns()==$ns,"处理函数，不能跨插件注册！！");
+                }
             }
             $eventnode['class']=$handler[0];
             $eventnode['method']=$handler[1];
@@ -344,12 +347,13 @@ final class XlEventRegist{
                     continue;
                 }
                 if(!$eventnode['handler']){
-
                     if($eventnode['class']&&$eventnode['method']){
-
-                        $ins=XlLead::$factroy->bind("properties",['_Isplugin'=>$eventnode['isplugin'],'_Ns'=>$eventnode['ns']])->getInstance($eventnode['class']);
-
-                        $eventnode['handler']=[$ins,$eventnode['method']];
+                        if(is_object($eventnode['class'])){
+                            $eventnode['handler']=[$eventnode['class'],$eventnode['method']];
+                        }else{
+                            $ins=XlLead::$factroy->bind("properties",['_Isplugin'=>$eventnode['isplugin'],'_Ns'=>$eventnode['ns']])->getInstance($eventnode['class']);
+                            $eventnode['handler']=[$ins,$eventnode['method']];
+                        }
                     }
                 }else{
 

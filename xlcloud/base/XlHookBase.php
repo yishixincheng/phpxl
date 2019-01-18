@@ -23,6 +23,15 @@ class XlHookBase extends XlBase {
 
     }
 
+    final public function get_Isplugin(){
+
+        return $this->_Isplugin?:false;
+    }
+
+    final public function get_Ns(){
+        return $this->_Ns?:null;
+    }
+
     /**
      * 注入的变量
      */
