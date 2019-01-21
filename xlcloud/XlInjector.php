@@ -16,7 +16,6 @@ final class XlInjector{
     private $_insStack=[];
     private $_singletons=[];
 
-    private $_cachesec=TIMEOUT_METACACHE; //缓存时间
     public static $cache=null;
 
     public function binds($binds){
@@ -27,7 +26,7 @@ final class XlInjector{
         if(!is_array($binds)){
             return $this;
         }
-        $keys=['properties','construct_args','injector','singleton','conf'];
+        $keys=['properties','construct_args','injector','singleton'];
         foreach ($binds as $key=>$value){
 
             if(in_array($key,$keys)){
@@ -62,29 +61,12 @@ final class XlInjector{
         $construct_args=$this->getBinParam("construct_args")?:[]; //注入的构造函数参数
         $injector=$this->getBinParam("injector");
         $issingleton=$this->getBinParam("singleton")?:false; //是否是单例
-        $conf=$this->getBinParam("conf")?:[];
 
         $ins=null; //要返回的实例
         $className=$this->getClassName($id);
         $reflClass=new \ReflectionClass($className); //反射类
 
-        if(isset($conf['id'])){
-            $class=$conf['id']; //通过配置文件读取
-
-            if(isset($class['properties'])){
-                $properties = array_merge($class['properties'], $properties);
-            }
-            if (isset($class['pass_by_construct']) && $class['pass_by_construct']){ //属性在构造时传入
-                if(count($construct_args) ===0){
-                    throw  new XlException("construct must pass params".$className);
-                }
-                //组合构造参数
-                $construct_args = $this->buildConstructArgs($reflClass, $properties);
-                $properties=array();
-            }
-        }
         if(!$issingleton){
-
             //循环依赖只能使用单例
             if(array_search($id,$this->_insStack)!==false){
 
@@ -94,32 +76,21 @@ final class XlInjector{
 
         }
         try{
-            if(isset($class)&&$class['pass_by_construct']){
-                $ins=$reflClass->newInstanceArgs($construct_args);
-                $meta=$this->getMeta($reflClass); //获取注释信息
+            $ins=$reflClass->newInstanceWithoutConstructor();
+            $meta=$this->getMeta($reflClass); //获取注释信息
 
-                if($issingleton){
-                    $this->_singletons[$id]=$ins;
-                }
-                $this->inject($reflClass, $ins, $meta, $properties, $injector);
-            }else{
-                $ins=$reflClass->newInstanceWithoutConstructor();
-                $meta=$this->getMeta($reflClass); //获取注释信息
-
-                if($issingleton){
-                    $this->_singletons[$id]=$ins;
-                }
-                $this->inject($reflClass, $ins, $meta, $properties, $injector);
-
-                if($init !==null&&is_callable($init)){
-                    $init($ins);
-                }
-                $cnst = $reflClass->getConstructor();
-                if($cnst){
-                    $cnst->invokeArgs($ins,$construct_args);
-                }
+            if($issingleton){
+                $this->_singletons[$id]=$ins;
             }
+            $this->inject($reflClass, $ins, $meta, $properties, $injector);
 
+            if($init !==null&&is_callable($init)){
+                $init($ins);
+            }
+            $cnst = $reflClass->getConstructor();
+            if($cnst){
+                $cnst->invokeArgs($ins,$construct_args);
+            }
 
         }catch (XlException $e){
             array_pop($this->_insStack);
@@ -289,35 +260,10 @@ final class XlInjector{
         if(isset($cache)&&$cache) {
 
             //缓存时间60秒
-            $cache->set($cache_key, $data,$this->_cachesec);
+            $cache->set($cache_key, $data,TIMEOUT_METACACHE);
         }
 
         return $data;
-    }
-    private function buildConstructArgs($reflClass, $properties){
-
-        if($properties===null) {
-            return [];
-        }
-        if(count($properties)==0){
-            return [];
-        }
-        $refMethod = $reflClass->getConstructor();
-        $params = $refMethod->getParameters();
-        $args = [];
-        foreach ($params as $key => $param) {
-            $param_name = $param->getName();
-            if(isset($properties[$param_name])){
-                $args[$key] = $this->getProperty($properties[$param_name]);
-            }else{
-                if(!$param->isOptional()){
-                    throw new XlException("{$reflClass->getName()}::__construct lose paramer $param_name"); //抛出异常
-                }
-                break;
-            }
-        }
-        return $args;
-
     }
     public static function setPropertyValue($refl, $ins, $name, $value)
     {
