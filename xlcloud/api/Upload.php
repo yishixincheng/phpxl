@@ -12,7 +12,7 @@ define("IMGOPTYPE_WMAXLIMIT",5);    //超过最大宽度则裁切，低于最大
 define("IMGOPTYPE_WMINLIMIT",6);    //不能小于最低宽度
 define("IMGOPTYPE_MINWH",7);        //不能小于设定的宽高
 
-class Upload extends XlApiBase{
+final class Upload extends XlApiBase{
 
     private $_iimg=null;
     private $_ioppic=null;

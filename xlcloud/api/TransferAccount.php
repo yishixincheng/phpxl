@@ -9,7 +9,7 @@ use xl\XlLead;
  * 转账接口
  */
 
-class TransferAccount extends XlApiBase{
+final class TransferAccount extends XlApiBase{
 
     protected $model;             //插入数据表模型
     protected $payplat;           //支付平台，1,alipay;2,wxpay,3.wxpaytobank(微信支付到银行卡）

@@ -2,7 +2,7 @@
 
 namespace xl\api;
 
-class SearchParamUrl extends XlApiBase{
+final class SearchParamUrl extends XlApiBase{
 
 
     protected $params;

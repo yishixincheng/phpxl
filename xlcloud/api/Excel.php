@@ -2,7 +2,7 @@
 
 namespace xl\api;
 
-class Excel extends XlApiBase{
+final class Excel extends XlApiBase{
 
     protected $iapiname=""; //内部接口方法的名
     protected $oper="";  //导入还是导出

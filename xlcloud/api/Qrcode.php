@@ -8,7 +8,7 @@ namespace xl\api;
  * 二维码生成
  */
 
-class Qrcode extends XlApiBase{
+final class Qrcode extends XlApiBase{
 
     protected $text; //要生成的文本
     protected $errorLevel="L";

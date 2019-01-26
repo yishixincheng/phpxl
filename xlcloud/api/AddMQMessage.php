@@ -6,7 +6,7 @@ use xl\base\XlException;
 import("@xl.vendor.autoload");
 
 
-class AddMQMessage extends XlApiBase{
+final class AddMQMessage extends XlApiBase{
 
     protected $queuename=null;  //队列名,null是默认队列
     protected $task=null;        //task名称，结构plugin:folder/taskname

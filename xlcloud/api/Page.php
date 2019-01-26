@@ -8,7 +8,7 @@ namespace xl\api;
  * 分页代码实现
  */
 
-class Page extends XlApiBase{
+final class Page extends XlApiBase{
 
     protected $page=1;      //当前页
     protected $shownum=5; //显示数量默认是5

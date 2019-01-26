@@ -10,7 +10,7 @@ import("@xl.vendor.autoload");
  * @package xl\api
  * 开启MQ服务
  */
-class OpenMQServer extends XlApiBase{
+final class OpenMQServer extends XlApiBase{
 
 
     protected $config=null;

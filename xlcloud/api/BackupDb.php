@@ -8,7 +8,7 @@ namespace xl\api;
  * 备份数据表，支持mysql
  */
 
-class BackupDb extends XlApiBase{
+final class BackupDb extends XlApiBase{
 
     protected $database;  //备份表所在的数据库
     protected $username;  //数据库用户名
