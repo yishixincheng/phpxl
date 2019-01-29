@@ -7,6 +7,7 @@ final class Excel extends XlApiBase{
     protected $iapiname=""; //内部接口方法的名
     protected $oper="";  //导入还是导出
     protected $postparams=[]; //传递的参数
+    protected $configfunc=null;
 
     public function run(){
 
@@ -31,7 +32,7 @@ final class Excel extends XlApiBase{
             return $rt;
         }
         $datalist=$rt['result'];
-        $config=$iapiObj->getImConfig();
+        $config=$iapiObj->getImConfig($this->postparams);
         $datalist=$this->_getformatdatalist($datalist,$config);
         $rt=$iapiObj->import($this->postparams,$datalist);
 
@@ -46,7 +47,8 @@ final class Excel extends XlApiBase{
 
         $iapiObj=$this->getIapiObject();
 
-        $config=$iapiObj->getExConfig(); //导出配置
+        $config=$iapiObj->getExConfig($this->postparams); //导出配置
+
         $columnmap=$this->_getdealcolumnmap([],$config['columnmap']);
         $rt=$iapiObj->export($this->postparams);
         if($rt['title']){
