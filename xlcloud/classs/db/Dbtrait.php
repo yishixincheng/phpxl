@@ -90,16 +90,23 @@ trait Dbtrait{
         return $value;
     }
     public function add_special_char2(&$value) {
-        if('*' == $value || false !== strpos($value, '(') || false !== strpos($value, '.') || false !== strpos ( $value, '`')) {
-            //不处理包含* 或者 使用了sql方法。
-        } else {
+
+        if(is_string($value)||is_numeric($value)){
             $value = trim($value);
-        }
-        if (preg_match("/\b(select|insert|update|delete)\b/i", $value)) {
-            $value = preg_replace("/\b(select|insert|update|delete)\b/i", '', $value);
+            if (preg_match("/\b(select|insert|update|delete)\b/i", $value)) {
+                $value = preg_replace("/\b(select|insert|update|delete)\b/i", '', $value);
+            }
+            $this->add_backslash($value);
         }
         return $value;
     }
+
+    public function add_backslash(&$value){
+        if(strpos($value,"\\")!==false){
+            $value= str_replace("\\","\\\\",$value);
+        }
+    }
+
     public function debugLog($debug=null,$sqlstr){
 
         if(empty($debug)){

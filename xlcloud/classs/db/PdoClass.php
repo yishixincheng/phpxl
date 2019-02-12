@@ -227,9 +227,13 @@ class PdoClass extends XlClassBase implements DbInterface {
         foreach($values as $vs){
 
             if($vs&&is_array($vs)){
-                array_walk($vs, array($this, 'add_special_char2'));
+                array_walk($vs, [$this, 'add_special_char2']);
                 $istrs.='(';
                 foreach($vs as $v){
+                    if(is_array($v)){
+                        $v=json_encode($v);
+                        $this->add_backslash($v);
+                    }
                     $istrs.="'".$v."',";
                 }
                 $istrs=rtrim($istrs,",");
@@ -283,7 +287,7 @@ class PdoClass extends XlClassBase implements DbInterface {
             $column=$columns[$i]?$columns[$i]:$columns[0];
             $condition=$conditions[$i]?$conditions[$i]:$conditions[0];
 
-            array_walk($column, array($this, 'add_special_char'));
+            array_walk($column, [$this, 'add_special_char']);
             $str=implode(",",$column);
             $sqlstr="SELECT $str FROM `".$this->config['database']."`.`".$table."`" .$condition;
             $tpm[]=$sqlstr;
@@ -428,11 +432,16 @@ class PdoClass extends XlClassBase implements DbInterface {
         {
             $dstr="";
             $istr="";
-            array_walk($columns, array($this, 'add_special_char2'));
+            array_walk($columns, [$this, 'add_special_char2']);
             foreach($columns as $key=>$value)
             {
                 $dstr.="`".$key."`,";
+                if(is_array($value)){
+                    $value=json_encode($value);
+                    $this->add_backslash($value);
+                }
                 $istr.="'".$value."',";
+
             }
             $dstr=rtrim($dstr,",");
             $istr=rtrim($istr,",");
@@ -460,11 +469,10 @@ class PdoClass extends XlClassBase implements DbInterface {
 
         if(empty($condition)){return false;}
         $arrstr="";
-        array_walk($columns, array($this, 'add_special_char2'));
+        array_walk($columns, [$this, 'add_special_char2']);
         foreach($columns as $key=>$value)
         {
             if(is_string($value)){
-
                 $op=substr($value,0,2);
                 switch($op){
                     case '+=':
@@ -482,6 +490,10 @@ class PdoClass extends XlClassBase implements DbInterface {
                 }
 
             }else{
+                if(is_array($value)){
+                    $value=json_encode($value);
+                    $this->add_backslash($value);
+                }
                 $arrstr.=$key."='".$value."',";
             }
         }
@@ -550,7 +562,7 @@ class PdoClass extends XlClassBase implements DbInterface {
         }
         else if(is_array($columns))
         {
-            array_walk($columns, array($this, 'add_special_char'));
+            array_walk($columns, [$this, 'add_special_char']);
             $str=implode(",",$columns);
         }
         if($str&&$table)

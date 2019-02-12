@@ -661,7 +661,7 @@ final class XlModelFactory extends XlMvcBase {
 
     private function _getTableTypefromTypeAndSize($type,$size=''){
 
-        if(!in_array($type,array('text','tinytext','medinumtext','longtext','date','datetime'))){
+        if(!in_array($type,array('text','tinytext','medinumtext','longtext','date','datetime','json'))){
             return $type.'('.$size.')';
         }
         return $type;
@@ -1787,7 +1787,7 @@ final class XlModelFactory extends XlMvcBase {
 
     private function _notSizechartypes(){
 
-        return array('text','tinytext','medinumtext','longtext','date','datetime');
+        return array('text','tinytext','medinumtext','longtext','date','datetime','json');
     }
 
     /**
@@ -2272,6 +2272,9 @@ final class XlModelFactory extends XlMvcBase {
                 break;
             case 'double':
                 $rt=['check'=>'float'];
+                break;
+            case 'json':
+                $rt= ['check'=>is_array($v)?'array':'string'];
                 break;
             default:
                 $rt=['check'=>'string','range'=>$range];

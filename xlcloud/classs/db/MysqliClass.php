@@ -149,6 +149,10 @@ class MysqliClass extends XlClassBase implements DbInterface{
                 array_walk($vs, array($this, 'add_special_char2'));
                 $istrs.='(';
                 foreach($vs as $v){
+                    if(is_array($v)){
+                        $v=json_encode($v);
+                        $this->add_backslash($v);
+                    }
                     $istrs.="'".$v."',";
                 }
                 $istrs=rtrim($istrs,",");
@@ -245,6 +249,10 @@ class MysqliClass extends XlClassBase implements DbInterface{
             foreach($columns as $key=>$value)
             {
                 $dstr.="`".$key."`,";
+                if(is_array($value)){
+                    $value=json_encode($value);
+                    $this->add_backslash($value);
+                }
                 $istr.="'".$value."',";
             }
             $dstr=rtrim($dstr,",");
@@ -293,6 +301,10 @@ class MysqliClass extends XlClassBase implements DbInterface{
                 }
 
             }else{
+                if(is_array($value)){
+                    $value=json_encode($value);
+                    $this->add_backslash($value);
+                }
                 $arrstr.=$key."='".$value."',";
             }
         }
