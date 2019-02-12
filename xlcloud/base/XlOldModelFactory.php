@@ -35,7 +35,7 @@ final class XlOldModelFactory extends XlMvcBase {
     private $_merge_insert=null;
     private $_partition=null;
     private $_fields=null;
-    private $_engin=null;
+    private $_engine=null;
     private $_charset=null;
     private $_opencache=null;
     private $_cachetime=null;
@@ -147,7 +147,7 @@ final class XlOldModelFactory extends XlMvcBase {
 
     public function parseModelName($modelname,$config=null,$model_name=null){
 
-
+        $this->_engine=config("database/engine")??"InnoDB";
         //只支持2层目录
         if($this->_model==null){
             if(($pos=strpos($modelname,'.'))){
@@ -220,8 +220,11 @@ final class XlOldModelFactory extends XlMvcBase {
                 }else{
                     $this->_merge = $this->_model->merge;
                 }
-                if ($this->_model->merge_insert) {
-                    $this->_merge_insert = $this->_model->merge_insert;
+                if($this->_merge){
+                    if ($this->_model->merge_insert) {
+                        $this->_merge_insert = $this->_model->merge_insert;
+                    }
+                    $this->_engine="MyISAM"; //强制
                 }
 
             }
@@ -235,7 +238,7 @@ final class XlOldModelFactory extends XlMvcBase {
                 throw new XlException("Table　".$this->_tablename." fields is not set");
             }
 
-            $this->_engin=$this->_model->engin??"MyISAM";
+            $this->_engine=$this->_model->engine??$this->_engine;
             $this->_charset=$this->_model->charset??"utf8";
 
             //parse _fields 获取主键
@@ -609,7 +612,7 @@ final class XlOldModelFactory extends XlMvcBase {
             }
         }
 
-        $rt=$this->_create_table($tablename,$sqlline,$this->_engin,$this->_charset);
+        $rt=$this->_create_table($tablename,$sqlline,$this->_engine,$this->_charset);
 
         return ['result'=>$rt,'sqlline'=>$sqlline];
 
@@ -674,7 +677,7 @@ final class XlOldModelFactory extends XlMvcBase {
         return $this->_create_table($tablename,$sqlline,"MRG_MyISAM",$this->_charset,$attach);
 
     }
-    private function _create_table($table,$sqlline,$e='MyISAM',$charset='utf8',$attach=null){
+    private function _create_table($table,$sqlline,$e='InnoDB',$charset='utf8',$attach=null){
 
 
         //不存在，则创建
@@ -2631,7 +2634,7 @@ final class XlOldModelFactory extends XlMvcBase {
 
     public function beginTransaction(){
 
-        if(strtolower($this->_engin)!="innodb"){
+        if(strtolower($this->_engine)!="innodb"){
             throw new XlException("数据库引擎类型不支持事务！");
         }
 
@@ -2643,7 +2646,7 @@ final class XlOldModelFactory extends XlMvcBase {
 
     public function commit(){
 
-        if(strtolower($this->_engin)!="innodb"){
+        if(strtolower($this->_engine)!="innodb"){
             throw new XlException("数据库引擎类型不支持事务！");
         }
 
@@ -2655,7 +2658,7 @@ final class XlOldModelFactory extends XlMvcBase {
 
     public function rollBack(){
 
-        if(strtolower($this->_engin)!="innodb"){
+        if(strtolower($this->_engine)!="innodb"){
             throw new XlException("数据库引擎类型不支持事务！");
         }
 

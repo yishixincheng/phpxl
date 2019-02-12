@@ -50,7 +50,7 @@ final class XlModelFactory extends XlMvcBase {
     private $_merge_insert=null;
     private $_partition=null;
     private $_fields=null;
-    private $_engin=null;
+    private $_engine=null;
     private $_charset=null;
     private $_opencache=null;
     private $_cachetime=null;
@@ -59,7 +59,6 @@ final class XlModelFactory extends XlMvcBase {
     private $_openslowlog=false;
     private $_longquerytime=null;
     private $_slowlogfile=null; //日志下面的目录
-    private $_debug=false;
 
 
     public function __construct($modelname,$config=null,$model=null,$model_name=null) {
@@ -137,6 +136,7 @@ final class XlModelFactory extends XlMvcBase {
         //只支持2层目录
         $this->_dbconfig=config("database")?:[];
         $this->_tablepre=$this->_dbconfig['tablepre']?:''; //表前缀
+        $this->_engine=$this->_dbconfig['engine']??"InnoDB";
         if($this->_model==null){
             if(($pos=strrpos($modelname,'.'))){
                 $folder=substr($modelname,0,$pos);
@@ -194,13 +194,14 @@ final class XlModelFactory extends XlMvcBase {
                     if ($this->_model->merge_insert) {
                         $this->_merge_insert = $this->_model->merge_insert;
                     }
+                    $this->_engine="MyISAM"; //强制
                 }
             }
             if(empty($this->_fields)){
                 throw new XlException("Table　".$this->_tablename." fields is not set");
             }
 
-            $this->_engin=$this->_model->engin??"MyISAM";
+            $this->_engine=$this->_model->engine??$this->_engine;
             $this->_charset=$this->_model->charset??"utf8";
 
             //parse _fields 获取主键
@@ -547,7 +548,7 @@ final class XlModelFactory extends XlMvcBase {
             }
         }
 
-        $rt=$this->_create_table($tablename,$sqlline,$this->_engin,$this->_charset);
+        $rt=$this->_create_table($tablename,$sqlline,$this->_engine,$this->_charset);
 
         return ['result'=>$rt,'sqlline'=>$sqlline];
 
@@ -612,7 +613,7 @@ final class XlModelFactory extends XlMvcBase {
         return $this->_create_table($tablename,$sqlline,"MRG_MyISAM",$this->_charset,$attach);
 
     }
-    private function _create_table($table,$sqlline,$e='MyISAM',$charset='utf8',$attach=null){
+    private function _create_table($table,$sqlline,$e='InnoDB',$charset='utf8',$attach=null){
 
 
         //不存在，则创建
@@ -2525,7 +2526,7 @@ final class XlModelFactory extends XlMvcBase {
 
     public function beginTransaction(){
 
-        if(strtolower($this->_engin)!="innodb"){
+        if(strtolower($this->_engine)!="innodb"){
             throw new XlException("数据库引擎类型不支持事务！");
         }
 
@@ -2541,7 +2542,7 @@ final class XlModelFactory extends XlMvcBase {
 
     public function commit(){
 
-        if(strtolower($this->_engin)!="innodb"){
+        if(strtolower($this->_engine)!="innodb"){
             throw new XlException("数据库引擎类型不支持事务！");
         }
 
@@ -2557,7 +2558,7 @@ final class XlModelFactory extends XlMvcBase {
 
     public function rollBack(){
 
-        if(strtolower($this->_engin)!="innodb"){
+        if(strtolower($this->_engine)!="innodb"){
             throw new XlException("数据库引擎类型不支持事务！");
         }
 
