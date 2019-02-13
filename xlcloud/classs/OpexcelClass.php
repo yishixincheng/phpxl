@@ -209,6 +209,85 @@ class OpexcelClass extends XlClassBase{
 
         exit;
     }
+
+    public function exportExcelByColRow($datastruct){
+
+        ob_end_clean();
+        $d_header=$datastruct['header'];
+        $d_list=$datastruct['list'];
+        $d_title=$datastruct['title'];
+
+        if(!(is_array($d_header)&&is_array($d_list))){
+            return;
+        }
+
+        $objPHPExcel=new \PHPExcel();
+        $objPHPExcel->getProperties()->setCreator("Maarten Balliauw")
+            ->setLastModifiedBy("Maarten Balliauw")
+            ->setTitle("Office 2007 XLSX Test Document")
+            ->setSubject("Office 2007 XLSX Test Document")
+            ->setDescription("Test document for Office 2007 XLSX, generated using PHP classes.")
+            ->setKeywords("office 2007 openxml php")
+            ->setCategory("Test result file");
+        $objPHPExcel->getDefaultStyle()->getFont()->setName('Arial');
+        $objPHPExcel->getDefaultStyle()->getFont()->setSize(9);
+        $objPHPExcel->getDefaultStyle()->getAlignment()->setWrapText(true);
+        $objActiveSheet=$objPHPExcel->setActiveSheetIndex(0);
+
+        foreach($d_header as $k=>$v){
+
+            $value=$v['value']; //值
+            $colrow=$v['colrow']; //列
+
+            if(preg_match("/(.+):(.+)/",$colrow,$match)){
+                $objActiveSheet->mergeCells($colrow);
+                $colrow_i=$match[1];
+            }else{
+                $colrow_i=$colrow;
+            }
+            $objActiveSheet->setCellValue($colrow_i,$value?:'');
+
+            $objActiveSheet->getColumnDimension($colrow_i)->setWidth(20);
+            $objActiveSheet->getStyle($colrow_i)->getFont()->setBold(true);
+        }
+
+
+        foreach($d_list as $row)
+        {
+            if(is_array($row)){
+
+                foreach ($row as $k=>$v){
+
+                    $value=$v['value']; //值
+                    $colrow=$v['colrow']; //列
+                    if(preg_match("/(.+):(.+)/",$colrow,$match)){
+                        $objActiveSheet->mergeCells($colrow);
+                        $colrow_i=$match[1];
+                    }else{
+                        $colrow_i=$colrow;
+                    }
+                    $objActiveSheet->setCellValueExplicit($colrow_i,$value?:'',\PHPExcel_Cell_DataType::TYPE_STRING);//设置单元格的内容为字符串格式
+                }
+
+            }
+        }
+
+        $objPHPExcel->getActiveSheet()->setTitle($d_title);
+        $objPHPExcel->setActiveSheetIndex(0);
+
+        $filename="$d_title".date('YmdHis');
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment;filename="'.$filename.'.xls"');
+        header('Cache-Control: max-age=0');
+        $objWriter = \PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel5');
+        ob_end_clean();
+        $objWriter->save('php://output');
+        exit;
+
+
+    }
+
+
     public function uploadGetData($filename='excelfile'){
 
         $file_ext=pathinfo($_FILES[$filename]['name'], PATHINFO_EXTENSION);

@@ -49,6 +49,40 @@ final class Excel extends XlApiBase{
 
         $config=$iapiObj->getExConfig($this->postparams); //导出配置
 
+        if($config['type']=="colrow"){
+
+            return $this->_exportByColRow($config,$iapiObj);
+
+        }else{
+            return $this->_exportByDefault($config,$iapiObj);
+        }
+
+    }
+
+    private function _exportByColRow($config,$iapiObj){
+
+        $rt=$iapiObj->export($this->postparams);
+        $datalist=null;
+        if($rt){
+            if($rt['title']){
+                $config['title']=$rt['title'];
+            }
+            if($rt['columnmap']){
+                $config['columnmap']=$rt['columnmap'];
+            }
+            if($rt['status']=="fail"){
+                return $rt;
+            }
+            $datalist=$rt['datalist'];
+        }
+        sysclass("opexcel")->exportExcelByColRow(['header'=>$config['columnmap'], 'list'=>$datalist?:[], 'title'=>$config['title']]);
+
+        return ['status'=>'success'];
+
+    }
+
+    private function _exportByDefault($config,$iapiObj){
+
         $columnmap=$this->_getdealcolumnmap([],$config['columnmap']);
         $rt=$iapiObj->export($this->postparams);
         if($rt['title']){
