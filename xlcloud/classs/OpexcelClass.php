@@ -274,6 +274,7 @@ class OpexcelClass extends XlClassBase{
         $colrow=$v['colrow']; //列
 
         $width=$v['width']?:null;
+        $height=$v['height']?:null;
         $bold=$v['bold']??null;
         $halign=$v['halign']?:'center';
         $valign=$v['valign']?:'center';
@@ -290,10 +291,13 @@ class OpexcelClass extends XlClassBase{
         }
         preg_match("/([A-Za-z]+)(\d+)/",$colrow_i,$match);
         $colrow_i_col=$match[1];
-        //$colrow_i_rol=$match[2];
+        $colrow_i_rol=$match[2];
         $objActiveSheet->setCellValue($colrow_i,$value);
         if($width){
             $objActiveSheet->getColumnDimension($colrow_i_col)->setWidth($width);
+        }
+        if($height){
+            $objActiveSheet->getRowDimension($colrow_i_rol)->setRowHeight($height);
         }
 
         $objStyle=$objActiveSheet->getStyle($colrow_i);
