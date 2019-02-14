@@ -236,19 +236,9 @@ class OpexcelClass extends XlClassBase{
 
         foreach($d_header as $k=>$v){
 
-            $value=$v['value']; //值
-            $colrow=$v['colrow']; //列
+            $v['bold']=$v['bold']??true;
 
-            if(preg_match("/(.+):(.+)/",$colrow,$match)){
-                $objActiveSheet->mergeCells($colrow);
-                $colrow_i=$match[1];
-            }else{
-                $colrow_i=$colrow;
-            }
-            $objActiveSheet->setCellValue($colrow_i,$value?:'');
-
-            $objActiveSheet->getColumnDimension($colrow_i)->setWidth(20);
-            $objActiveSheet->getStyle($colrow_i)->getFont()->setBold(true);
+            $this->_setUnitTextAndStyle($v,$objActiveSheet);
         }
 
 
@@ -257,16 +247,7 @@ class OpexcelClass extends XlClassBase{
             if(is_array($row)){
 
                 foreach ($row as $k=>$v){
-
-                    $value=$v['value']; //值
-                    $colrow=$v['colrow']; //列
-                    if(preg_match("/(.+):(.+)/",$colrow,$match)){
-                        $objActiveSheet->mergeCells($colrow);
-                        $colrow_i=$match[1];
-                    }else{
-                        $colrow_i=$colrow;
-                    }
-                    $objActiveSheet->setCellValueExplicit($colrow_i,$value?:'',\PHPExcel_Cell_DataType::TYPE_STRING);//设置单元格的内容为字符串格式
+                    $this->_setUnitTextAndStyle($v,$objActiveSheet);
                 }
 
             }
@@ -284,6 +265,58 @@ class OpexcelClass extends XlClassBase{
         $objWriter->save('php://output');
         exit;
 
+
+    }
+
+
+    private function _setUnitTextAndStyle($v,$objActiveSheet){
+        $value=$v['value']; //值
+        $colrow=$v['colrow']; //列
+
+        $width=$v['width']?:null;
+        $bold=$v['bold']??null;
+        $halign=$v['halign']?:'center';
+        $valign=$v['valign']?:'center';
+        $background=$v['background']??null;
+        $color=$v['color']??null;
+        $size=$v['size']??null;
+        $border=$v['border']??true;
+
+        if(preg_match("/(.+):(.+)/",$colrow,$match)){
+            $objActiveSheet->mergeCells($colrow);
+            $colrow_i=$match[1];
+        }else{
+            $colrow_i=$colrow;
+        }
+        preg_match("/([A-Za-z]+)(\d+)/",$colrow_i,$match);
+        $colrow_i_col=$match[1];
+        //$colrow_i_rol=$match[2];
+        $objActiveSheet->setCellValue($colrow_i,$value);
+        if($width){
+            $objActiveSheet->getColumnDimension($colrow_i_col)->setWidth($width);
+        }
+
+        $objStyle=$objActiveSheet->getStyle($colrow_i);
+        $bold&&$objStyle->getFont()->setBold($bold);
+        $halign&&$objStyle->getAlignment()->setHorizontal($halign);
+        $valign&&$objStyle->getAlignment()->setVertical($valign);
+        $color&&$objStyle->getFont()->getColor()->setRGB($color);
+        $background&&$objStyle->getFill()->setFillType(\PHPExcel_Style_Fill::FILL_SOLID)&&$objStyle->getFill()->getStartColor()->setRGB($background);
+        $size&&$objStyle->getFont()->setSize($size);
+
+        if($border){
+
+            $styleThinBlackBorderOutline = [
+                'borders' => [
+                    'allborders' => [                               //allborders  表示全部线框
+                        'style' => \PHPExcel_Style_Border::BORDER_THIN,   //设置border样式
+                        'color' => ['argb' => 'FF000000']          //设置border颜色
+                    ]
+                ]
+            ];
+            $objActiveSheet->getStyle($colrow)->applyFromArray($styleThinBlackBorderOutline);
+
+        }
 
     }
 
