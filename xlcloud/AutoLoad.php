@@ -18,31 +18,28 @@ final class AutoLoad
         if(defined("ROOT_NS")&&ROOT_NS){
             static::$aliases['@'.ROOT_NS]=PRO_ROOT;
         }
-
         $keepns=['xl','Doctrine','third','root','rpc',ROOT_NS];
 
         //插件存在，加入到自动加载中
-        if($plugins&&is_array($plugins)){
-
-            $pluginspathlist=[];
-            foreach ($plugins as $_ns=>$v){
-                $namespace=$v['namespace']?:$_ns;
-                if(empty($namespace)){
-                    continue;
-                }
-                if(in_array($namespace,$keepns)){
-                    continue;
-                }
-                static::$aliases['@'.$namespace]=$pluginspathlist[$namespace]=PROROOT_PATH.'plugin'.D_S.$namespace;
-            }
-
-            if($pluginspathlist){
-                define("PLUGIN_PATH",PROROOT_PATH."plugin".D_S);
-                define("PLUGINS_PATH",$pluginspathlist); //定义插件路径常量数组,php7支持常量数组
-            }
-
+        if(!$plugins||!is_array($plugins)){
+            $plugins=[];
         }
-
+        $plugins['sysmanage']=['namespace'=>"sysmanage"];
+        $pluginspathlist=[];
+        foreach ($plugins as $_ns=>$v){
+            $namespace=$v['namespace']?:$_ns;
+            if(empty($namespace)){
+                continue;
+            }
+            if(in_array($namespace,$keepns)){
+                continue;
+            }
+            static::$aliases['@'.$namespace]=$pluginspathlist[$namespace]=PROROOT_PATH.'plugin'.D_S.$namespace;
+        }
+        if($pluginspathlist){
+            define("PLUGIN_PATH",PROROOT_PATH."plugin".D_S);
+            define("PLUGINS_PATH",$pluginspathlist); //定义插件路径常量数组,php7支持常量数组
+        }
         if($nss&&is_array($nss)){
             foreach ($nss as $ns=>$rootpath){
                 if(in_array($ns,$keepns)){
