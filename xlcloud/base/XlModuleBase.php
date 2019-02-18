@@ -77,6 +77,9 @@ class XlModuleBase extends XlMvcBase{
                     $patcharr=array_merge($patcharr,$pluginpatcharr); //合并配置项，插件里的配置优先
                 }
             }
+            if(strpos($path,$this->_Ns.D_S)===0){
+                $path=substr($path,strlen($this->_Ns.D_S));
+            }
             $path="plugin".D_S.$this->_Ns.D_S.$path; //重置路径
         }
         if($patcharr!=null&&is_array($patcharr)){
