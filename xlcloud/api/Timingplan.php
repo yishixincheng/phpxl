@@ -138,7 +138,7 @@ final class Timingplan extends XlApiBase{
     private function callTask($plan){
 
         $task=$plan['task'];
-
+        $parameter=$plan['parameter']??null;
 
         if($task){
 
@@ -153,13 +153,13 @@ final class Timingplan extends XlApiBase{
                 $methodname=substr($task,$pos+1);
                 $isplugin=true;
             }
-            TS("定时器任务",null,$isplugin,$ns)->task($methodname)->done(); //调用task任务
+            TS("定时器任务",$parameter,$isplugin,$ns)->task($methodname)->done(); //调用task任务
 
             return;
 
         }else if(isset($plan['callback'])&&$plan['callback']){
 
-            affair($plan['callback'][0])->{$plan['callback'][1]}(); //兼容以前的
+            affair($plan['callback'][0])->{$plan['callback'][1]}($parameter); //兼容以前的
 
             return;
 
@@ -182,10 +182,11 @@ final class Timingplan extends XlApiBase{
 
         if($class&&$method){
             $ins=XlLead::$factroy->bind("properties",['_Isplugin'=>$isplugin,'_Ns'=>$ns])->getInstance($class);
-            call_user_func([$ins,$method]);
+            call_user_func([$ins,$method],$parameter);
         }
 
     }
+
 
     private function checkMemAndRestart(){
 

@@ -15,6 +15,7 @@ final class XlStatic{
     public static function init(){
 
         define('IS_XLIFREAM',true);
+        define('XL_VERSION','2.0.0');
         if(!defined("TIMERZONE")){
             define("TIMERZONE","Etc/GMT-8"); //默认设置东八区时间
         }
