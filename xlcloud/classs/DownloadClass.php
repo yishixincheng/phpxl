@@ -7,7 +7,6 @@ use xl\base\XlClassBase;
 class DownloadClass extends XlClassBase {
 
     private $_filepath='';
-    private $_breakpoint=false;
     private $_exts=[];
     private $_savefilename='';
     private $_memorylimit='1024M';
@@ -37,17 +36,13 @@ class DownloadClass extends XlClassBase {
     public function getSaveFileName(){
 
         if($this->_savefilename){
-           return $this->_savefilename;
+            return $this->_savefilename;
         }
         $filearr=explode('/',$this->_filepath);
         $filename=array_pop($filearr);
 
         return $filename;
 
-    }
-    public function isSupportBreakPoint($breakpoint){
-        //是否支持断点续传
-        $this->_breakpoint=$breakpoint;
     }
     public function setPromiseExt($ext){
 
@@ -62,6 +57,7 @@ class DownloadClass extends XlClassBase {
     public function setMemoryLimit($ml){
         $this->_memorylimit=$ml;
     }
+
     public function exec(){
 
         //执行
@@ -84,38 +80,46 @@ class DownloadClass extends XlClassBase {
         //设置输出浏览器格式
         header("Content-Type:$mime");
         header("Content-Disposition:attachment;filename=".$this->getSaveFileName());
+        $seek=0;
+        $size=$filesize;
+        //支持断点续传
+        header("Accept-Ranges:bytes");
+        if(isset($_SERVER['HTTP_RANGE'])) {
 
-        if($this->_breakpoint){
-
-            //支持断点续传
-            header("Accept-Ranges:bytes");
-            if(isset($_SERVER['HTTP_RANGE'])) {
-
-                $ranges=$this->_getRange($filesize);
-                $surlen=$ranges['end']-$ranges['start'];
-                header("HTTP/1.1 206 Partial Content");
-                header("Content-Length:$surlen");
-                header("Content-Range:bytes {$ranges['start']}-{$ranges['end']}/$filesize");
-
-            }else{
-
-                //一次链接
-                $size=$filesize;
-                header("Content-Range:bytes 0-$size/$filesize");
-                header("Content-Length:".$size);
-            }
+            $ranges=$this->_getRange($filesize);
+            $surlen=$ranges['end']-$ranges['start'];
+            $seek=$ranges['start'];
+            $size=$surlen;
 
         }else{
-            $range=0;
+            //一次链接
+            header("Content-Range:bytes 0-$size/$filesize");
+            header("Content-Length:".$size);
         }
+
         //打开文件
-        $fp = fopen($filepath,"rb");
-        fseek($fp,$range);
+        $fp = fopen($filepath,"rb+");
+        fseek($fp,$seek);
+        $_seeksize=$size;
+        $_linesize=1024*8;
+
         while(!feof($fp)){
             //设置文件最长执行时间
-            print(fread($fp,1024*8));
-            flush(); //输出缓冲
-            ob_flush();
+
+            if($_seeksize<=0){
+                break;
+            }
+            if($_seeksize<=$_linesize){
+                print(fread($fp,$_seeksize));
+                flush(); //输出缓冲
+                ob_flush();
+                break;
+            }else{
+                print(fread($fp,$_linesize));
+                $_seeksize-=$_linesize;
+                flush(); //输出缓冲
+                ob_flush();
+            }
         }
 
         fclose($fp);
@@ -126,10 +130,12 @@ class DownloadClass extends XlClassBase {
     private function _getRange($file_size){
 
         $range = $_SERVER['HTTP_RANGE'];
-        $range = preg_replace('/[\s|,].*/', '', $range);
-        $range = explode('-', substr($range, 6));
-        if(count($range)<2){
-            $range[1] = $file_size;
+        $range = explode('-', $range);
+        if(count($range)<2) {
+            $range[1] =$file_size;
+        }
+        if($range[1]>$file_size){
+            $range[1]=$file_size;
         }
         $range = array_combine(array('start','end'), $range);
         if(empty($range['start'])){
@@ -346,6 +352,7 @@ class DownloadClass extends XlClassBase {
         );
         return isset($mime_types[$ext]) ? $mime_types[$ext] : '';
     }
+
 
 
 }
