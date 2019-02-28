@@ -15,7 +15,7 @@ class TestIapi extends XlIapiBase{
     {
         // TODO: Implement getResult() method.
 
-        return "这个是插件test1的Test内部接口方法+xxxxxx";
+        return "这个是插件test1的Test内部接口方法+xxxxxxfff";
 
     }
 

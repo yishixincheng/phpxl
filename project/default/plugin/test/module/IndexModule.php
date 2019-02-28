@@ -21,6 +21,11 @@ class IndexModule extends XlModuleBase {
     public function init(){
 
 
+        echo "插件里的路由";
+
+        //$this->triggerEvent("test",['x'=>1,'y'=>1,'z'=>2]);
+
+
         $model=$this->Model("test");
         //$model->add(["name"=>"测试"]);
         //$rt=$model->getOne("*","where 1 limit 1");
@@ -82,8 +87,9 @@ class IndexModule extends XlModuleBase {
         echo "<br>";
         */
 
+        echo 2;
 
-        $this->Display();
+       // $this->Display();
 
     }
 
