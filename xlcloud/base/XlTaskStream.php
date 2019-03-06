@@ -202,26 +202,36 @@ class XlTaskStream extends XlMvcBase{
     }
     private function _getTaskObject($taskname,$issingleton=true){
 
-        if($issingleton&&!ISCLIPURE){
-            if($obj=$this->staticCacheGet("taskobjs",$taskname)){
+        $_Isplugin=$this->_Isplugin;
+        $_Ns=$this->_Ns;
+        if(($pos=strpos($taskname,":"))!==false){
+            if($pos==0){
+                $_Isplugin=false;
+                $_Ns=defined("ROOT_NS")?ROOT_NS:'';
+            }else{
+                if($this->_Isplugin){
+                    throw new XlException("非法调用");
+                }
+            }
+            $taskname=substr($taskname,$pos+1);
+        }
+        if(!$_Isplugin){
+            $_Ns=defined("ROOT_NS")?ROOT_NS:'';
+        }
+        $taskname=trim($taskname);
+        $cachekey=$_Ns.":".$taskname;
+        if($issingleton){
+            if($obj=$this->staticCacheGet("taskobjs",$cachekey)){
                 return $obj;
             }
         }
-        if($this->_Isplugin){
-            $ns=$this->_Ns;
-        }else{
-            $ns=defined("ROOT_NS")?ROOT_NS:'';
-        }
-        $taskname=trim($taskname);
         if(strpos($taskname,".")===false){
             $taskname=ucfirst($taskname);
         }
-        $cls=$ns."\\task\\".str_replace(".","\\",$taskname)."Task";
-
+        $cls=$_Ns."\\task\\".str_replace(".","\\",$taskname)."Task";
         $obj=\xl\XlLead::$factroy->bind("properties",['_Isplugin'=>$this->_Isplugin,'_Ns'=>$this->_Ns])->getInstance($cls);
-
-        if($issingleton&&!ISCLIPURE){
-            $this->staticCacheSet("taskobjs",$taskname,$obj);
+        if($issingleton){
+            $this->staticCacheSet("taskobjs",$cachekey,$obj);
         }
         return $obj;
     }

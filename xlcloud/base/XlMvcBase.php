@@ -207,9 +207,26 @@ class XlMvcBase extends XlHookBase {
 
     final public function Model($tbname,$config=null){
 
-
         //根据表名返回结构,不同的模型创建不同的对象
-        $key=$tbname;
+        $_Isplugin=$this->_Isplugin;
+        $_Ns=$this->_Ns;
+        if(($pos=strpos($tbname,":"))!==false){
+            if($pos==0){
+                $_Isplugin=false;
+                $_Ns=defined("ROOT_NS")?ROOT_NS:'';
+            }else{
+                if($this->_Isplugin){
+                    throw new XlException("非法调用");
+                }
+            }
+            $tbname=substr($tbname,$pos+1);
+        }
+
+        if(!$_Isplugin){
+            $_Ns=defined("ROOT_NS")?ROOT_NS:'';
+        }
+
+        $key=$_Ns.":".$tbname;
         if($config){
             $key.="_".serialize($config);
         }
@@ -221,7 +238,7 @@ class XlMvcBase extends XlHookBase {
             return static::$_modellist[$key];
         }
 
-        $proxy=$this->factory->bind("properties",['_Isplugin'=>$this->_Isplugin,'_Ns'=>$this->_Ns])->bind("construct_args",[$tbname,$config])->getInstance("xl\\base\\XlModelProxy");//构造基类
+        $proxy=$this->factory->bind("properties",['_Isplugin'=>$_Isplugin,'_Ns'=>$_Ns])->bind("construct_args",[$tbname,$config])->getInstance("xl\\base\\XlModelProxy");//构造基类
 
         static::$_modellist[$key]=$proxy->getModelObject();
 
@@ -237,7 +254,23 @@ class XlMvcBase extends XlHookBase {
      */
     final public function noCacheModel($tbname,$config=null){
 
-        $proxy=$this->factory->bind("properties",['_Isplugin'=>$this->_Isplugin,'_Ns'=>$this->_Ns])->bind("construct_args",[$tbname,$config])->getInstance("xl\\base\\XlModelProxy");//构造基类
+        $_Isplugin=$this->_Isplugin;
+        $_Ns=$this->_Ns;
+        if(($pos=strpos($tbname,":"))!==false){
+            if($pos==0){
+                $_Isplugin=false;
+                $_Ns=defined("ROOT_NS")?ROOT_NS:'';
+            }else{
+                if($this->_Isplugin){
+                    throw new XlException("非法调用");
+                }
+            }
+            $tbname=substr($tbname,$pos+1);
+        }
+        if(!$_Isplugin){
+            $_Ns=defined("ROOT_NS")?ROOT_NS:'';
+        }
+        $proxy=$this->factory->bind("properties",['_Isplugin'=>$_Isplugin,'_Ns'=>$_Ns])->bind("construct_args",[$tbname,$config])->getInstance("xl\\base\\XlModelProxy");//构造基类
 
         return $proxy->getModelObject();
 
@@ -246,7 +279,26 @@ class XlMvcBase extends XlHookBase {
     final public function SqlView($tbname,$config=null,$modelsconfig=null){
 
         //根据表名返回结构,不同的模型创建不同的对象
-        $key=$tbname;
+
+        $_Isplugin=$this->_Isplugin;
+        $_Ns=$this->_Ns;
+        if(($pos=strpos($tbname,":"))!==false){
+            if($pos==0){
+                $_Isplugin=false;
+                $_Ns=defined("ROOT_NS")?ROOT_NS:'';
+            }else{
+                if($this->_Isplugin){
+                    throw new XlException("非法调用");
+                }
+            }
+            $tbname=substr($tbname,$pos+1);
+        }
+
+        if(!$_Isplugin){
+            $_Ns=defined("ROOT_NS")?ROOT_NS:'';
+        }
+
+        $key=$_Ns.":".$tbname;
         if($config){
             $key.="_".serialize($config);
         }
@@ -258,7 +310,8 @@ class XlMvcBase extends XlHookBase {
         if(static::$_sqlviewlist[$key]){
             return static::$_sqlviewlist[$key];
         }
-        $proxy=$this->factory->bind("properties",['_Isplugin'=>$this->_Isplugin,'_Ns'=>$this->_Ns])->bind("construct_args",[$tbname,$config,$modelsconfig])->getInstance("xl\\base\\XlSqlviewProxy");//构造基类
+
+        $proxy=$this->factory->bind("properties",['_Isplugin'=>$_Isplugin,'_Ns'=>$_Ns])->bind("construct_args",[$tbname,$config,$modelsconfig])->getInstance("xl\\base\\XlSqlviewProxy");//构造基类
 
         static::$_sqlviewlist[$key]=$proxy->getModelObject();
 
@@ -274,7 +327,23 @@ class XlMvcBase extends XlHookBase {
      */
     final public function noCacheSqlView($tbname,$config=null,$modelsconfig=null){
 
-        $proxy=$this->factory->bind("properties",['_Isplugin'=>$this->_Isplugin,'_Ns'=>$this->_Ns])->bind("construct_args",[$tbname,$config,$modelsconfig])->getInstance("xl\\base\\XlSqlviewProxy");//构造基类
+        $_Isplugin=$this->_Isplugin;
+        $_Ns=$this->_Ns;
+        if(($pos=strpos($tbname,":"))!==false){
+            if($pos==0){
+                $_Isplugin=false;
+                $_Ns=defined("ROOT_NS")?ROOT_NS:'';
+            }else{
+                if($this->_Isplugin){
+                    throw new XlException("非法调用");
+                }
+            }
+            $tbname=substr($tbname,$pos+1);
+        }
+        if(!$_Isplugin){
+            $_Ns=defined("ROOT_NS")?ROOT_NS:'';
+        }
+        $proxy=$this->factory->bind("properties",['_Isplugin'=>$_Isplugin,'_Ns'=>$_Ns])->bind("construct_args",[$tbname,$config,$modelsconfig])->getInstance("xl\\base\\XlSqlviewProxy");//构造基类
 
         return $proxy->getModelObject();
 
@@ -282,7 +351,23 @@ class XlMvcBase extends XlHookBase {
 
     final public function Dataset($dsname,$config=null){
 
-        $key=$dsname;
+        $_Isplugin=$this->_Isplugin;
+        $_Ns=$this->_Ns;
+        if(($pos=strpos($dsname,":"))!==false){
+            if($pos==0){
+                $_Isplugin=false;
+                $_Ns=defined("ROOT_NS")?ROOT_NS:'';
+            }else{
+                if($this->_Isplugin){
+                    throw new XlException("非法调用");
+                }
+            }
+            $dsname=substr($dsname,$pos+1);
+        }
+        if(!$_Isplugin){
+            $_Ns=defined("ROOT_NS")?ROOT_NS:'';
+        }
+        $key=$_Ns.":".$dsname;
         if($config){
             $key.="_".serialize($config);
         }
@@ -291,7 +376,7 @@ class XlMvcBase extends XlHookBase {
         if(static::$_datasetlist[$key]){
             return static::$_datasetlist[$key];
         }
-        static::$_datasetlist[$key]=$this->factory->bind("properties",['_Isplugin'=>$this->_Isplugin,'_Ns'=>$this->_Ns])->bind("construct_args",[$dsname,$config])->getInstance("xl\\base\\XlDatasetFactory");//构造基类
+        static::$_datasetlist[$key]=$this->factory->bind("properties",['_Isplugin'=>$_Isplugin,'_Ns'=>$_Ns])->bind("construct_args",[$dsname,$config])->getInstance("xl\\base\\XlDatasetFactory");//构造基类
 
         return static::$_datasetlist[$key];
 
@@ -302,13 +387,30 @@ class XlMvcBase extends XlHookBase {
      */
     final public function Logic($clsname,$binds=null,$iscache=1){
 
-        if(!$binds){
-            if($this->_Isplugin){
-                $binds=['properties'=>['_Isplugin'=>$this->_Isplugin,'_Ns'=>$this->_Ns]];
+        $_Isplugin=$this->_Isplugin;
+        $_Ns=$this->_Ns;
+        if(($pos=strpos($clsname,":"))!==false){
+            if($pos==0){
+                $_Isplugin=false;
+                $_Ns=defined("ROOT_NS")?ROOT_NS:'';
+            }else{
+                if($this->_Isplugin){
+                    throw new XlException("非法调用");
+                }
             }
+            $clsname=substr($clsname,$pos+1);
         }
 
-        return __autocreaterunobject("logic",$clsname,$iscache,$binds,$this->_Isplugin?$this->_Ns:null);
+        if(!$_Isplugin){
+            $_Ns=defined("ROOT_NS")?ROOT_NS:'';
+        }
+
+        if(!$binds){
+            if($_Isplugin){
+                $binds=['properties'=>['_Isplugin'=>$_Isplugin,'_Ns'=>$_Ns]];
+            }
+        }
+        return __autocreaterunobject("logic",$clsname,$iscache,$binds,$_Isplugin?$_Ns:null);
 
     }
 
@@ -319,7 +421,24 @@ class XlMvcBase extends XlHookBase {
      */
     final public function MS($methodname,$config=null){
 
-        return MS($methodname,$config,$this->_Isplugin,$this->_Ns);
+        $_Isplugin=$this->_Isplugin;
+        $_Ns=$this->_Ns;
+        if(($pos=strpos($methodname,":"))!==false){
+            if($pos==0){
+                $_Isplugin=false;
+                $_Ns=defined("ROOT_NS")?ROOT_NS:'';
+            }else{
+                if($this->_Isplugin){
+                    throw new XlException("非法调用");
+                }
+            }
+            $methodname=substr($methodname,$pos+1);
+        }
+        if(!$_Isplugin){
+            $_Ns=defined("ROOT_NS")?ROOT_NS:'';
+        }
+
+        return MS($methodname,$config,$_Isplugin,$_Ns);
 
     }
 
@@ -337,6 +456,7 @@ class XlMvcBase extends XlHookBase {
     /**
      * 添加到消息队列
      * 结构plugin:folder/taskname
+     *
      */
     final public function MQ($task,$params=null,$queuename=null,$settime=null,$debug=false){
 
@@ -345,29 +465,30 @@ class XlMvcBase extends XlHookBase {
             static::$_isopenmq=true;
             $config=config("mq");
         }
-        if(substr($task,0,1)==":"){
-            if($this->_Isplugin){
-                $task=$this->_Ns.$task;
+        $_Isplugin=$this->_Isplugin;
+        $_Ns=$this->_Ns;
+        if(($pos=strpos($task,":"))!==false){
+            if($pos==0){
+                $_Isplugin=false;
+                $_Ns=defined("ROOT_NS")?ROOT_NS:'';
             }else{
-                $task=substr($task,1);
+                if($this->_Isplugin){
+                    throw new XlException("非法调用");
+                }
             }
+            $task=substr($task,$pos+1);
+        }
+        if(!$_Isplugin){
+            $_Ns=defined("ROOT_NS")?ROOT_NS:'';
         }
         //添加到消息队列中
         if($debug){
-            $ns=null;
-            if(($pos=strpos($task,":"))===false){
-                //全局方法
-                $ns=defined("ROOT_NS")?ROOT_NS:'';
-                $methodname=$task;
-                $isplugin=false;
-            }else{
-                //插件
-                $ns=substr($task,0,$pos);
-                $methodname=substr($task,$pos+1);
-                $isplugin=true;
-            }
             //添加失败
-            return TS("消息队列任务",$params,$isplugin,$ns)->task($methodname)->done(); //调用task任务
+            return TS("消息队列任务",$params,$_Isplugin,$_Ns)->task($task)->done(); //调用task任务
+        }
+
+        if($_Isplugin){
+            $task=$_Ns.":".$task;
         }
 
         return \xl\api\XlApi::exec("AddMQMessage", ['queuename'=>$queuename,
