@@ -1,0 +1,65 @@
+
+.thispage{
+    width: 600px;
+    margin: auto;
+}
+
+.version_info{
+    padding-top: 30px;
+}
+
+.version_no{
+    font-size: 14px;
+}
+.version_check{
+    margin-top: 20px;
+}
+
+.version_check a{
+
+    display: block;
+    width: 200px;
+    height: 40px;
+    color: #fff;
+    background: #807c6c;
+    border-radius: 5px;
+    font-size: 16px;
+    text-align: center;
+    cursor:pointer;
+    line-height: 40px;
+
+}
+
+.upgrade_title{
+    margin-top: 50px;
+}
+.upgrade_progressbarbox{
+    margin-top: 10px;
+}
+
+.upgrade_progressbarwrap{
+
+    width: 500px;
+    height: 20px;
+    background: #dedede;
+
+}
+.upgrade_progressbar{
+    width: 0;
+    height: 20px;
+    background:#aeaca2;
+}
+
+.install .upgrade_progressbarwrap{
+    background:#aeaca2;
+}
+.install .upgrade_progressbar{
+    background: #807c6c;
+}
+
+.upgrade_info{
+    width: 500px;
+    height: 300px;
+    overflow-y: scroll;
+    display: none;
+}
