@@ -456,7 +456,7 @@ final class XlOldModelFactory extends XlMvcBase {
         $hashvalue=null;
         if(is_string($parseval)){
 
-            preg_match("/(or\s+)?`?(".$this->_hashfield.")`?\s*=\s*\'?\"?\s*([^\s\'\"]*)\s*\'?\"?(\s+or\s+)?/i",$parseval,$match);
+            preg_match("/(or\s+)?`?(?:\b)(".$this->_hashfield.")`?\s*=\s*\'?\"?\s*([^\s\'\"]*)\s*\'?\"?(\s+or\s+)?/i",$parseval,$match);
 
             if($match){
                 $matchcount=count($match);
