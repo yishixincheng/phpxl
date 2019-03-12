@@ -323,11 +323,15 @@ final class XlEventRegist{
                 unset($m2[$k]);
             }
         }
-        foreach ($m2 as $m2k=>$m2v){
-            if(!isset($m1[$m2k])){
-                $m1[$m2k]=$m2v;
+        if(is_array($m2)){
+
+            foreach ($m2 as $m2k=>$m2v){
+                if(!isset($m1[$m2k])){
+                    $m1[$m2k]=$m2v;
+                }
             }
         }
+
 
         return $m1;
 
