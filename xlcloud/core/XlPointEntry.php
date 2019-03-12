@@ -1,7 +1,7 @@
 <?php
 
 namespace xl\core;
-use xl\{XlLead,XlInjector};
+use xl\XlLead;
 use xl\util\{XlUAnnotationReader,XlUVerify};
 
 
@@ -56,11 +56,7 @@ final class XlPointEntry{
         if(!(defined("IS_DEBUG")&&IS_DEBUG)){
             //非研发状态,尝试从缓存中获取
             $key="@xl_point_".PROR_NAME."_".$pointname;
-            if(!$cache=XlInjector::$cache){
-                $cls = sysclass("cachefactory", 0);
-                $cache = $cls::priority(['apc','xcache','eaccelerator','memcache','file']);
-            }
-            $methods=$cache->get($key);
+            $methods=XlLead::routerCacheGet($key);
             if(empty($methods)){
                 foreach ($findfolders as $v){
                     if($whitelist&&is_array($whitelist)){
@@ -76,7 +72,7 @@ final class XlPointEntry{
                     }
                     static::findMethodsFromFiles($methods,$v['path'],$pointname,$v['isplugin'],$v['ns']);
                 }
-                $cache->set($key,$methods,TIMEOUT_METACACHE);
+                XlLead::routerCacheSet($key,$methods,TIMEOUT_METACACHE);
             }
 
         }else{
@@ -211,12 +207,8 @@ final class XlPointEntry{
         //读缓存
         $key="@xl_point_".PROR_NAME."_".md5($filepath)."_".$pointname;
 
-        if(!$cache=XlInjector::$cache){
-            $cls = sysclass("cachefactory", 0);
-            $cache = $cls::priority(['apc','xcache','eaccelerator','memcache','file']);
-        }
 
-        $cacheArr=$cache->get($key);
+        $cacheArr=XlLead::routerCacheGet($key);
 
         if($cacheArr&&is_array($cacheArr)){
 
@@ -262,7 +254,7 @@ final class XlPointEntry{
         }
 
         //设置缓存
-        $cache->set($key,['filemtime'=>filemtime($filepath),'matchArr'=>$matchArr],TIMEOUT_METACACHE); //设置缓存
+        XlLead::routerCacheSet($key,['filemtime'=>filemtime($filepath),'matchArr'=>$matchArr],TIMEOUT_METACACHE);
 
     }
 

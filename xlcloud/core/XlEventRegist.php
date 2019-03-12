@@ -1,7 +1,7 @@
 <?php
 
 namespace xl\core;
-use xl\{XlLead, XlInjector};
+use xl\XlLead;
 use xl\util\{XlUAnnotationReader,XlUVerify};
 
 /**
@@ -151,14 +151,11 @@ final class XlEventRegist{
         if(!(defined("IS_DEBUG")&&IS_DEBUG)){
             //非开发环境，从缓存中读取
             $key="@xl_event_".PROR_NAME."_".$ns; //插件隔离
-            if(!$cache=XlInjector::$cache){
-                $cls = sysclass("cachefactory", 0);
-                $cache = $cls::priority(['apc','xcache','eaccelerator','memcache','file']);
-            }
-            $currmethods=$cache->get($key);
+
+            $currmethods=XlLead::routerCacheGet($key);
             if(empty($currmethods)){
                 static::findMethodsFromFiles($currmethods,$findfolder['path'],$findfolder['isplugin'],$findfolder['ns']);
-                $cache->set($key,$currmethods,TIMEOUT_METACACHE); //设置到缓存中
+                XlLead::routerCacheSet($key,$currmethods,TIMEOUT_METACACHE);
             }
             if(empty($maintiermethods)){
                 $methods=$currmethods;
@@ -260,14 +257,10 @@ final class XlEventRegist{
         if(!(defined("IS_DEBUG")&&IS_DEBUG)){
             //非开发环境，从缓存中读取
             $key="@xl_event_".PROR_NAME."_".$ns; //插件隔离
-            if(!$cache=XlInjector::$cache){
-                $cls = sysclass("cachefactory", 0);
-                $cache = $cls::priority(['apc','xcache','eaccelerator','memcache','file']);
-            }
-            $methods=$cache->get($key);
+            $methods=XlLead::routerCacheGet($key);
             if(empty($methods)){
                 static::findMethodsFromFiles($methods,$findfolder['path'],$findfolder['isplugin'],$findfolder['ns']);
-                $cache->set($key,$methods,TIMEOUT_METACACHE); //设置到缓存中
+                XlLead::routerCacheSet($key,$methods,TIMEOUT_METACACHE);
             }
 
         }else{
@@ -324,14 +317,12 @@ final class XlEventRegist{
             }
         }
         if(is_array($m2)){
-
             foreach ($m2 as $m2k=>$m2v){
                 if(!isset($m1[$m2k])){
                     $m1[$m2k]=$m2v;
                 }
             }
         }
-
 
         return $m1;
 
@@ -454,12 +445,7 @@ final class XlEventRegist{
         //读缓存
         $key="@xl_event_".PROR_NAME."_".md5($filepath);
 
-        if(!$cache=XlInjector::$cache){
-            $cls = sysclass("cachefactory", 0);
-            $cache = $cls::priority(['apc','xcache','eaccelerator','memcache','file']);
-        }
-
-        $cacheArr=$cache->get($key);
+        $cacheArr=XlLead::routerCacheGet($key);
 
         if($cacheArr&&is_array($cacheArr)){
 
@@ -513,10 +499,9 @@ final class XlEventRegist{
             }
         }
         //设置缓存
-        $cache->set($key,['filemtime'=>filemtime($filepath),'matchArr'=>$matchArr],TIMEOUT_METACACHE); //设置缓存
+        XlLead::routerCacheSet($key,['filemtime'=>filemtime($filepath),'matchArr'=>$matchArr],TIMEOUT_METACACHE);
 
     }
-
     private static function matchMethodFromMeta($class,$isplugin,$ns){
 
         $reflClass=new \ReflectionClass($class);

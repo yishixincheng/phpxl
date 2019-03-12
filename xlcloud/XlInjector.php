@@ -16,8 +16,6 @@ final class XlInjector{
     private $_insStack=[];
     private $_singletons=[];
 
-    public static $cache=null;
-
     public function binds($binds){
 
         if(!$binds){
@@ -235,34 +233,24 @@ final class XlInjector{
         return $id;
     }
     public function getMeta($reflClass){
-
         //获取注释信息
         if(is_string($reflClass)){
             $reflClass=new \ReflectionClass($reflClass);
         }
         $name=$reflClass->getName(); //类名
         if(!IS_DEBUG) {
-            if(!static::$cache){
-                $cls = sysclass("cachefactory", 0);
-                $cache = $cls::priority(['apc','xcache','eaccelerator','memcache','file']);
-                static::$cache=$cache;
-            }else{
-                $cache=static::$cache;
-            }
+
             $cache_key = '@meta_' . md5($reflClass->getFileName() . '_' . $name);
-            $data = $cache->get($cache_key);
+            $data=XlLead::routerCacheGet($cache_key);
             if ($data) {
                 return $data;
             }
         }
         //从文件中获取meta信息
         $data = XlUMeta::get($name);
-        if(isset($cache)&&$cache) {
-
-            //缓存时间60秒
-            $cache->set($cache_key, $data,TIMEOUT_METACACHE);
+        if(isset($cache_key)) {
+            XlLead::routerCacheSet($cache_key,$data,TIMEOUT_METACACHE);
         }
-
         return $data;
     }
     public static function setPropertyValue($refl, $ins, $name, $value)

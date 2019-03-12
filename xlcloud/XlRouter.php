@@ -25,10 +25,6 @@ final class XlRouter extends XlBase{
     public function __construct() {
 
         //注册所有Moudle模块并解析参数，找到对应的方法调用
-        if(!$this->cache=XlInjector::$cache){
-            $cls = sysclass("cachefactory", 0);
-            $this->cache = $cls::priority(['apc','xcache','eaccelerator','memcache','file']);
-        }
 
         $this->routes=$this->getRouterFromCache();
         if( $this->routes==null){
@@ -148,7 +144,7 @@ final class XlRouter extends XlBase{
         }
 
         $key=$this->_getRouterCacheKey();
-        $routerMap=$this->cache->get($key);
+        $routerMap=XlLead::routerCacheGet($key);
 
         if($routerMap&&is_array($routerMap)){
             return $routerMap;
@@ -186,7 +182,7 @@ final class XlRouter extends XlBase{
         }
 
         $key=$this->_getRouterCacheKey();
-        $this->cache->set($key,$rMap,TIMEOUT_ROUTETIME); //设置到缓存中
+        XlLead::routerCacheSet($key,$rMap,TIMEOUT_ROUTETIME);
 
     }
 
@@ -266,7 +262,7 @@ final class XlRouter extends XlBase{
         //读缓存
 
         $key=$this->_getRouterCacheKey()."_".md5($class_file);
-        $cacheArr=$this->cache->get($key);
+        $cacheArr=XlLead::routerCacheGet($key);
 
         if($cacheArr&&is_array($cacheArr)){
 
@@ -289,10 +285,10 @@ final class XlRouter extends XlBase{
         $class_name=$ara['class'];
         $container = $this->factory->bind("construct_args",[$class_name,$method])->getInstance('xl\\XlContainer');
 
-        $this->cache->set($key,['filemtime'=>filemtime($class_file),
-                                 'ns'=>$ara['ns'],
-                                 'isplugin'=>$ara['isplugin'],
-                                 'routes'=>$container->routes],TIMEOUT_ROUTETIME); //设置缓存
+        XlLead::routerCacheSet($key,['filemtime'=>filemtime($class_file),
+            'ns'=>$ara['ns'],
+            'isplugin'=>$ara['isplugin'],
+            'routes'=>$container->routes],TIMEOUT_ROUTETIME);
 
         $this->_fillRoutesFromParseFile($routes,$container->routes,$ara['ns'],$ara['isplugin']);
 

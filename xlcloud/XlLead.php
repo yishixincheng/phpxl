@@ -13,6 +13,7 @@ final class  XlLead{
 
     public static $factroy=null;
     public static $hook=null;
+    public static $routercache=null;
 
     public static function checkPhpVersion(){
         if (version_compare(PHP_VERSION, '7.0.0', '<') ) exit("Sorry, Xl will only run on PHP version 7.0.0 or greater!\n");
@@ -198,5 +199,65 @@ final class  XlLead{
         return static::$hook;
 
     }
+
+    public static function getRouterCache(){
+
+        if(!static::$routercache){
+            $cls = sysclass("cachefactory", 0);
+            static::$routercache = $cls::priority(['apc','xcache','eaccelerator','memcache','file']);
+        }
+        return static::$routercache;
+
+    }
+
+    public static function routerCacheGet($key){
+
+          $cache=static::getRouterCache();
+
+          return $cache->get($key);
+
+
+    }
+    public static function routerCacheSet($key,$val,$expire=0){
+
+        $cache=static::getRouterCache();
+        $cache->set($key,$val,$expire);
+
+        $keycaches=static::routerCacheGet("@xl_router_keys");
+
+        if(!$keycaches||!is_array($keycaches)){
+            $keycaches=[];
+        }
+        if(!in_array($key,$keycaches)){
+            $keycaches[]=$key;
+            $cache->set("@xl_router_keys",$keycaches);
+        }
+
+        return true;
+
+    }
+    public static function routerCacheDel($key){
+
+        $cache=static::getRouterCache();
+
+        $cache->delete($key);
+
+        $keycaches=static::routerCacheGet("@xl_router_keys");
+
+        if(!$keycaches||!is_array($keycaches)){
+            $keycaches=[];
+        }
+        if(in_array($key,$keycaches)){
+
+            $offset=array_search($key,$keycaches);
+            unset($keycaches[$offset]);
+            $cache->set("@xl_router_keys",$keycaches);
+        }
+
+        return true;
+
+
+    }
+
 
 }

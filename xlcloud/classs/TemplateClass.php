@@ -2,7 +2,7 @@
 
 namespace xl\classs;
 use xl\base\XlClassBase;
-use xl\XlInjector;
+use xl\XlLead;
 
 class TemplateClass extends XlClassBase{
 
@@ -34,13 +34,8 @@ class TemplateClass extends XlClassBase{
         if(!is_file($this->templatefile)){
             die("模板文件'".$this->templatefile."'不存在，请检查目录");
         }
-        if(!$cache=XlInjector::$cache){
-            $cls = sysclass("cachefactory", 0);
-            $cache = $cls::priority(['apc','xcache','eaccelerator','memcache','file']);
-        }
-
         $cachekey="@xl_tpl_".$template."_mtime";
-        $lasttplemtime=intval($cache->get($cachekey)?:0);
+        $lasttplemtime=intval(XlLead::routerCacheGet($cachekey)?:0);
         $nowtplmtime=filemtime($this->templatefile);
 
         if(is_file($this->compilefile)){
@@ -53,7 +48,7 @@ class TemplateClass extends XlClassBase{
         $this->write();
 
         //记录缓存时间
-        $cache->set($cachekey,$nowtplmtime);
+        XlLead::routerCacheSet($cachekey,$nowtplmtime);
 
         return $this->compilefile;
 
