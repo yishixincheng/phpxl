@@ -142,6 +142,10 @@ class UpgradeModule extends Base{
         if(empty($content)){
             return -1;
         }
+        if(strncmp($content,"{",1)===0){
+            echo $content;
+            return false;
+        }
         //文件大小
 
         if($seek==0){
@@ -170,10 +174,11 @@ class UpgradeModule extends Base{
 
             $fromdir=dirname(XL_ROOT) . D_S . 'upgrade' . D_S . 'soft'.D_S; //拷贝源目录
             $todir=dirname(XL_ROOT).D_S;//目标目录
+            $fromdir1=$fromdir;
             $this->recodeInstallLogger("",true);
-            $this->copydir($fromdir,$fromdir,$todir);
+            $this->copydir($fromdir,$fromdir1,$todir);
 
-            @unlink($fromdir); //移除
+            GDelFile($fromdir1); //移除
 
             //安装完毕设置新版本
             try{
@@ -251,6 +256,8 @@ class UpgradeModule extends Base{
                 $xd_path=substr($path,strlen($source_dir));
                 $target_path=$target_dir.$xd_path;
 
+                @mkdir(dirname($target_path),0777,true);
+
                 @copy($path,$target_path); //拷贝文件
 
                 //写日志
@@ -302,7 +309,160 @@ class UpgradeModule extends Base{
 
     }
 
+    /**
+     * @path({"downloadsoftplugin","POST"})
+     */
+    public function downLoadSoftPlugin($postParam){
+
+        $plugintype=$postParam['plugintype'];
+        $softversion=$postParam['softversion'];
+        $currsoftversion=$postParam['currsoftversion'];
+        //$version=$postParam['version'];
+        $lastversion=$postParam['lastversion'];
+        $downloadurl=$postParam['downloadurl'];
+
+        if(empty($plugintype)||empty($lastversion)||empty($downloadurl)){
+            AjaxPrint($this->ErrorInf("参数缺失！"));
+            return;
+        }
+        if($softversion<$currsoftversion){
+            AjaxPrint($this->ErrorInf("插件依赖软件版本".$softversion.",请先升级软件！"));
+            return;
+        }
+        $conf=config("upgrade");
+        $auth='';
+        $softplugin_downloadurl=$downloadurl;   //插件下载地址
+        $software_salt=$conf['software_salt'];
+        try{
+            $softwaredata=iapi("upgrade.GetVersionData",null);
+            $appkey=$softwaredata['appkey'];
+            $appsecret=$softwaredata['appsecret'];
+            if($appkey&&$appsecret){
+                $auth=sys_auth($appkey."|".$appsecret,"ENCODE",$software_salt);
+            }
+        }catch (\Exception $e){
+        }
+        if(empty($softplugin_downloadurl)){
+            AjaxPrint($this->ErrorInf("未找到软件压缩包！"));
+            return;
+        }
+        if($auth){
+            $softplugin_downloadurl.="&auth=".$auth;
+        }
+        $fseek_key="plugin_".$plugintype."_fseek";
+        $fseek=config("upgrade/".$fseek_key)?:0;
+        $fsize=102400;
+
+        $result=$this->loadSoftPluginFileFromRemote($softplugin_downloadurl,$plugintype,$fseek,$fsize);
+
+        if($result===-1){
+            config("upgrade/".$fseek_key,0,true);
+            AjaxPrint(['isover'=>1,'fseek'=>$fseek]); //下载结束
+            return;
+        }else if($result===1){
+            config("upgrade/".$fseek_key,$fseek+$fsize,true);
+            AjaxPrint(['isover'=>0,'fseek'=>$fseek]); //未下载结束
+        }
+
+
+    }
+    private function loadSoftPluginFileFromRemote($url,$plugintype,$seek=0,$size=1024){
+
+        $save_dir=dirname(XL_ROOT).D_S.'upgrade'.D_S.'plugin'.D_S;
+        $filename=$plugintype.'.zip';
+        //创建保存目录
+        if (!file_exists($save_dir) && !mkdir($save_dir, 0777, true)) {
+            return false;
+        }
+        //获取远程文件所采用的方法
+        $ch = curl_init();
+        $timeout = 5;
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+
+        $headers=[];
+        $headers[]="Range:".$seek."-".($seek+$size);
+        curl_setopt($ch, CURLOPT_HTTPHEADER,$headers);
+        $content = curl_exec($ch);
+        curl_close($ch);
+
+        if(empty($content)){
+            return -1;
+        }
+        if(strncmp($content,"{",1)===0){
+            echo $content;
+            return false;
+        }
+
+        //文件大小
+        if($seek==0){
+            $fp2 = @fopen($save_dir . $filename, 'w+');
+        }else{
+            $fp2 = @fopen($save_dir . $filename, 'ab+');
+        }
+
+        fwrite($fp2, $content);
+        fclose($fp2);
+        unset($content, $url);
+
+        return 1;
+
+    }
+
+    /**
+     * @path({"installplugin","POST"})
+     */
+    public function installPlugin($postParam){
+
+        //安装插件
+        $plugintype=$postParam['plugintype'];
+        $pluginname=$postParam['pluginname'];
+        $version=$postParam['version'];
+        if(empty($plugintype)){
+            AjaxPrint($this->ErrorInf("参数缺失！"));
+            return;
+        }
+        $soft_path=dirname(XL_ROOT).D_S.'upgrade'.D_S.'plugin'.D_S.$plugintype.'.zip';
+        if (!is_file($soft_path)) {
+            AjaxPrint($this->ErrorInf("抱歉，安装包不存在，请刷新页面从新下载！"));
+            return;
+        }
+        $zip = new \ZipArchive();
+        if ($zip->open($soft_path)) {
+            $zip->extractTo(dirname(XL_ROOT) . D_S . 'upgrade' . D_S . 'plugin'.D_S.$plugintype.D_S);
+            $zip->close();//关闭处理的zip文件
+            @unlink($soft_path); //删除压缩包
+        }else{
+            AjaxPrint($this->ErrorInf("解压失败，请检测系统是否支持zip解压缩！"));
+            return;
+        }
+        //copy到插件目录
+        $fromdir=dirname(XL_ROOT) . D_S . 'upgrade' . D_S . 'plugin'.D_S.$plugintype.D_S; //拷贝源目录
+        $todir=dirname(DOC_ROOT).D_S;//目标目录
+        $fromdir1=$fromdir;
+
+        $this->recodeInstallLogger("",true);
+        $this->copydir($fromdir,$fromdir1,$todir);
+
+        GDelFile($fromdir1); //移除
+
+        //安装完毕设置新版本
+        try{
+
+            config("plugins/".$plugintype."/version",$version);
+            config("plugins/".$plugintype."/name",$pluginname,true);
+
+            iapi("upgrade.InstallPluginComplete",['plugintype'=>$plugintype,'version'=>$version,'pluginname'=>$pluginname]);
+
+        }catch(\Exception $e){
+
+        }
+
+        AjaxPrint(['isover' =>1, 'msg' => '安装完毕']); //未下载结束
+
+    }
+
+
 
 }
-
-

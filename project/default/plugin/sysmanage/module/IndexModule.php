@@ -2,6 +2,8 @@
 
 namespace sysmanage\module;
 
+use Symfony\Component\Config\Definition\Exception\Exception;
+
 import("@xl.vendor.autoload");
 
 /**
@@ -106,8 +108,19 @@ class IndexModule extends Base{
 
         $this->setHtmlTitle("插件管理");
         $this->initNav();
-
         $this->setAttach("currnav","pluginmanage");
+
+        try{
+            $conf=config("upgrade");
+            $softwaredata=iapi("upgrade.GetVersionData",null);
+            $softwareplugins=rpc("softupgrade.GetPluginListRequest",['softtype'=>$conf['software']],["rsp_urls"=>$conf['softurl'],
+                "appkey"=>"shengguo",
+                "appsecret"=>"xinxikeji"]);
+            $softwareplugins=getApiData($softwareplugins);
+
+        }catch (Exception $e){
+
+        }
 
         $plugins=config("plugins");
 
@@ -115,8 +128,37 @@ class IndexModule extends Base{
             $plugins=[];
         }
 
-        $this->setAttach("plugins",$plugins);
+        if(isset($softwareplugins)&&$softwareplugins){
+            foreach ($softwareplugins as $item){
+                if(isset($plugins[$item['plugintype']])){
+                    $plugins[$item['plugintype']]['des']=$item['des'];
+                    $plugins[$item['plugintype']]['softversion']=$item['softversion'];
+                    if($plugins[$item['plugintype']]['version']!=$item['version']){
+                        $plugins[$item['plugintype']]['lastversion']=$item['version'];
+                    }
+                    if(isset($softwaredata)&&$softwaredata){
+                        $plugins[$item['plugintype']]['currsoftversion']=$softwaredata['software_version'];
+                    }
+                    $plugins[$item['plugintype']]['downloadurl']=$item['downloadurl'];
 
+                }else{
+                    $plugins[$item['plugintype']]=[
+                        'name'=>$item['name'],
+                        'lastversion'=>$item['version'],
+                        'softversion'=>$item['softversion'],
+                        'des'=>$item['des'],
+                        'newplugin'=>1,
+                        'version'=>'-',
+                        'downloadurl'=>$item['downloadurl']
+                    ];
+                    if(isset($softwaredata)&&$softwaredata){
+                        $plugins[$item['plugintype']]['currsoftversion']=$softwaredata['software_version'];
+                    }
+                }
+            }
+        }
+
+        $this->setAttach("plugins",$plugins);
 
         $this->Display("pluginmanage");
 
