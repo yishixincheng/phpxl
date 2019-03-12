@@ -1708,7 +1708,7 @@ final class XlOldModelFactory extends XlMvcBase {
         }
         if($ins&&is_array($ins)){
             foreach($ins as $k=>$v){
-                if($v&&(is_array($v)||is_string($v))){
+                if($v){
                     $instr=$this->orz_in_str($k,$v);
                     $this->orz_and_condition("and ".$instr,$condition);
                     $params[]=$v;
@@ -1717,7 +1717,7 @@ final class XlOldModelFactory extends XlMvcBase {
         }
         if($keywords&&is_array($keywords)){
             foreach($keywords as $k=>$v){
-                if($v!==""&&is_string($v)){
+                if($v!==""&&!is_array($v)){
                     $k=trim($k);
                     $karr=multiexplode(array(",","|"," "),$k);
                     $kvstr=array();

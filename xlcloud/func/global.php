@@ -83,12 +83,25 @@ function Xl_Recursion_Del_Array_Value(&$parent,&$keys){
 
 
 
-function GDelFile($src){
-    if(file_exists($src)){
-        if(@chmod($src,0777)){
-            @unlink($src);
+function GDelFile($path){
+    if(file_exists($path)){
+        if(is_dir($path)){
+            if(substr($path,-1,1)!=DIRECTORY_SEPARATOR){
+                $path.=DIRECTORY_SEPARATOR;
+            }
+            $dirs=@scandir($path);
+            foreach ($dirs as $v){
+                if($v!='.'&&$v!='..'){
+                    GDelFile($path.$v);
+                }
+            }
+            @rmdir($path);
         }else{
-            @unlink($src);
+            if(@chmod($path,0777)){
+                @unlink($path);
+            }else{
+                @unlink($path);
+            }
         }
     }
 }
