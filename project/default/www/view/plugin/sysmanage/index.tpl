@@ -5,8 +5,10 @@
 {tpl "/plugin/sysmanage/header-close"}
 
 
-
-
+<div class="_boxwrap">
+    <div class="_box">
+    </div>
+</div>
 
 {tpl "/plugin/sysmanage/footer-start"}
 

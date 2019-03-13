@@ -2,8 +2,6 @@
 
 namespace sysmanage\module;
 
-use Symfony\Component\Config\Definition\Exception\Exception;
-
 import("@xl.vendor.autoload");
 
 /**
@@ -88,7 +86,7 @@ class IndexModule extends Base{
 
         \Xl_MQ\MQConfig::setup($config);
 
-        $html=\Xl_MQ\MQMonitor::showTable("/systool/mqunlock");
+        $html=\Xl_MQ\MQMonitor::showTable("/sysmanage/mqunlock");
 
         $html.="<div style='clear: both; width: 650px;margin: auto;margin-top: 20px;'>当前时间：".date("Y-m-d H:i:s")."</div>";
 

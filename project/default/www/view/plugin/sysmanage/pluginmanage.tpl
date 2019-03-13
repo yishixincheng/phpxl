@@ -85,7 +85,11 @@
                      <li class="c2">{$k}</li>
                      <li class="c3">{$plugin['version']}</li>
                      <li class="c4">{if $plugin['isclose']}关闭{else}开启{/if}</li>
-                     <li class="c5">{if $plugin['isclose']}<a>点击开启</a>{else}<a>点击关闭</a>{/if}</li>
+                     <li class="c5" data-plugintype="{$k}">
+                         {if $k=="accredit"}-{else}
+                                 {if $plugin['isclose']}<a data-event="open">点击开启</a>{else}<a data-event="close">点击关闭</a>{/if}
+                         {/if}
+                     </li>
                      <li class="c6" data-plugintype="{$k}" data-pluginname="{$plugin['name']}" data-softversion="{$plugin['softversion']}" data-currsoftversion="{$plugin['currsoftversion']}" data-version="{$plugin['version']}" data-lastversion="{$plugin['lastversion']}" data-downloadurl="{$plugin['downloadurl']}">
                          {if $plugin['lastversion']}
                              {if $plugin['newplugin']}

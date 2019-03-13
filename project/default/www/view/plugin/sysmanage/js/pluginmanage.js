@@ -13,6 +13,8 @@
             this.addProxyEvent("download",this.event_downLoad);
             this.addProxyEvent("upgrade",this.event_upgrade);
             this.addProxyEvent("install",this.event_install);
+            this.addProxyEvent("open",this.event_open);
+            this.addProxyEvent("close",this.event_close);
             this.registProxyEvent(".pbox_wrap");
 
         },
@@ -124,6 +126,43 @@
                 }
             },0);
 
+        },
+        event_open:function(tid,pid){
+
+            var $parent=$(tid).parent();
+            var parent=$parent.get(0);
+            var plugintype=Xl.sgData(parent,"plugintype");
+
+            Xl.request("/sysmanage/pluginmanage/opencloseplugin",{plugintype:plugintype,open:1},function (d,isok) {
+
+                if(isok){
+                    Xl.alert("操作成功！","right");
+                    $parent.html('<a data-event="close">点击关闭</a>');
+                    $parent.parent().find(".c4").html("开启");
+                }else{
+                    Xl.alert(d.msg||"操作失败","error")
+                }
+
+            });
+
+        },
+        event_close:function (tid,pid) {
+
+            var $parent=$(tid).parent();
+            var parent=$parent.get(0);
+            var plugintype=Xl.sgData(parent,"plugintype");
+
+            Xl.request("/sysmanage/pluginmanage/opencloseplugin",{plugintype:plugintype,open:0},function (d,isok) {
+
+                 if(isok){
+                     Xl.alert("操作成功！","right");
+                     $parent.html('<a data-event="open">点击开启</a>');
+                     $parent.parent().find(".c4").html("关闭");
+                 }else{
+                     Xl.alert(d.msg||"操作失败","error")
+                 }
+
+            });
 
         }
 

@@ -85,9 +85,10 @@
             var fseek=d.fseek; //偏移
             var html=['<div class="upgrade_progressbarwrap"><div class="upgrade_progressbar"></div></div>'];
             $(".upgrade_progressbarbox").html(html.join(''));
-
             var pt=(fseek/this.data_softsize)*100;
-
+            if(pt>100){
+                pt=100;
+            }
             $(".upgrade_progressbar").css({width:pt+"%"});
 
         },
