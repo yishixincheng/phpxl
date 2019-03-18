@@ -144,7 +144,7 @@ class UpgradeModule extends Base{
         if(empty($content)){
             return -1;
         }
-        if(strncmp($content,"{",1)===0){
+        if(strncmp($content,"{response:",10)===0){
             echo $content;
             return false;
         }
