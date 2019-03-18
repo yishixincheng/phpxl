@@ -116,7 +116,11 @@ class IndexModule extends Base{
                 "appsecret"=>"xinxikeji"]);
             $softwareplugins=getApiData($softwareplugins);
 
-        }catch (Exception $e){
+            if($softwareplugins['status']=="fail"){
+                unset($softwareplugins);
+            }
+
+        }catch (\Exception $e){
 
         }
 

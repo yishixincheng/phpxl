@@ -2,6 +2,8 @@
 
 namespace sysmanage\module;
 
+set_time_limit(0);
+
 /**
  * Class UpgradeModule
  * @package sysmanage\module
@@ -445,10 +447,12 @@ class UpgradeModule extends Base{
         $this->recodeInstallLogger("",true);
         $this->copydir($fromdir,$fromdir1,$todir);
 
-        GDelFile($fromdir1); //移除
+
 
         //安装完毕设置新版本
         try{
+
+            GDelFile($fromdir1); //移除
 
             config("plugins/".$plugintype."/version",$version);
             config("plugins/".$plugintype."/name",$pluginname,true);
