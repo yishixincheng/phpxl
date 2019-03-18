@@ -1231,13 +1231,13 @@ function import($path){
         $pathroot=xl\AutoLoad::$aliases[array_shift($patharr)];
         $path=$pathroot.D_S.implode(D_S,$patharr);
     }else{
-        $path=str_replace('.','/',$path);
+        $path=str_replace('.',D_S,$path);
     }
     if(strpos($path,"#")!=0){
         $path=str_replace("#",'.',$path);
     }
-    if(strpos($path,'/')===0){
-        $path=$path.'.php';
+    if(substr($path,-4)!=".php"){
+        $path.=".php";
     }
     require $path;
     $static_importcache[$pathkey]=1;
