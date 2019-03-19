@@ -7,48 +7,52 @@
 class ChuangRuiSms{
 
 
-    public function __construct()
+    public function send($mobile,$content,$templateId='',$sign='',$encode='UTF-8')
     {
+        //发送链接（用户名，密码，手机号，内容）
+
+        $accesskey=config("sms/CHUANGRUI/sms_accesskey")?:config("sms/CHUANGRUI/sms_account");
+        $secret=config("sms/CHUANGRUI/sms_secret")?:config("sms/CHUANGRUI/sms_password");
+
+        $url = "http://api.1cloudsp.com/api/v2/send?";
+        $data=array
+        (
+            'accesskey'=>$accesskey,
+            'secret'=>$secret,
+            'encode'=>$encode,
+            'mobile'=>$mobile,
+            'content'=>$content,
+            'sign'=>$sign,
+            'templateId'=>$templateId
+
+
+        );
+        $result = $this->curlSMS($url,$data);
+        //print_r($data); //测试
+
+        if(strpos($result,"success")==0) {
+            //提交成功
+            return true;
+            //逻辑代码
+        } else {
+            //提交失败
+            return false;
+        }
 
     }
-    public function send($telphone,$content,$timertime='',$sign='',$extno=''){
-
-        $flag = 0;
-        $params='';
-        $sign=($sign?:config("sms/CHUANGRUI/sign"))?:config("sms/sign");
-
-        //以下信息自己填以下
-        $argv = array(
-            'name'=>config("sms/CHUANGRUI/sms_account"),     //必填参数。用户账号
-            'pwd'=>config("sms/CHUANGRUI/sms_password"),     //必填参数。（web平台：基本资料中的接口密码）
-            'content'=>$content,   //必填参数。发送内容（1-500 个汉字）UTF-8编码
-            'mobile'=>$telphone,   //必填参数。手机号码。多个以英文逗号隔开
-            'stime'=>$timertime,   //可选参数。发送时间，填写时已填写的时间发送，不填时为当前时间发送
-            'sign'=>$sign,    //必填参数。用户签名。
-            'type'=>'pt',  //必填参数。固定值 pt
-            'extno'=>$extno    //可选参数，扩展码，用户定义扩展码，只能为数字
-        );
-        ;
-        foreach ($argv as $key=>$value) {
-            if ($flag!=0) {
-                $params .= "&";
-                $flag = 1;
-            }
-            $params.= $key."="; $params.= urlencode($value);// urlencode($value);
-            $flag = 1;
-        }
-        $url = "http://web.cr6868.com/asmx/smsservice.aspx?".$params; //提交的url地址
-
-        $con=file_get_contents($url);
-        $i=strpos($con,',');
-        $con= substr( $con, 0, $i);  //获取信息发送后的状态
-
-        if($con == '0'){
-             return true;
-        }else{
-             return $con;
-        }
-
+    private function curlSMS($url,$post_fields=array())
+    {
+        $ch=curl_init();
+        curl_setopt($ch,CURLOPT_URL,$url);
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
+        curl_setopt($ch,CURLOPT_TIMEOUT,30);//30秒超时限制
+        curl_setopt($ch,CURLOPT_HEADER,1);//将文件头输出直接可见。
+        curl_setopt($ch,CURLOPT_POST,1);
+        curl_setopt($ch,CURLOPT_POSTFIELDS,$post_fields);//post操作的所有数据的字符串。
+        $data = curl_exec($ch);//抓取URL并把他传递给浏览器
+        curl_close($ch);//释放资源
+        $res = explode("\r\n\r\n",$data);//explode把他打散成为数组
+        return $res[2]; //然后在这里返回数组。
     }
 
 }
