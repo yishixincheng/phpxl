@@ -31,9 +31,8 @@ class GlobalconfClass extends XlClassBase{
         $path=CONFIG_PATH.'globalconf.json';
 
         if(!file_exists($path)){
-            throw new XlException("全局配置文件不存在！");
+            return [];
         }
-
         $_jsonObj=sysclass("json");
 
         $this->_confcache=$_jsonObj->read($path,false);
