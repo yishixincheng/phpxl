@@ -108,7 +108,7 @@ final class XlMysqlModelFactory extends XlMvcBase {
             if ($this->_model->database) {
                 $this->_database =$this->_logicdatabase = $this->_model->database; //逻辑库名
             }else{
-                $this->_database = $this->_dbhostconf['default']?$this->_dbhostconf['database']:null;
+                $this->_database =$this->_logicdatabase = $this->_dbhostconf['default']?$this->_dbhostconf['database']:null;
 
                 if(empty($this->_database)){
                     throw new XlException("默认数据库没有设置！");
