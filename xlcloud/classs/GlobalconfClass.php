@@ -311,7 +311,7 @@ class GlobalconfClass extends XlClassBase{
                 if(preg_match("/(.+)_(.+)/",$database,$mch)){
                     return $mch[1]?$this->getDbHostConf($mch[1],null,null):null;
                 }else{
-                    return null;
+                    return $this->getDbHostConf(); //获取默认的
                 }
             })();
         }
@@ -321,7 +321,7 @@ class GlobalconfClass extends XlClassBase{
                 if(preg_match("/(.+)_(.+)/",$database,$mch)){
                     return $mch[1]?$this->getDbHostConf($mch[1],null,null):null;
                 }else{
-                    return null;
+                    return $this->getDbHostConf(); //获取默认的
                 }
             })();
         }
@@ -349,7 +349,7 @@ class GlobalconfClass extends XlClassBase{
                 if(preg_match("/(.+)_(.+)/",$database,$mch)){
                     return $mch[1]?$this->getDbHostConf($mch[1],null,null):null;
                 }else{
-                    return null;
+                    return $this->getDbHostConf(); //获取默认的
                 }
             })(); //表没有设置，则返回对应的数据库所在主机
         }
