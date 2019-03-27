@@ -183,17 +183,123 @@ class GlobalconfClass extends XlClassBase{
             return null;
         }
 
-        return $dbhosts[$hostname];
+        $dbhost=$dbhosts[$hostname];
+
+        if(is_array($dbhost)){
+
+            $conf=config("database")?:[];
+            if(!isset($dbhost['driver'])){
+                $dbhost['driver']=$conf['driver']?:"mysql";
+            }else if($dbhost['driver']=="pdo"){
+                $dbhost['driver']="mysql";
+            }
+            if(!isset($dbhost['tablepre'])){
+                $dbhost['tablepre']=$conf['tablepre']?:'';
+            }
+            if(!isset($dbhost['engine'])){
+                $dbhost['engine']=$conf['engine']?:'InnoDB';
+            }
+            if(!isset($dbhost['type'])){
+                $dbhost['type']=$conf['type']?:'pdo';
+            }
+            if(!isset($dbhost['pconnect'])){
+                $dbhost['pconnect']=$conf['pconnect']?:0;
+            }
+            if(!isset($dbhost['autoconnect'])){
+                $dbhost['autoconnect']=$conf['autoconnect']?:0;
+            }
+            if(!isset($dbhost['charset'])){
+                $dbhost['charset']=$conf['charset']?:'utf8';
+            }
+            if(!isset($dbhost['debug'])){
+                $dbhost['debug']=$conf['debug']?:true;
+            }
+
+        }
+
+        return $dbhost;
 
     }
+
+    private function _parseHostDsn($hostdsn){
+
+        $promisekeys=['host','port','username','password'];
+        if(!is_array($hostdsn)){
+            $hostdsnArr=explode(';',$hostdsn);
+            $hostdsn=[];
+            foreach ($hostdsnArr as $hostItem){
+                $hostItemArr=explode('=',$hostItem);
+                if($hostItemArr&&count($hostItemArr)==2){
+                    $k=trim($hostItemArr[0]);
+                    $v=trim($hostItemArr[1]);
+                    if(in_array($k,$promisekeys)){
+                        $hostdsn[$k]=$v;
+                    }
+                }
+            }
+
+        }else{
+            foreach ($hostdsn as $k=>$v){
+                if(!in_array($k,$promisekeys)){
+                    unset($hostdsn[$k]);
+                }
+            }
+        }
+        $conf=config("database")?:[];
+        if(!isset($hostdsn['driver'])){
+            $hostdsn['driver']=$conf['driver']?:"mysql";
+        }else if($hostdsn['driver']=="pdo"){
+            $hostdsn['driver']="mysql";
+        }
+        if(!isset($hostdsn['tablepre'])){
+            $hostdsn['tablepre']=$conf['tablepre']?:'';
+        }
+        if(!isset($hostdsn['engine'])){
+            $hostdsn['engine']=$conf['engine']?:'InnoDB';
+        }
+        if(!isset($hostdsn['type'])){
+            $hostdsn['type']=$conf['type']?:'pdo';
+        }
+        if(!isset($hostdsn['pconnect'])){
+            $hostdsn['pconnect']=$conf['pconnect']?:0;
+        }
+        if(!isset($hostdsn['autoconnect'])){
+            $hostdsn['autoconnect']=$conf['autoconnect']?:0;
+        }
+        if(!isset($hostdsn['charset'])){
+            $hostdsn['charset']=$conf['charset']?:'utf8';
+        }
+        if(!isset($hostdsn['debug'])){
+            $hostdsn['debug']=$conf['debug']?:true;
+        }
+
+        return $hostdsn;
+
+    }
+
+
 
     /**
      * 根据实例数据库名，实例表名和切片值获取主机配置
      */
-    public function getDbHostConf($database,$tablename=null,$sharding=null){
+    public function getDbHostConf($database=null,$tablename=null,$sharding=null){
 
-        if(!$database){
-            return null;
+        if(empty($database)){
+            //直接从配置默认的配置文件中读取
+            $conf=config("database");
+            if(empty($conf)){
+                return null;
+            }
+            $return=['type'=>'database','name'=>'默认库','default'=>true,'database'=>$conf['database']]; //设置默认库
+            $return['masterhost']=$this->_parseHostDsn($conf['master']);
+            if($conf['slaves']){
+                $slave=$conf['slaves'][array_rand($conf['slaves'],1)]; //随机命中
+                $return['slavehost']=$this->_parseHostDsn($slave);
+            }
+            $return['slavehost']=$return['slavehost']?:$return['masterhost'];
+
+            return $return;
+
         }
         if($this->_schemeHosts==null){
             $this->_schemeHosts=$this->getSchemeHosts();
@@ -203,7 +309,7 @@ class GlobalconfClass extends XlClassBase{
             //表名不存在
             return $this->_schemeHosts[$database]?:(function() use($database){
                 if(preg_match("/(.+)_(.+)/",$database,$mch)){
-                    return $this->getDbHostConf($mch[1],null,null);
+                    return $mch[1]?$this->getDbHostConf($mch[1],null,null):null;
                 }else{
                     return null;
                 }
@@ -213,7 +319,7 @@ class GlobalconfClass extends XlClassBase{
         if(!$hostnode){
             return $this->_schemeHosts[$database]?:(function() use($database){
                 if(preg_match("/(.+)_(.+)/",$database,$mch)){
-                    return $this->getDbHostConf($mch[1],null,null);
+                    return $mch[1]?$this->getDbHostConf($mch[1],null,null):null;
                 }else{
                     return null;
                 }
@@ -222,10 +328,8 @@ class GlobalconfClass extends XlClassBase{
         if($sharding){
 
             $sharding=intval($sharding);
-
             $shardinghost=$hostnode['sharding']?:[];
             foreach ($shardinghost as $range=>$node){
-
                 $rangeArr=explode("_",$range);
                 $minR=intval($rangeArr[0]);
                 $maxR=intval($rangeArr[1]);
@@ -238,13 +342,12 @@ class GlobalconfClass extends XlClassBase{
                     }
                     break;
                 }
-
             }
         }
         if(!$hostnode['masterhost']){
             return $this->_schemeHosts[$database]?:(function() use($database){
                 if(preg_match("/(.+)_(.+)/",$database,$mch)){
-                    return $this->getDbHostConf($mch[1],null,null);
+                    return $mch[1]?$this->getDbHostConf($mch[1],null,null):null;
                 }else{
                     return null;
                 }

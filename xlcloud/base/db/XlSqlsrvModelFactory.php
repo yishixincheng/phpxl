@@ -1,38 +1,49 @@
 <?php
 
-namespace xl\base;
+namespace xl\base\db;
 
-/**
- * Class XlOldModelFactory
- * @package xl\base
- * 不能继承，Model工厂类
- */
+use xl\base\XlException;
+use xl\base\XlMvcBase;
 
-final class XlOldModelFactory extends XlMvcBase {
+
+final class XlSqlsrvModelFactory extends XlMvcBase {
 
     const  CACHE_TYPE_GETONE=1;
     const  CACHE_TYPE_GETROWS=2;
     const  CACHE_TYPE_GETROWNUM=4;
-
     private $_model_path=MODEL_PATH;
 
     //数据库配置
     public static $db_repairnum=[]; //修复次数统计
-
     private $_workid=1;
     private $_dbconfig=null;
     private $_tablepre=null;
-
     private $_model=null;
+    private $_logicdatabase=null; //逻辑库名
+    private $_primarykeys=[]; //主键
+    private $_primarykey_types=[]; //主键对应的类型
+    private $_increments=[];        //主键是否自增
+    private $_keys=[];         //索引
+    private $_hashfield=null; //分表划分字段
+    private $_hashkey_type=null; //hash数据类型
+    private $_lastid=null;           //最后自增的id
     private $_tablename=null;
     private $_shardtablename=null;
     private $_abstablename=null; //当前全表名包括前缀
+    private $_writedb=null;   //主数据库实例
+    private $_readdb=null;
+    private $_selfmotionconfiguration=false; //是否自动配置
+    private $_dbhostconf=null;
+
+
+    /**
+     * @var 注入属性
+     */
     private $_database=null;
+    private $_logictablename=null; //逻辑表名
     private $_isneedcreate=null;
     private $_isautorepairstruct=null;
     private $_sharding=null;
-    private $_merge=null;
-    private $_merge_insert=null;
     private $_partition=null;
     private $_fields=null;
     private $_engine=null;
@@ -45,36 +56,19 @@ final class XlOldModelFactory extends XlMvcBase {
     private $_longquerytime=null;
     private $_slowlogfile=null; //日志下面的目录
 
-    private $_primarykeys=[]; //主键
-    private $_primarykey_types=[]; //主键对应的类型
-    private $_increments=[];        //主键是否自增
-    private $_keys=[];         //索引
-    private $_hashfield=null; //分表划分字段
-    private $_hashkey_type=null; //hash数据类型
-    private $_lastid=null;           //最后自增的id
-
-    private $_master=null; //主数据配置信息
-    private $_slaves=null; //从数据库配置信息
-    private $_slave=null;  //当前命中的从数据库
-    private $_writedb=null;   //主数据库实例
-    private $_readdb=null;
-    private $_connectconfig=null;
 
 
-    public function __construct($modelname,$config=null,$model=null,$model_name=null) {
-
+    public function __construct($modelname,$config=null,$model,$model_name,$dbhostconf)
+    {
 
         if($this->_Isplugin){
             $this->_model_path=PLUGIN_PATH.$this->_Ns.D_S."model".D_S;
         }
-
         /**
          * config置入，可以改变Model里默认设置的配置信息，说明如下
          *
-         * 1.数组 ['database'=>'','tablename'=>'','master'=>'',workid=1,'slaves'=>[]],dataname如果是/开头，绝对数据库名，否则是配置文件的数据库+"_database"
+         * 1.数组 ['database'=>'','tablename'=>'',workid=1],dataname如果是/开头，绝对数据库名，否则是配置文件的数据库+"_database"
          *           tablename如果是/开头，代表是绝对表名（不包括前缀），如果是不加，则是模型里设置的表名+"_tablename"
-         *
-         *
          * 2.字符串，@值，则调用model模型里，config(值)进行获取配置信息
          *
          * 3.字符串，/开头，绝对表名。其他则是相对（model）的表名，即，表名+"_tablename"
@@ -82,60 +76,16 @@ final class XlOldModelFactory extends XlMvcBase {
          * 说明：
          * (数据库，表名设置必须是20字一下，数字字母下划线）超过则报错
          *
-        */
-
+         */
         parent::__construct();
 
-        $this->_model=$model;
+        $this->_model=$model; //必须存在
+        $this->_dbhostconf=$dbhostconf;
+        $this->_dbconfig=$this->_dbhostconf['masterhost'];
+
         //根据modelname生成model具体实例，如user.User,或者user,img(表名找到对应的model类)
         $this->parseModelName($modelname,$config,$model_name);
-        $this->parseSelectDb(); //选择数据表
 
-    }
-
-    private function _parseConfig($config=null){
-
-        if(empty($config)&&$config!==0){
-            return;
-        }
-        if(is_object($config)){
-            $config =  json_decode( json_encode($config),true);
-        }
-        if(!is_array($config)){
-            $configstr=trim($config);
-            $config=[];
-            if(strpos($configstr,"@")===0){
-                if(!method_exists($this->_model,"config")){
-                    throw new XlException(get_class($this->_model)." method config is not defined");
-                }
-                $config=$this->_model->config(substr($configstr,1));
-                if(!is_array($config)){
-                    throw new XlException(get_class($this->_model)." method config returntype is must array"); //返回值类型必须是数组
-                }
-            }else{
-                $config['tablename']=$configstr;
-            }
-        }
-        if(!$config){
-            return;
-        }
-
-        if($config['connectconfig']){
-            $this->_connectconfig=$config['connectconfig'];
-        }
-
-        if($tablename=$config['tablename']){
-            if(strpos($tablename,"/")===0){
-                $this->_tablename=substr($tablename,1);
-            }else{
-                $this->_tablename.="_".$tablename;
-            }
-        }
-
-        $this->_database=$config['database']?:$this->_database;
-        $this->_master=$config['master']?:null;
-        $this->_slaves=$config['slaves']?:null;
-        $this->_workid=$config['workid']?:$this->_workid;//不同的主机对应workid不一样
 
     }
 
@@ -144,101 +94,41 @@ final class XlOldModelFactory extends XlMvcBase {
      * @throws XlException
      * 解析绑定的Model
      */
-
     public function parseModelName($modelname,$config=null,$model_name=null){
 
-        $this->_engine=config("database/engine")??"InnoDB";
         //只支持2层目录
-        if($this->_model==null){
-            if(($pos=strpos($modelname,'.'))){
-                $folder=substr($modelname,0,$pos);
-                $folder=str_replace(".",D_S,$folder);
-                $modelname=substr($modelname,$pos+1);
-                $classname=ucfirst($modelname).'Model';
-                $path=$this->_model_path.$folder.D_S.$classname.'.php'; //文件路径
-                if(!is_file($path)){
-                    $path=false;
-                }
-            }else{
-                //查找
-                $classname=ucfirst($modelname).'Model';
-                $path=findfile($this->_model_path,$classname.'.php');
-            }
-            if(!$path){
-                throw new XlException($classname." file is not exist!");
-            }
-            //包含文件
-            include_once($path);
-            $this->_model = new $classname; //实例化Model
-            if (!$this->_model) {
-                throw new XlException($classname . " is not defined");
-            }
-        }
+        $this->_tablepre=$this->_dbconfig['tablepre']?:''; //表前缀
         try {
             if (empty($this->_model->alias)) {
-                $this->_tablename = strtolower($model_name?:$modelname); //表名即是model类名
+                $this->_tablename = $this->_logictablename = strtolower($model_name?:$modelname); //逻辑表名
             } else {
-                $this->_tablename = $this->_model->alias;
+                $this->_tablename = $this->_logictablename = $this->_model->alias; //逻辑表名
             }
             if ($this->_model->database) {
-                $this->_database = $this->_model->database;
+                $this->_database =$this->_logicdatabase = $this->_model->database; //逻辑库名
+            }else{
+                $this->_database = $this->_dbhostconf['default']?$this->_dbhostconf['database']:null;
+
+                if(empty($this->_database)){
+                    throw new XlException("默认数据库没有设置！");
+                }
             }
-            if ($this->_model->isneedcreate) {
-                $this->_isneedcreate = $this->_model->isneedcreate;
-            }
-            if (!empty($this->_model->isautorepairstruct)){
-                $this->_isautorepairstruct=$this->_model->isautorepairstruct;
-            }
-            if (!empty($this->_model->tablepre)){
-                $this->_tablepre=$this->_model->tablepre;
-            }
-            if (!empty($this->_model->opencache)){
-                $this->_opencache=$this->_model->opencache;
-            }
-            if (!empty($this->_model->cachetime)){
-                $this->_cachetime=$this->_model->cachetime;
-            }
-            if (!empty($this->_model->cachetype)){
-                $this->_cachetype=$this->_model->cachetype;
-            }
-            if (!empty($this->_model->cachepre)){
-                $this->_cachepre=$this->_model->cachepre;
-            }
+            $this->_isneedcreate=$this->_model->isneedcreate??$this->_isneedcreate;
+            $this->_isautorepairstruct=$this->_model->isautorepairstruct??$this->_isautorepairstruct;
+            $this->_tablepre=$this->_model->tablepre??$this->_tablepre;
+            $this->_opencache=$this->_model->opencache??$this->_opencache;
+            $this->_cachetime=$this->_model->cachetime??$this->_cachetime;
+            $this->_cachetype=$this->_model->cachetype??$this->_cachetype;
+            $this->_cachepre=$this->_model->cachepre??$this->_cachepre;
+            $this->_sharding=$this->_model->sharding??$this->_sharding;
             $this->_openslowlog=$this->_model->openslowlog??$this->_openslowlog;
             $this->_longquerytime=$this->_model->longquerytime??$this->_longquerytime;
             $this->_slowlogfile=$this->_model->slowlogfile??$this->_slowlogfile;
-
-            $this->_sharding=$this->_model->sharding??$this->_sharding;
-            $this->_master=$this->_model->master??$this->_master;
-            $this->_slaves=$this->_model->slaves??$this->_slaves;
-
-            if($this->_sharding){
-
-                //merge引擎基于分表基础上
-                if(!isset($this->_model->merge)){
-                    $this->_merge=true;
-                }else{
-                    $this->_merge = $this->_model->merge;
-                }
-                if($this->_merge){
-                    if ($this->_model->merge_insert) {
-                        $this->_merge_insert = $this->_model->merge_insert;
-                    }
-                    $this->_engine="MyISAM"; //强制
-                }
-
-            }
-            if (isset($this->_model->partition)) {
-                $this->_partition = $this->_model->partition;
-            }
-            if (isset($this->_model->fields)) {
-                $this->_fields = $this->_model->fields;
-            }
+            $this->_partition=$this->_model->partition??$this->_partition;
+            $this->_fields=$this->_model->fields??null;
             if(empty($this->_fields)){
                 throw new XlException("Table　".$this->_tablename." fields is not set");
             }
-
-            $this->_engine=$this->_model->engine??$this->_engine;
             $this->_charset=$this->_model->charset??"utf8";
 
             //parse _fields 获取主键
@@ -284,146 +174,65 @@ final class XlOldModelFactory extends XlMvcBase {
                 }
 
             }
-
             //解析配置参数
             $this->_parseConfig($config);
-
         }catch (\Exception $e){
-
             throw new XlException($e->getMessage()); //抛出异常
-
         }
-
     }
-    public function parseSelectDb(){
+    private function _parseConfig($config=null){
 
-        //选择数据表
-        $databaseconfig=$this->_connectconfig;
-
-        if($databaseconfig){
-            if(!is_array($databaseconfig)){
-                $connectconfighashid=null;
-                if(is_string($databaseconfig)){
-                    if(substr($databaseconfig,0,1)=="@"){
-                        $connectconfighashid=substr($databaseconfig,1);
-                    }
-                }
-                if(method_exists($this->_model,"connectconfig")){
-                    $databaseconfig=$this->_model->connectconfig($connectconfighashid);
-                }
-            }
-            if(!is_array($databaseconfig)){
-                $databaseconfig=null;
-            }
-        }else{
-            if(method_exists($this->_model,"connectconfig")){
-                $databaseconfig=$this->_model->connectconfig(null);
-            }
-        }
-        $this->_dbconfig=$databaseconfig?:config("database");
-
-        if($this->_database){
-            if(strpos($this->_database,"/")===0){
-                $this->_dbconfig['database']=substr($this->_database,1);
+        $configfunc_param=null;
+        if(is_string($config)&&$config){
+            $configstr=trim($config);
+            $config=[];
+            if(strpos($configstr,"@")===0){
+                $configfunc_param=substr($configstr,1);
             }else{
-                $this->_dbconfig['database'].="_".$this->_database;
+                $config['tablename']=$configstr;
+            }
+        }else if(is_object($config)){
+            $config =  json_decode( json_encode($config),true);
+        }
+        $ishaveconfigfunc=method_exists($this->_model,"config");
+        if(empty($config)&&!$ishaveconfigfunc){
+            return null;
+        }
+        if($configfunc_param&&!$ishaveconfigfunc){
+            throw new XlException(get_class($this->_model)." method config is not defined");
+        }
+        $config=$config?:[];
+        if($ishaveconfigfunc){
+            $autoconfig=$this->_model->config($configfunc_param);
+            if($configfunc_param==null){
+                $this->_selfmotionconfiguration=true;
+            }
+            if(!is_array($autoconfig)){
+                throw new XlException(get_class($this->_model)." method config returntype is must array"); //返回值类型必须是数组
+            }
+            $config=array_merge($config,$autoconfig); //函数调用覆盖
+        }
+        if(empty($config)){
+            return null;
+        }
+        if($tablename=$config['tablename']){
+            if(strpos($tablename,"/")===0){
+                $this->_tablename=substr($tablename,1);
+            }else{
+                $this->_tablename=$this->_logictablename."_".$tablename;
             }
         }
-        $pattern="/^[A-Za-z0-9_]+$/";
-        if(!preg_match($pattern,$this->_dbconfig['database'])){
-            throw new XlException("database ".$this->_dbconfig['database']." must in A-Za-z0-9_");
-        }
-        if(!preg_match($pattern,$this->_tablename)){
-            throw new XlException("tablename ".$this->_tablename." must in A-Za-z0-9_");
-        }
+        if($config['database']){
 
-        $this->_database=$this->_dbconfig['database'];
-        $this->_tablepre=$this->_dbconfig['tablepre'];
-        $this->_workid=$this->_dbconfig['workid']??1; //主机编号，为了生成唯一的uuid
-
-        if(!$this->_master){
-            $this->_master=$this->_dbconfig['master'];
-        }
-        if(!$this->_slaves){
-            $this->_slaves=$this->_dbconfig['slaves'];
-        }
-        unset($this->_dbconfig['slaves']);
-        unset($this->_dbconfig['master']);
-
-        if(!$this->_master){
-            throw new XlException("sqlserver master is not configure");
-        }
-        $isalone=true;
-        if($this->_slaves){
-            $isalone=false;
-            $this->_slave=$this->_slaves[array_rand($this->_slaves,1)]; //随机命中
-        }
-
-        $this->_parseHostDsn($this->_master);
-
-        if($isalone){
-            $this->_slave=$this->_master;
-        }else{
-            $this->_parseHostDsn($this->_slave);
-        }
-
-        $this->switchDb(); //选择数据库
-
-    }
-    private function _parseHostDsn(&$hostdsn){
-
-        $promisekeys=['host','port','username','password'];
-        if(!is_array($hostdsn)){
-            $hostdsnArr=explode(';',$hostdsn);
-            $hostdsn=[];
-            foreach ($hostdsnArr as $hostItem){
-                $hostItemArr=explode('=',$hostItem);
-                if($hostItemArr&&count($hostItemArr)==2){
-                    $k=trim($hostItemArr[0]);
-                    $v=trim($hostItemArr[1]);
-                    if(in_array($k,$promisekeys)){
-                        $hostdsn[$k]=$v;
-                    }
-                }
-            }
-
-        }else{
-            foreach ($hostdsn as $k=>$v){
-                if(!in_array($k,$promisekeys)){
-                    unset($hostdsn[$k]);
-                }
+            if(strpos($config['database'],"/")===0){
+                $this->_database=$config['database'];
+            }else{
+                $this->_database=$this->_logicdatabase."_".$config['database'];
             }
         }
-        if(empty($hostdsn)){
-            throw new XlException("hostdsn parse is invalid");
-        }
-    }
-
-    public function switchDb($config=null){
-
-        if($config&&is_array($config)) {
-            $this->_dbconfig = $config;
-            $this->_database=$this->_dbconfig['database'];
-            $this->_tablepre=$this->_dbconfig['tablepre'];
-        }
-        $dbf=sysclass("dbfactory",0);
-        $writeconfig=$this->_dbconfig;
-        $readconfig=$this->_dbconfig;
-        $writeconfig['hostname']=$this->_master['host']?:'localhost';
-        $writeconfig['port']=$this->_master['port']?:'3306';
-        $writeconfig['username']=$this->_master['username'];
-        $writeconfig['password']=$this->_master['password'];
-
-        $readconfig['hostname']=$this->_slave['host']?:'localhost';
-        $readconfig['port']=$this->_slave['port']?:'3306';
-        $readconfig['username']=$this->_slave['username'];
-        $readconfig['password']=$this->_slave['password'];
-
-        $this->_writedb = $dbf::getInstance($writeconfig)->getDbObj($this->_database);
-        $this->_readdb=$dbf::getInstance($readconfig)->getDbObj($this->_database);
+        $this->_workid=$config['workid']?:$this->_workid;//不同的主机对应workid不一样
 
     }
-
     /**
      * @return null
      * 获得绑定的model对象
@@ -519,7 +328,7 @@ final class XlOldModelFactory extends XlMvcBase {
             return $condtion;
         }
 
-        $condtionstr="where 1 ";
+        $condtionstr="where 1=1 ";
         $condtionarr=[];
         foreach ($condtion as $k=>$v){
             $condtionarr[]='`'.$k."`='".$v."'";
@@ -527,6 +336,49 @@ final class XlOldModelFactory extends XlMvcBase {
         $condtionstr.=" and ".implode(" and ",$condtionarr);
 
         return $condtionstr;
+
+    }
+
+    public function connectDbHostAndGetTable($condition=null){
+
+        $tablename=$this->_getTable($condition);
+        if($this->_shardtablename!=$this->_tablename){
+            $sharding=substr($this->_shardtablename,strlen($this->_tablename));
+        }else{
+            $sharding=null;
+        }
+        if($this->_dbhostconf['default']){
+            //无分布式
+            $dbconf=$this->_dbhostconf;
+        }else{
+            $dbconf=sysclass("globalconf")->getDbHostConf($this->_database,$this->_tablename,$sharding);
+        }
+        if(!$dbconf){
+            throw new XlException("抱歉，未找到数据库".$this->_database." 数据表".$this->_tablename."对应的主机");
+        }
+
+        $masterhost=$dbconf['masterhost']?:[];
+        $slavehost=$dbconf['slavehost']?:[];
+
+        $dbf=sysclass("dbfactory",0);
+        $writeconfig=$this->_dbconfig;
+        $readconfig=$this->_dbconfig;
+        $writeconfig['hostname']=$masterhost['host']?:'localhost';
+        $writeconfig['port']=$masterhost['port']?:'3306';
+        $writeconfig['username']=$masterhost['username'];
+        $writeconfig['password']=$masterhost['password'];
+        $writeconfig['database']=$this->_database;
+
+        $readconfig['hostname']=$slavehost['host']?:'localhost';
+        $readconfig['port']=$slavehost['port']?:'3306';
+        $readconfig['username']=$slavehost['username'];
+        $readconfig['password']=$slavehost['password'];
+        $readconfig['database']=$this->_database;
+
+        $this->_writedb = $dbf::getInstance($writeconfig)->getDbObj($this->_database);
+        $this->_readdb=$dbf::getInstance($readconfig)->getDbObj($this->_database);
+
+        return $tablename;
 
     }
 
@@ -544,9 +396,6 @@ final class XlOldModelFactory extends XlMvcBase {
 
             if(is_bool($rt)){
                 return $rt;
-            }
-            if($this->_merge){
-                $rt=$this->_createMergeTable($this->_tablename,$this->_shardtablename,$rt['sqlline']);
             }
 
         }else{
@@ -569,10 +418,12 @@ final class XlOldModelFactory extends XlMvcBase {
         if($this->staticCacheIsSet("tableexist",$tablekey)){
             return $this->staticCacheGet("tableexist",$tablekey);
         }
+        if(!$this->_readdb){
+            $this->connectDbHostAndGetTable();
+        }
         $istableexist=$this->_readdb->tableExists($this->_tablepre.$table);
         $this->staticCacheSet("tableexist",$tablekey,$istableexist);
         return $istableexist;
-
     }
     private function _createTable($tablename,$fields){
 
@@ -586,7 +437,7 @@ final class XlOldModelFactory extends XlMvcBase {
         //不存在则创建
         $sqlline=[];
         foreach($fields as $k=>$v){
-            $node='`'.$k.'` ';
+            $node=$k.' ';
             $node.=$this->_getcreatesqllinenode($v);
             array_push($sqlline,$node);
         }
@@ -599,7 +450,7 @@ final class XlOldModelFactory extends XlMvcBase {
             $pkstr="PRIMARY KEY (";
             $pkeys=[];
             foreach($primarykeys as $v){
-                array_push($pkeys,"`$v`");
+                array_push($pkeys,"$v");
             }
             $pkstr.=implode(',',$pkeys);
             $pkstr.=")";
@@ -608,83 +459,24 @@ final class XlOldModelFactory extends XlMvcBase {
         if(!empty($keys)){
 
             foreach($keys as $v){
-                array_push($sqlline,'KEY `'.$v.'` (`'.$v.'`)');
+                array_push($sqlline,'KEY '.$v.' ('.$v.')');
             }
         }
 
-        $rt=$this->_create_table($tablename,$sqlline,$this->_engine,$this->_charset);
+        $rt=$this->_create_table($tablename,$sqlline,$this->_charset);
 
         return ['result'=>$rt,'sqlline'=>$sqlline];
 
 
     }
-    private function _getTableUnions($tablename){
-
-        //动态获取unions
-        $sql=$this->query("show create table ".$this->_tablepre.$tablename);
-        $rt=$this->getQueryResult($sql);
-
-        $ct=$rt['Create Table'];
-
-        $unionsArr=[];
-        if($ct) {
-
-            preg_match("/union=\((.+?)\)/i", $ct, $match);
-
-            if ($match) {
-
-                $unions = $match[1];
-                if ($unions) {
-
-                    $unions = str_replace('`', '', $unions);
-
-                    $unionsArr = explode(',', $unions);
-                }
-            }
-        }
-
-        return $unionsArr;
-
-
-    }
-    private function _createMergeTable($tablename,$shardtablename,$sqlline){
-
-        if(!$this->_isneedcreate){
-            return false; //无需创建
-        }
-        if($this->tableExists($tablename)){
-
-            //如果存在，则动态修改union值
-            if($tablename!=$shardtablename){
-                $unions=$this->_getTableUnions($tablename);
-                $unions[]=$this->_tablepre.$shardtablename;
-                $unions=array_unique($unions);
-                $sqlstr="ALTER TABLE {{tablepre}}".$tablename."  UNION=(".implode(',',$unions).")";
-
-                $this->query($sqlstr); //动态修改union值
-            }
-            return true;
-        }
-
-        $attach="union(".$this->_tablepre.$shardtablename.")";
-
-        if($this->_merge_insert){
-            $attach.=" insert_method=".$this->_merge_insert;
-        }
-
-        //创建merge表
-
-        return $this->_create_table($tablename,$sqlline,"MRG_MyISAM",$this->_charset,$attach);
-
-    }
-    private function _create_table($table,$sqlline,$e='InnoDB',$charset='utf8',$attach=null){
+    private function _create_table($table,$sqlline,$charset='utf8',$attach=null){
 
 
         //不存在，则创建
         if(is_array($sqlline)){
             $sqlline=implode(',',$sqlline);
         }
-        $sqlstr="CREATE TABLE IF NOT EXISTS `".$this->_tablepre.$table."` (".$sqlline.")  ENGINE=".$e." DEFAULT CHARSET=".$charset;
+        $sqlstr="CREATE TABLE ".$this->_tablepre.$table." (".$sqlline.")";
 
         if($attach){
             $sqlstr.=" ".$attach;
@@ -713,11 +505,6 @@ final class XlOldModelFactory extends XlMvcBase {
             //列不存在
             $isreturn=$this->repairTableStruct(); //修复表结构
 
-        }else if($errid=="TABLE_NEED_REPAIR"){
-
-            //表需要修复
-            $isreturn=$this->repairTable();
-
         }
 
         return $isreturn;
@@ -726,7 +513,7 @@ final class XlOldModelFactory extends XlMvcBase {
 
     private function _getTableTypefromTypeAndSize($type,$size=''){
 
-        if(!in_array($type,array('text','tinytext','medinumtext','longtext','date','datetime','json'))){
+        if(!in_array($type,array('text','tinytext','medinumtext','longtext','date','datetime','json','int','bigint','float','double'))){
             return $type.'('.$size.')';
         }
         return $type;
@@ -740,156 +527,17 @@ final class XlOldModelFactory extends XlMvcBase {
             return false;
         }
 
-        $tablename=$this->getAllTableName(true);
-
-        if(static::$db_repairnum[$tablename]){
-            throw new XlException("修复失败，请检查字段是否与模型定义一致");
-        }
-
-        $fields=$this->_fields;
-        $tbfds=$this->getFields(); //域
-        $addops=[];$changeops=[];
-        $dropops=[];$increment='';
-        $primarykey=[];$key=[];
-        foreach($fields as $fk=>$fv){
-
-            if(!isset($fv['comment'])){
-                if($fv['name']){
-                    $fv['comment']=$fv['name'];
-                }
-            }
-            $sqlstr=$this->_getTableTypefromTypeAndSize($fv['type'],$fv['size'])." ";
-
-            if(!in_array($fv['type'],$this->_notSizechartypes())) {
-
-                if ($fv['type'] != "set" && $fv['type'] != "enum") {
-
-                    if (!isset($fv['default'])) {
-                        if (in_array($fv['type'], $this->_tableGetchartypes())) {
-                            $fv['default'] = '';
-                        } else {
-                            $fv['default'] = 0;
-                        }
-                    }
-                    if (!$fv['increment'] && isset($fv['default'])) {
-                        if ($fv['default'] === "") {
-                            $sqlstr .= " default '' ";
-                        } else {
-                            if ($fv['default'] === "null") {
-                                $sqlstr .= " default NULL ";
-                            } else {
-                                $sqlstr .= " default '{$fv['default']}' ";
-                            }
-                        }
-                    } else {
-                        $increment = " CHANGE `{$fk}` `{$fk}` " . $sqlstr . " AUTO_INCREMENT " . ($fv['comment'] ? " COMMENT '{$fv['comment']}'" : ""); //自增
-                    }
-                }
-            }else{
-
-                if ($fv['type'] == 'date') {
-                    if (!preg_match("/^\s*\d{4}-\d{2}-\d{2}\s*/", $fv['default'])) {
-                        $sqlstr .= " default null ";
-                    }
-                } elseif ($fv['type'] == "datetime") {
-                    if (!preg_match("/^\s*\d{4}-\d{2}-\d{2}\s \d{2}:\d{2}:\d{2}*/", $fv['default'])) {
-                        $sqlstr .= " default null ";
-                    }
-                }else{
-                    if(!$fv['default']){
-                        $sqlstr.=" default null ";
-                    }else{
-                        $sqlstr.="  default '{$fv['default']}' ";
-                    }
-                }
-
-
-            }
-            if($fv['comment']){
-                $sqlstr.=" COMMENT '{$fv['comment']}' ";
-            }
-            if(array_key_exists($fk,$tbfds)){
-                //已经存在
-                $sqlstr=" CHANGE `{$fk}` `{$fk}` ".$sqlstr;
-                $changeops[]=$sqlstr;
-            }else{
-                //不存在，添加
-                $sqlstr=" ADD `{$fk}` ".$sqlstr;
-                $addops[]=$sqlstr;
-            }
-            if($fv['primarykey']){
-                //主键
-                array_push($primarykey,$fk);
-            }
-            if($fv['key']){
-                array_push($key,$fk);
-            }
-        }
-        foreach($tbfds as $fk=>$fv){
-
-            if(!array_key_exists($fk,$fields)){
-                //删除项
-                $sqlstr=" Drop `$fk` ";
-                $dropops[]=$sqlstr;
-            }
-
-        }
-        $ops=array_merge($dropops,$changeops,$addops);
-        if(!empty($primarykey)){
-            $pkstr=" DROP PRIMARY KEY , ADD PRIMARY KEY (";
-            $pkeys=array();
-            foreach($primarykey as $v){
-                array_push($pkeys,"`$v`");
-            }
-            $pkstr.=implode(',',$pkeys);
-            $pkstr.=")";
-            array_push($ops,$pkstr);
-        }
-        if(!empty($key)){
-            foreach($key as $v){
-                $kstr=" DROP INDEX `$v`, ADD INDEX (`$v`) ";
-                array_push($ops,$kstr);
-            }
-        }
-        $sqlline=implode(",",$ops);
-
-        $sqlstr="ALTER TABLE {$tablename} ".$sqlline;
-
-        $rt=$this->query($sqlstr);
-
-        if($increment){
-            $sqlstr="ALTER TABLE {$tablename} ".$increment;
-            $rt=$this->query($sqlstr);
-        }
-        if(!isset(static::$db_repairnum[$tablename])){
-            static::$db_repairnum[$tablename]=1;
-        }else{
-            static::$db_repairnum[$tablename]++;
-        }
-        if($rt){
-            return true;
-        }
-        return false;
-        
-    }
-    
-    public function repairTable(){
-
-
-        $tablename=$this->getAllTableName(true);
-        $sqlstr="REPAIR TABLE {$tablename} ";
-
-        $rt=$this->query($sqlstr);
-
-        if($rt){
-            return true;
-        }
-        return false;
+        throw new XlException("Sqlsrv：系统不支持自动修复功能！");
 
     }
-
     public function query($sql,$isread=null) {
+
         $sql = preg_replace('/{{tablepre}}/', $this->_tablepre, $sql,1);
+
+        if(!$this->_writedb){
+            $this->connectDbHostAndGetTable(); //连接数据库
+        }
+
         if($isread){
             return $this->_readdb->query($sql);
         }else{
@@ -909,7 +557,6 @@ final class XlOldModelFactory extends XlMvcBase {
         }
         $attach=$columns."_".$condition;
         $cachekey=$optype.'_'.$this->_readdb->getCacheKey($tablename,$attach);
-
         if($this->_cachepre){
             $cachekey="/".$this->_cachepre.$cachekey;
         }
@@ -969,43 +616,35 @@ final class XlOldModelFactory extends XlMvcBase {
      * @return mixed
      * 检索数据表
      */
-     public function getOne($columns="*",$condition,$debug=null){
+    public function getOne($columns="*",$condition,$debug=null){
 
         //检索数据表,避免重新获取错误，最大智能尝试一次
-
         $condition=$this->_parseConditionArray($condition);
+        $tablename=$this->connectDbHostAndGetTable($condition);
         $iscreatetable=false;
-        $tablename=$this->_getTable($condition);
 
-         $cachekey=null;
+        $cachekey=null;
 
-         if($debug==null){
-             $rt=$this->_readFromCache(self::CACHE_TYPE_GETONE,$tablename,$columns,$condition,$cachekey);
-             if($rt!=null){
-                 return $rt;
-             }
-         }
-
+        if($debug==null){
+            $rt=$this->_readFromCache(self::CACHE_TYPE_GETONE,$tablename,$columns,$condition,$cachekey);
+            if($rt!=null){
+                return $rt;
+            }
+        }
         $rt=$this->_readdb->getOne($tablename,$columns,$condition,$debug,function($errid) use(&$iscreatetable){
-
             //异常捕获,表不存在，则检测是否创建
-
             $iscreatetable=$this->autoRepairSqlException($errid);
-
             return $iscreatetable;
-
         },$this->_openslowlog?[$this,"aopRecordSqlSlowLogFunc"]:null);
-
         if($iscreatetable){
             return $this->getOne($columns,$condition,$debug); //重新获取
         }
 
-         if($cachekey){
+        if($cachekey){
 
-             //设置缓存
-             $this->_writeToCache($cachekey,$rt);
-         }
-
+            //设置缓存
+            $this->_writeToCache($cachekey,$rt);
+        }
 
         return $rt;
 
@@ -1019,21 +658,23 @@ final class XlOldModelFactory extends XlMvcBase {
      * 获取多行
      */
 
-     public function getRows($columns="*",$condition,$debug=null){
+    public function getRows($columns="*",$condition,$debug=null){
 
         //检索数据表,避免重新获取错误，最大智能尝试一次
 
         $condition=$this->_parseConditionArray($condition);
+        $tablename=$this->connectDbHostAndGetTable($condition);
         $iscreatetable=false;
-        $tablename=$this->_getTable($condition);
+
         $cachekey=null;
 
         if($debug==null){
-             $rt=$this->_readFromCache(self::CACHE_TYPE_GETROWS,$tablename,$columns,$condition,$cachekey);
-             if($rt!=null){
-                 return $rt;
-             }
+            $rt=$this->_readFromCache(self::CACHE_TYPE_GETROWS,$tablename,$columns,$condition,$cachekey);
+            if($rt!=null){
+                return $rt;
+            }
         }
+
         $rt=$this->_readdb->getRows($tablename,$columns,$condition,$debug,function ($errid) use(&$iscreatetable){
 
             //异常捕获,表不存在，则检测是否创建
@@ -1047,16 +688,16 @@ final class XlOldModelFactory extends XlMvcBase {
             return $this->getRows($columns,$condition,$debug); //重新获取
         }
 
-         if($cachekey){
-             //设置缓存
-             $this->_writeToCache($cachekey,$rt);
-         }
+        if($cachekey){
+            //设置缓存
+            $this->_writeToCache($cachekey,$rt);
+        }
 
         return $rt;
 
     }
 
-     public function createId($hashkey=null){
+    public function createId($hashkey=null){
 
         //创建自动创建id
         if(method_exists($this->_model,"id")){
@@ -1119,7 +760,7 @@ final class XlOldModelFactory extends XlMvcBase {
      * 插入数据表
      */
 
-     public function insert(array $columns,$debug=null){
+    public function insert(array $columns,$debugorcleancache=null){
 
         $this->_lastid=null;
 
@@ -1171,24 +812,29 @@ final class XlOldModelFactory extends XlMvcBase {
 
         }
         $iscreatetable=false;
+        $tablename=$this->connectDbHostAndGetTable($columns);
 
-        $rt=$this->_writedb->insert($this->_getTable($columns),$columns,$debug,function ($errid) use(&$iscreatetable){
+        $rt=$this->_writedb->insert($tablename,$columns,$debugorcleancache,function ($errid) use(&$iscreatetable){
 
             //异常捕获,表不存在，则检测是否创建
             $iscreatetable=$this->autoRepairSqlException($errid);
-
             return $iscreatetable;
 
         },$this->_openslowlog?[$this,"aopRecordSqlSlowLogFunc"]:null);
 
         if($iscreatetable){
-            return $this->insert($columns,$debug); //重新获取
+            return $this->insert($columns,$debugorcleancache); //重新获取
         }
 
         if($rt){
             if($id=$columns[$this->_primarykeys[0]]){
                 $this->_lastid=$id;
             }
+        }
+
+        //删除缓存
+        if($debugorcleancache==="cleancache"){
+            $this->cleanCache($tablename);
         }
 
         $this->_readdb=$this->_writedb; //防止读取延迟
@@ -1215,24 +861,18 @@ final class XlOldModelFactory extends XlMvcBase {
     public function setColumn(array $columns,$condition,$debugorcleancache=null){
 
         $iscreatetable=false;
-
         if($this->_sharding){
-
             //分片的情况下，不能改变哈希值
             unset($columns[$this->_hashfield]);
         }
-
         $condition=$this->_parseConditionArray($condition);
-
-        $tablename=$this->_getTable($condition);
+        $tablename=$this->connectDbHostAndGetTable($condition);
 
         $rt=$this->_writedb->setColumn($tablename,$columns,$condition,$debugorcleancache,function($errid) use(&$iscreatetable){
 
             //异常捕获,表不存在，则检测是否创建
             $iscreatetable=$this->autoRepairSqlException($errid);
-
             return $iscreatetable;
-
         },$this->_openslowlog?[$this,"aopRecordSqlSlowLogFunc"]:null);
 
         if($iscreatetable){
@@ -1257,14 +897,15 @@ final class XlOldModelFactory extends XlMvcBase {
      * 删除数据表
      */
 
-     public function delete($condition,$debugorcleancache=null){
+    public function delete($condition,$debugorcleancache=null){
 
 
         $condition=$this->_parseConditionArray($condition);
 
+        $tablename=$this->connectDbHostAndGetTable($condition);
+
         $iscreatetable=false;
 
-        $tablename=$this->_getTable($condition);
         $rt=$this->_writedb->delete($tablename,$condition,$debugorcleancache,function($errid) use(&$iscreatetable){
 
             //异常捕获,表不存在，则检测是否创建
@@ -1282,12 +923,12 @@ final class XlOldModelFactory extends XlMvcBase {
             return true;
         }
 
-         //删除缓存
-         if($debugorcleancache==="cleancache"){
-             $this->cleanCache($tablename);
-         }
+        //删除缓存
+        if($debugorcleancache==="cleancache"){
+            $this->cleanCache($tablename);
+        }
 
-         if($rt){
+        if($rt){
             $this->_readdb=$this->_writedb; //方式读取延迟
         }
 
@@ -1304,7 +945,7 @@ final class XlOldModelFactory extends XlMvcBase {
      * 多行插入
      */
 
-     public function inserts($columns,array $values,$debugorcleancache=null){
+    public function inserts($columns,array $values,$debugorcleancache=null){
 
         if($this->_sharding){
             //分表情况，则循环遍历插入
@@ -1351,21 +992,27 @@ final class XlOldModelFactory extends XlMvcBase {
             }
 
         }
+
         $iscreatetable=false;
-        $tablename=$this->_table();
+
+        $tablename=$this->connectDbHostAndGetTable();
+
         $rt=$this->_writedb->inserts($tablename,$columns,$values,$debugorcleancache,function ($errid) use(&$iscreatetable){
 
             $iscreatetable=$this->autoRepairSqlException($errid);
+
             return $iscreatetable;
 
         },$this->_openslowlog?[$this,"aopRecordSqlSlowLogFunc"]:null);
+
         if($iscreatetable){
             return $this->inserts($columns,$values,$debugorcleancache); //重新获取
         }
-         //删除缓存
-         if($debugorcleancache==="cleancache"){
-             $this->cleanCache($tablename);
-         }
+
+        //删除缓存
+        if($debugorcleancache==="cleancache"){
+            $this->cleanCache($tablename);
+        }
 
         $this->_readdb=$this->_writedb;
 
@@ -1382,25 +1029,24 @@ final class XlOldModelFactory extends XlMvcBase {
      * 获取检索的行数
      */
 
-     public function getRowNum($condition,$isgroup=false,$debug=null){
+    public function getRowNum($condition,$isgroup=false,$debug=null){
 
         $condition=$this->_parseConditionArray($condition);
         $iscreatetable=false;
-        $tablename=$this->_getTable($condition);
+        $tablename=$this->connectDbHostAndGetTable($condition);
 
-         $cachekey=null;
+        $cachekey=null;
 
-         if($debug==null){
-             $rt=$this->_readFromCache(self::CACHE_TYPE_GETROWNUM,$tablename,intval($isgroup),$condition,$cachekey);
+        if($debug==null){
+            $rt=$this->_readFromCache(self::CACHE_TYPE_GETROWNUM,$tablename,intval($isgroup),$condition,$cachekey);
 
-             if($rt!=null){
-                 return $rt;
-             }
+            if($rt!=null){
+                return $rt;
+            }
 
-         }
+        }
 
         $rt=$this->_readdb->getRowNum($tablename,$condition,$isgroup,$debug,function($errid) use (&$iscreatetable){
-
 
             $iscreatetable=$this->autoRepairSqlException($errid);
 
@@ -1413,8 +1059,8 @@ final class XlOldModelFactory extends XlMvcBase {
         }
 
         if($cachekey){
-             //设置缓存
-             $this->_writeToCache($cachekey,$rt);
+            //设置缓存
+            $this->_writeToCache($cachekey,$rt);
         }
 
         return $rt;
@@ -1429,27 +1075,22 @@ final class XlOldModelFactory extends XlMvcBase {
      * @throws XlException
      * 计算某一列的之和
      */
-
-     public function sumRow($column,$condition,$debug=null){
-
+    public function sumRow($column,$condition,$debug=null){
 
         $condition=$this->_parseConditionArray($condition);
         $iscreatetable=false;
-
-        $rt=$this->_readdb->sumRow($this->_getTable($condition),$column,$condition,$debug,function($errid) use (&$iscreatetable){
+        $tablename=$this->connectDbHostAndGetTable($condition);
+        $rt=$this->_readdb->sumRow($tablename,$column,$condition,$debug,function($errid) use (&$iscreatetable){
 
             $iscreatetable=$this->autoRepairSqlException($errid);
 
             return $iscreatetable;
 
         });
-
         if($iscreatetable){
             return $this->sumRow($column,$condition,$debug); //重新获取
         }
-
         return $rt;
-
 
     }
 
@@ -1457,7 +1098,7 @@ final class XlOldModelFactory extends XlMvcBase {
      * @return 获取当前表名，不带前缀，非分表表名
      */
 
-     public function getTableName(){
+    public function getTableName(){
 
         return $this->_tablename;
 
@@ -1470,9 +1111,9 @@ final class XlOldModelFactory extends XlMvcBase {
         }else{
             $tablename=$this->_tablename;
         }
-
         if($ishasdb){
-            return "`".$this->_database."`.`".$this->_tablepre.$tablename."`";
+            $user=(isset($this->_dbconfig['schemaname'])&&$this->_dbconfig['schemaname'])?$this->_dbconfig['schemaname']:"dbo";
+            return $this->_database.".".$user.".".$this->_tablepre.$tablename;
         }else{
             return $this->_tablepre.$tablename;
         }
@@ -1575,10 +1216,10 @@ final class XlOldModelFactory extends XlMvcBase {
             if($this->_primarykeys&&is_array($this->_primarykeys)){
                 $pkeystr=[];
                 foreach ($this->_primarykeys as $pkey){
-                     if($needfileds[$pkey]){
-                         $pkeystr[]=" $pkey='".$needfileds[$pkey]['value']."' ";
-                         unset($needfileds[$pkey]);
-                     }
+                    if($needfileds[$pkey]){
+                        $pkeystr[]=" $pkey='".$needfileds[$pkey]['value']."' ";
+                        unset($needfileds[$pkey]);
+                    }
                 }
                 if($pkeystr){
                     if(count($pkeystr)==1){
@@ -1671,7 +1312,7 @@ final class XlOldModelFactory extends XlMvcBase {
 
         //封装搜索结果集
         /*
-         namespace="命名空间，保持唯一",params，搜索键值对,keywords,关键字列表，others(比如between,or)，orders,排序列表，page=>1，页，num=>每页数量，
+         保持唯一",params，搜索键值对,keywords,关键字列表，others(比如between,or)，orders,排序列表，page=>1，页，num=>每页数量，
          needallcount=>true,是否计算个数
         */
         $params=$pm['params']; //键值对
@@ -1814,50 +1455,6 @@ final class XlOldModelFactory extends XlMvcBase {
         return $this->_writedb->getQueryResult($sql);
     }
 
-    /**
-     * @param $tables
-     * @param $columns
-     * @param $conditions
-     * @param string $debug
-     * @return mixed
-     * 系统中不建议使用，不支持分表
-     */
-
-    public function unionAll($tables,$columns,$conditions,$debug=''){
-
-        if(!is_array($tables)){
-            $tables=explode(',',$tables);
-        }
-        foreach($tables as &$table){
-            $table=$this->_table($table);
-        }
-        return $this->_readdb->unionAll($tables,$columns,$conditions,$debug);
-    }
-
-    public function setColumnEx($table,$columns,$condition,$debug=null){
-        return $this->_writedb->setColumn($this->_table($table),$columns,$condition,$debug);
-    }
-    public function getOneEx($table,$columns,$condition,$debug=null){
-        return $this->_readdb->getOne($this->_table($table),$columns,$condition,$debug);
-    }
-    public function getRowsEx($table,$columns,$condition,$debug=null){
-
-        return $this->_readdb->getRows($this->_table($table),$columns,$condition,$debug);
-    }
-    public function deleteEx($table,$condition,$debug=null){
-
-        return $this->_writedb->delete($this->_table($table),$condition,$debug);
-    }
-    public function insertsEx($table,$columns,$values,$debug=null){
-        return $this->_writedb->Inserts($this->_table($table),$columns,$values,$debug);
-    }
-    public function getRowNumEx($table,$condition,$isgroup=false,$debug=''){
-        return $this->_readdb->getRowNum($this->_table($table),$condition,$isgroup,$debug);
-    }
-    public function sumRowEx($table,$column,$condition,$debug=null){
-        return $this->_readdb->sumRow($this->_table($table),$column,$condition,$debug);
-    }
-
     public function getPrimary() {
         return $this->_writedb->getPrimary($this->getAllTableName(false));
     }
@@ -1867,6 +1464,9 @@ final class XlOldModelFactory extends XlMvcBase {
             $table_name = $this->getAllTableName(false);
         } else {
             $table_name = $this->_tablepre.$table_name;
+        }
+        if(!$this->_readdb){
+            $this->connectDbHostAndGetTable();
         }
         return $this->_readdb->getFields($table_name);
     }
@@ -1891,7 +1491,7 @@ final class XlOldModelFactory extends XlMvcBase {
 
     private function _notSizechartypes(){
 
-        return array('text','tinytext','medinumtext','longtext','date','datetime','json');
+        return array('text','tinytext','medinumtext','longtext','date','datetime','json','int','bigint','float','double');
     }
 
     /**
@@ -1899,27 +1499,22 @@ final class XlOldModelFactory extends XlMvcBase {
      * @param $sqlstrtpl
      * 从文件中自动读取sql语句执行
      */
-    public function execSqlFromFile($tablename='',$path){
+    public function execSqlFromFile($path){
 
         if(!file_exists($path)){
             return $this->ErrorInf("文件不存在");
         }
-
         $sqlstr=file_get_contents($path);
         if(empty($sqlstr)){
             return $this->ErrorInf("文件内容不存在");
         }
         $sqlstr=trim($sqlstr);
-
-        if(!$tablename){
-            $tablename=$this->_tablename;
-            $this->getOne("*","where 1"); //执行语句自动创表
-        }
+        $tablename=$this->_tablename;
+        $this->getOne("*","where 1=1 "); //执行语句自动创表
 
         $count=$this->execSqlTplContent($tablename,$sqlstr);
 
         return $this->SuccInf("执行成功".$count."条sql语句");
-
 
     }
 
@@ -2013,14 +1608,6 @@ final class XlOldModelFactory extends XlMvcBase {
                 $sqlline.=" default null ";
             }
 
-        }
-        if(!isset($sn['comment'])){
-            if($sn['name']){
-                $sn['comment']=$sn['name'];
-            }
-        }
-        if($sn['comment']){
-            $sqlline.=" COMMENT '{$sn['comment']}' ";
         }
 
         return $sqlline;
@@ -2180,7 +1767,7 @@ final class XlOldModelFactory extends XlMvcBase {
         if($condition){
             if(stripos(trim($c),'and')===0){
                 if(strtolower(trim($c))==="and"){
-                    $c=" and 1 ";
+                    $c=" and 1=1 ";
                 }
                 if(stripos(trim($condition),'where')===0){
                     $condition.=" ".$c." ";
@@ -2208,7 +1795,7 @@ final class XlOldModelFactory extends XlMvcBase {
             }else if($c){
                 $condition="where ".$c." ";
             }else{
-                $condition="where 1 ";
+                $condition="where 1=1 ";
             }
         }
         return $condition;
@@ -2640,6 +2227,10 @@ final class XlOldModelFactory extends XlMvcBase {
 
         $db=$this->_writedb?:$this->_readdb;
 
+        if(!$db){
+            $this->connectDbHostAndGetTable(); //连接数据库
+        }
+
         $db->beginTransaction();
 
     }
@@ -2652,6 +2243,10 @@ final class XlOldModelFactory extends XlMvcBase {
 
         $db=$this->_writedb?:$this->_readdb;
 
+        if(!$db){
+            $this->connectDbHostAndGetTable(); //连接数据库
+        }
+
         $db->commit();
 
     }
@@ -2663,6 +2258,10 @@ final class XlOldModelFactory extends XlMvcBase {
         }
 
         $db=$this->_writedb?:$this->_readdb;
+
+        if(!$db){
+            $this->connectDbHostAndGetTable(); //连接数据库
+        }
 
         $db->rollBack();
 
@@ -2681,7 +2280,6 @@ final class XlOldModelFactory extends XlMvcBase {
         }
 
     }
-
     /**
      * 静态方法区域
      */
@@ -2816,5 +2414,7 @@ final class XlOldModelFactory extends XlMvcBase {
 
         return true; //恒等于判断
     }
+
+
 
 }

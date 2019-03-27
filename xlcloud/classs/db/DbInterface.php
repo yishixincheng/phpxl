@@ -28,35 +28,35 @@ Interface DbInterface{
      * 功能：获取一行
      */
 
-    public function getOne($tablename,$columns="*",$condition,$debug=null,$aop=null);
+    public function getOne($table,$columns="*",$condition,$debug=null,$hook=null,$aop=null);
 
     /**
      * 获取多行
      */
-    public function getRows($tablename,$columns="*",$condition,$debug=null,$aop=null);
+    public function getRows($table,$columns="*",$condition,$debug=null,$hook=null,$aop=null);
 
     /**
      * 设置列字段
      */
 
-    public function setColumn($tablename,array $columns,$condition,$debug=null,$aop=null);
+    public function setColumn($table,array $columns,$condition,$debug=null,$hook=null,$aop=null);
 
     /**
      * 插入
      */
 
-    public function insert($tablename,array $columns,$debug=null,$aop=null);
+    public function insert($table,array $columns,$debug=null,$hook=null,$aop=null);
 
     /**
      * 多行插入
      */
-    public function inserts($tablename,array $columns,array $values,$debug=null,$aop=null);
+    public function inserts($table,array $columns,array $values,$debug=null,$hook=null,$aop=null);
 
 
     /**
      * 删除
      */
-    public function delete($tablename,$condition,$debug=null,$aop=null);
+    public function delete($table,$condition,$debug=null,$hook=null,$aop=null);
 
 
 
@@ -64,13 +64,13 @@ Interface DbInterface{
      * unoin查询
      */
 
-    public function unionAll($tables,$columns,$conditions,$debug=null);
+    public function unionAll($tables,$columns,$conditions,$debug=null,$hook=null);
 
     /**
      * 个数
      */
 
-    public function getRowNum($tablename,$condition,$isgroup=false,$debug=null,$aop=null);
+    public function getRowNum($table,$condition,$isgroup=false,$debug=null,$hook=null);
 
 
     /**

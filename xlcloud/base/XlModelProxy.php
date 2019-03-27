@@ -49,16 +49,33 @@ final class XlModelProxy
         include_once($path);
         $model = new $classname; //实例化Model
         if (!$model) {
-            throw new XlException($classname . " is not defined");
+            throw new XlException($classname . " is not defined!");
         }
 
-        if($model->database&&empty($model->oldversion)){
-            return $this->factory->bind("properties",['_Isplugin'=>$this->_Isplugin,'_Ns'=>$this->_Ns])->bind("construct_args",[$this->_modelname,$this->_config,$model,$modelname])->getInstance("xl\\base\\XlModelFactory");//构造基类
-        }else{
-            return $this->factory->bind("properties",['_Isplugin'=>$this->_Isplugin,'_Ns'=>$this->_Ns])->bind("construct_args",[$this->_modelname,$this->_config,$model,$modelname])->getInstance("xl\\base\\XlOldModelFactory");//构造基类
+        //路由驱动
+        $dbhostconf=sysclass("globalconf")->getDbHostConf($model->database); //
+        if(!$dbhostconf){
+            throw new XlException("database host no found!");
         }
+
+        $driver=$dbhostconf['masterhost']['driver'];
+
+
+        if($driver=="sqlsrv"){
+
+            return $this->factory->bind("properties",['_Isplugin'=>$this->_Isplugin,'_Ns'=>$this->_Ns])->bind("construct_args",[$this->_modelname,$this->_config,$model,$modelname,$dbhostconf])->getInstance("xl\\base\\db\\XlSqlsrvModelFactory");
+
+        }else{
+
+            return $this->factory->bind("properties",['_Isplugin'=>$this->_Isplugin,'_Ns'=>$this->_Ns])->bind("construct_args",[$this->_modelname,$this->_config,$model,$modelname,$dbhostconf])->getInstance("xl\\base\\db\\XlMysqlModelFactory");
+
+        }
+
+
 
     }
+
+
 
     /**
      * 注入工厂实例

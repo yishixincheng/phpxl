@@ -1,12 +1,8 @@
 <?php
 
 namespace xl\classs;
-
 use xl\base\XlClassBase;
-use xl\classs\db\Dbtrait;
-use xl\classs\db\MysqliClass;
-use xl\classs\db\PdoClass;
-
+use xl\classs\db\{Dbtrait,MysqliClass,PdoClass,SqlsrvPdoClass};
 
 class DbfactoryClass extends XlClassBase{
 
@@ -61,16 +57,25 @@ class DbfactoryClass extends XlClassBase{
     }
     private function _connect() {
         $object = null;
-        switch($this->db_config['type']) {
-            case 'pdo':
-                $object=new PdoClass();
-                break;
-            case 'mysqli' :
-                $object=new MysqliClass();
-                break;
-            default :
-                $object=new PdoClass();
+
+        if($this->db_config['type']=="mysqli"){
+            $object=new MysqliClass();
+        }else{
+            if(!isset($this->db_config['driver'])){
+                $this->db_config['driver']="mysql";
+            }
+            switch ($this->db_config['driver']){
+                case "mysql":
+                    $object=new PdoClass();
+                    break;
+                case "sqlsrv":
+                    $object=new SqlsrvPdoClass();
+                    break;
+                default:
+                    $object=new PdoClass();
+            }
         }
+
         $object->open($this->db_config); //每个数据库创建独立对象
 
         return $object;

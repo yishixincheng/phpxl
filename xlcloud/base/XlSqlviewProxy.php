@@ -57,11 +57,20 @@ final class XlSqlviewProxy
             throw new XlException($classname . " is not defined");
         }
 
-        if($model->database&&!$model->oldversion){
-            return $this->factory->bind("properties",['_Isplugin'=>$this->_Isplugin,'_Ns'=>$this->_Ns])->bind("construct_args",[$this->_modelname,$this->_config,$this->_modelsconfig,$model,$modelname])->getInstance("xl\\base\\XlSqlviewFactory");//构造基类
-        }else{
-            return $this->factory->bind("properties",['_Isplugin'=>$this->_Isplugin,'_Ns'=>$this->_Ns])->bind("construct_args",[$this->_modelname,$this->_config,$this->_modelsconfig,$model,$modelname])->getInstance("xl\\base\\XlOldSqlviewFactory");//构造基类
+        //路由驱动
+        $dbhostconf=sysclass("globalconf")->getDbHostConf($model->database); //
+        if(!$dbhostconf){
+            throw new XlException("database host no found!");
         }
+
+        $driver=$dbhostconf['masterhost']['driver'];
+
+        if($driver=="sqlsrv"){
+            throw new XlException("sqlsrv 不提供视图功能");
+        }
+
+        return $this->factory->bind("properties",['_Isplugin'=>$this->_Isplugin,'_Ns'=>$this->_Ns])->bind("construct_args",[$this->_modelname,$this->_config,$this->_modelsconfig,$model,$modelname,$dbhostconf])->getInstance("xl\\base\\db\\XlMysqlViewFactory");//构造基类
+
 
     }
 

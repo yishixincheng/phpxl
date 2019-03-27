@@ -1,19 +1,14 @@
 <?php
 
-namespace xl\base;
+namespace xl\base\db;
+use xl\base\XlException;
+use xl\base\XlMvcBase;
 
-/**
- * Class XlCloudModelFactory
- * @package xl\base
- * 不能继承，云端Model工厂类，多机模式
- */
-
-final class XlModelFactory extends XlMvcBase {
+final class XlMysqlModelFactory extends XlMvcBase {
 
     const  CACHE_TYPE_GETONE=1;
     const  CACHE_TYPE_GETROWS=2;
     const  CACHE_TYPE_GETROWNUM=4;
-
     private $_model_path=MODEL_PATH;
 
     //数据库配置
@@ -36,6 +31,7 @@ final class XlModelFactory extends XlMvcBase {
     private $_writedb=null;   //主数据库实例
     private $_readdb=null;
     private $_selfmotionconfiguration=false; //是否自动配置
+    private $_dbhostconf=null;
 
 
     /**
@@ -61,21 +57,18 @@ final class XlModelFactory extends XlMvcBase {
     private $_slowlogfile=null; //日志下面的目录
 
 
-    public function __construct($modelname,$config=null,$model=null,$model_name=null) {
 
+    public function __construct($modelname,$config=null,$model,$model_name,$dbhostconf)
+    {
 
         if($this->_Isplugin){
             $this->_model_path=PLUGIN_PATH.$this->_Ns.D_S."model".D_S;
         }
-
-
         /**
          * config置入，可以改变Model里默认设置的配置信息，说明如下
          *
          * 1.数组 ['database'=>'','tablename'=>'',workid=1],dataname如果是/开头，绝对数据库名，否则是配置文件的数据库+"_database"
          *           tablename如果是/开头，代表是绝对表名（不包括前缀），如果是不加，则是模型里设置的表名+"_tablename"
-         *
-         *
          * 2.字符串，@值，则调用model模型里，config(值)进行获取配置信息
          *
          * 3.字符串，/开头，绝对表名。其他则是相对（model）的表名，即，表名+"_tablename"
@@ -86,42 +79,13 @@ final class XlModelFactory extends XlMvcBase {
          */
         parent::__construct();
 
-        $this->_model=$model;
+        $this->_model=$model; //必须存在
+        $this->_dbhostconf=$dbhostconf;
+        $this->_dbconfig=$this->_dbhostconf['masterhost'];
+
         //根据modelname生成model具体实例，如user.User,或者user,img(表名找到对应的model类)
         $this->parseModelName($modelname,$config,$model_name);
 
-    }
-
-    /**
-     * 重新获取对象，检测配置文件有没有改变
-     */
-    public function __invoke(){
-
-        if(!$this->_selfmotionconfiguration){
-            return;
-        }
-        $config=null;
-        if(method_exists($this->_model,"config")){
-            $this->_selfmotionconfiguration=true;
-            $config=$this->_model->config(null);
-            if(!$config){
-                return;
-            }
-        }
-        if($tablename=$config['tablename']){
-            if(strpos($tablename,"/")===0){
-                $this->_tablename=substr($tablename,1);
-            }else{
-                $this->_tablename=$this->_logictablename."_".$tablename;
-            }
-        }
-        if($config['database']){
-            if(strpos($config['database'],"/")===0){
-                $this->_database=$config['database'];
-            }else{
-                $this->_database=$this->_logicdatabase."_".$config['database'];
-            }
-        }
 
     }
 
@@ -130,37 +94,11 @@ final class XlModelFactory extends XlMvcBase {
      * @throws XlException
      * 解析绑定的Model
      */
-
     public function parseModelName($modelname,$config=null,$model_name=null){
 
         //只支持2层目录
-        $this->_dbconfig=config("database")?:[];
         $this->_tablepre=$this->_dbconfig['tablepre']?:''; //表前缀
         $this->_engine=$this->_dbconfig['engine']??"InnoDB";
-        if($this->_model==null){
-            if(($pos=strrpos($modelname,'.'))){
-                $folder=substr($modelname,0,$pos);
-                $folder=str_replace(".",D_S,$folder);
-                $modelname=substr($modelname,$pos+1);
-                $classname=ucfirst($modelname).'Model';
-                $path=$this->_model_path.$folder.D_S.$classname.'.php'; //文件路径
-                if(!is_file($path)){
-                    $path=false;
-                }
-            }else{
-                $classname=ucfirst($modelname).'Model';
-                $path=findfile($this->_model_path,$classname.'.php');
-            }
-            if(!$path){
-                throw new XlException($classname." file is not exist!");
-            }
-            //包含文件
-            include_once($path);
-            $this->_model = new $classname; //实例化Model
-            if (!$this->_model) {
-                throw new XlException($classname . " is not defined");
-            }
-        }
         try {
             if (empty($this->_model->alias)) {
                 $this->_tablename = $this->_logictablename = strtolower($model_name?:$modelname); //逻辑表名
@@ -169,6 +107,12 @@ final class XlModelFactory extends XlMvcBase {
             }
             if ($this->_model->database) {
                 $this->_database =$this->_logicdatabase = $this->_model->database; //逻辑库名
+            }else{
+                $this->_database = $this->_dbhostconf['default']?$this->_dbhostconf['database']:null;
+
+                if(empty($this->_database)){
+                    throw new XlException("默认数据库没有设置！");
+                }
             }
             $this->_isneedcreate=$this->_model->isneedcreate??$this->_isneedcreate;
             $this->_isautorepairstruct=$this->_model->isautorepairstruct??$this->_isautorepairstruct;
@@ -247,18 +191,12 @@ final class XlModelFactory extends XlMvcBase {
                 }
 
             }
-
             //解析配置参数
             $this->_parseConfig($config);
-
         }catch (\Exception $e){
-
             throw new XlException($e->getMessage()); //抛出异常
-
         }
-
     }
-
     private function _parseConfig($config=null){
 
         $configfunc_param=null;
@@ -280,9 +218,7 @@ final class XlModelFactory extends XlMvcBase {
         if($configfunc_param&&!$ishaveconfigfunc){
             throw new XlException(get_class($this->_model)." method config is not defined");
         }
-
         $config=$config?:[];
-
         if($ishaveconfigfunc){
             $autoconfig=$this->_model->config($configfunc_param);
             if($configfunc_param==null){
@@ -291,14 +227,11 @@ final class XlModelFactory extends XlMvcBase {
             if(!is_array($autoconfig)){
                 throw new XlException(get_class($this->_model)." method config returntype is must array"); //返回值类型必须是数组
             }
-
             $config=array_merge($config,$autoconfig); //函数调用覆盖
         }
-
         if(empty($config)){
             return null;
         }
-
         if($tablename=$config['tablename']){
             if(strpos($tablename,"/")===0){
                 $this->_tablename=substr($tablename,1);
@@ -313,13 +246,10 @@ final class XlModelFactory extends XlMvcBase {
             }else{
                 $this->_database=$this->_logicdatabase."_".$config['database'];
             }
-
         }
-
         $this->_workid=$config['workid']?:$this->_workid;//不同的主机对应workid不一样
 
     }
-
     /**
      * @return null
      * 获得绑定的model对象
@@ -434,7 +364,12 @@ final class XlModelFactory extends XlMvcBase {
         }else{
             $sharding=null;
         }
-        $dbconf=sysclass("globalconf")->getDbHostConf($this->_database,$this->_tablename,$sharding);
+        if($this->_dbhostconf['default']){
+            //无分布式
+            $dbconf=$this->_dbhostconf;
+        }else{
+            $dbconf=sysclass("globalconf")->getDbHostConf($this->_database,$this->_tablename,$sharding);
+        }
         if(!$dbconf){
             throw new XlException("抱歉，未找到数据库".$this->_database." 数据表".$this->_tablename."对应的主机");
         }
@@ -890,21 +825,21 @@ final class XlModelFactory extends XlMvcBase {
      */
     public function aopRecordSqlSlowLogFunc($point,$beforeparam){
 
-            if($point=="before"){
-                $starttime=microtime(true); //开始时间
-                return ['starttime'=>$starttime];
-            }else if($point=="after"){
+        if($point=="before"){
+            $starttime=microtime(true); //开始时间
+            return ['starttime'=>$starttime];
+        }else if($point=="after"){
 
-                $endtime=microtime(true);
-                $starttime=$beforeparam['starttime'];
-                $difftime=$endtime-$starttime;
+            $endtime=microtime(true);
+            $starttime=$beforeparam['starttime'];
+            $difftime=$endtime-$starttime;
 
-                if($difftime>=$this->_longquerytime){
-                    //记录到慢日志中
-                    logger($this->_slowlogfile?:"mysqlslowlog_".date("Ymd"))->write("时间：".$difftime." 语句：".$beforeparam['sqlstr'].PHP_EOL,true);
-                }
+            if($difftime>=$this->_longquerytime){
+                //记录到慢日志中
+                logger($this->_slowlogfile?:"mysqlslowlog_".date("Ymd"))->write("时间：".$difftime." 语句：".$beforeparam['sqlstr'].PHP_EOL,true);
             }
-            return null;
+        }
+        return null;
 
 
     }

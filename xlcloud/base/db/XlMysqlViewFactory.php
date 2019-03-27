@@ -1,18 +1,16 @@
 <?php
 
-namespace xl\base;
+namespace xl\base\db;
+use xl\base\XlException;
+use xl\base\XlMvcBase;
 
-/**
- * Class XlSqlviewFactory
- * @package xl\base
- * 不能继承，mysql视图接口
- */
+final class XlMysqlViewFactory extends XlMvcBase {
 
-final class XlOldSqlviewFactory extends XlMvcBase
-{
+    public static $db_checktableexist=[];
 
     private $_dbconfig=null;
     private $_tablepre=null;
+    private $_dbhostconf=null;
 
     private $_model_path=MODEL_PATH;
 
@@ -28,9 +26,13 @@ final class XlOldSqlviewFactory extends XlMvcBase
     private $_readdb=null;
     private $_modelsconfig=null;
     private $_isdebug=false;
-    private $_connectconfig=null;
 
-    public function __construct($modelname,$config=null,$modelsconfig=null,$model=null,$model_name=null){
+    public function __construct($modelname,$config=null,$modelsconfig=null,$model,$model_name='',$dbhostconf){
+
+        if($this->_Isplugin){
+            $this->_model_path=PLUGIN_PATH.$this->_Ns.D_S."model".D_S;
+        }
+
         /**
          * config置入，可以改变Model里默认设置的配置信息，说明如下
          * 1.数组 ['database'=>'','tablename'=>'','master'=>'',workid=1,'slaves'=>[]],dataname如果是/开头，绝对数据库名，否则是配置文件的数据库+"_database"
@@ -39,16 +41,48 @@ final class XlOldSqlviewFactory extends XlMvcBase
          * 3.字符串，/开头，绝对表名。其他则是相对（model）的表名，即，表名+"_tablename"
          * (数据库，表名设置必须是20字一下，数字字母下划线）超过则报错
          */
-        if($this->_Isplugin){
-            $this->_model_path=PLUGIN_PATH.$this->_Ns.D_S."model".D_S;
-        }
         parent::__construct();
         $this->_model=$model;
         $this->_modelsconfig=$modelsconfig?:null;
+        $this->_dbhostconf=$dbhostconf;
+        $this->_dbconfig=$this->_dbhostconf['masterhost'];
         $this->parseModelName($modelname,$config,$model_name);
-        $this->parseSelectDb(); //选择数据表
+        $this->connectDbHost();
 
     }
+
+    public function connectDbHost(){
+
+        if($this->_dbhostconf['default']){
+            //无分布式
+            $dbconf=$this->_dbhostconf;
+        }else{
+            $dbconf=sysclass("globalconf")->getDbHostConf($this->_database,$this->_tablename,null);
+        }
+        if(!$dbconf){
+            throw new XlException("抱歉，未找到数据库".$this->_database." 数据表".$this->_tablename."对应的主机");
+        }
+        $masterhost=$dbconf['masterhost']?:[];
+        $slavehost=$dbconf['slavehost']?:[];
+        $dbf=sysclass("dbfactory",0);
+        $writeconfig=$this->_dbconfig;
+        $readconfig=$this->_dbconfig;
+        $writeconfig['hostname']=$masterhost['host']?:'localhost';
+        $writeconfig['port']=$masterhost['port']?:'3306';
+        $writeconfig['username']=$masterhost['username'];
+        $writeconfig['password']=$masterhost['password'];
+
+        $readconfig['hostname']=$slavehost['host']?:'localhost';
+        $readconfig['port']=$slavehost['port']?:'3306';
+        $readconfig['username']=$slavehost['username'];
+        $readconfig['password']=$slavehost['password'];
+
+        $this->_writedb = $dbf::getInstance($writeconfig)->getDbObj($this->_database);
+        $this->_readdb=$dbf::getInstance($readconfig)->getDbObj($this->_database);
+
+    }
+
+
     private function _parseConfig($config=null){
 
         if(empty($config)&&$config!==0){
@@ -72,12 +106,11 @@ final class XlOldSqlviewFactory extends XlMvcBase
                 $config['tablename']=$configstr;
             }
         }
+
         if(!$config){
             return;
         }
-        if($config['connectconfig']){
-            $this->_connectconfig=$config['connectconfig'];
-        }
+
         if($tablename=$config['tablename']){
             if(strpos($tablename,"/")===0){
                 $this->_tablename=substr($tablename,1);
@@ -85,11 +118,14 @@ final class XlOldSqlviewFactory extends XlMvcBase
                 $this->_tablename.="_".$tablename;
             }
         }
-
-        $this->_database=$config['database']??null;
-        $this->_master=$config['master']??null;
-        $this->_slaves=$config['slaves']??null;
-
+        $database=$config['database'];
+        if($database){
+            if(strpos($database,"/")===0){
+                $this->_database=substr($database,1);
+            }else{
+                $this->_database.="_".$database;
+            }
+        }
     }
 
     /**
@@ -134,6 +170,13 @@ final class XlOldSqlviewFactory extends XlMvcBase
             }
             if (!empty($this->_model->database)) {
                 $this->_database = $this->_model->database;
+            }else{
+
+                $this->_database = $this->_dbhostconf['default']?$this->_dbhostconf['database']:null;
+                if(empty($this->_database)){
+                    throw new XlException("默认数据库没有设置！");
+                }
+
             }
             if (!empty($this->_model->master)){
                 $this->_master = $this->_model->master;
@@ -146,6 +189,8 @@ final class XlOldSqlviewFactory extends XlMvcBase
             }
             if (!empty($this->_model->tablepre)){
                 $this->_tablepre=$this->_model->tablepre;
+            }else{
+                $this->_tablepre=config("database/tablepre"); //从配置文件中读取
             }
             //解析配置参数
             $this->_parseConfig($config);
@@ -155,125 +200,6 @@ final class XlOldSqlviewFactory extends XlMvcBase
             throw new XlException($e->getMessage()); //抛出异常
 
         }
-
-    }
-    public function parseSelectDb(){
-
-        //选择数据表
-        $databaseconfig=$this->_connectconfig;
-        if($databaseconfig){
-            if(!is_array($databaseconfig)){
-                $connectconfighashid=null;
-                if(is_string($databaseconfig)){
-                    if(substr($databaseconfig,0,1)=="@"){
-                        $connectconfighashid=substr($databaseconfig,1);
-                    }
-                }
-                if(method_exists($this->_model,"connectconfig")){
-                    $databaseconfig=$this->_model->connectconfig($connectconfighashid);
-                }
-            }
-            if(!is_array($databaseconfig)){
-                $databaseconfig=null;
-            }
-        }else{
-            if(method_exists($this->_model,"connectconfig")){
-                $databaseconfig=$this->_model->connectconfig(null);
-            }
-        }
-        $this->_dbconfig=$databaseconfig?:config("database");
-        if($this->_database){
-            if(strpos($this->_database,"/")===0){
-                $this->_dbconfig['database']=substr($this->_database,1);
-            }else{
-                $this->_dbconfig['database'].="_".$this->_database;
-            }
-        }
-        $pattern="/^[A-Za-z0-9_]+$/";
-        if(!preg_match($pattern,$this->_dbconfig['database'])){
-            throw new XlException("database ".$this->_dbconfig['database']." must in A-Za-z0-9_");
-        }
-        if(!preg_match($pattern,$this->_tablename)){
-            throw new XlException("tablename ".$this->_tablename." must in A-Za-z0-9_");
-        }
-
-        $this->_database=$this->_dbconfig['database'];
-        $this->_tablepre=$this->_tablepre?:$this->_dbconfig['tablepre'];
-
-        if(!$this->_master){
-            $this->_master=$this->_dbconfig['master'];
-        }
-        if(!$this->_slaves){
-            $this->_slaves=$this->_dbconfig['slaves'];
-        }
-        unset($this->_dbconfig['slaves']);
-        unset($this->_dbconfig['master']);
-
-        if(!$this->_master){
-            throw new XlException("sqlserver master is not configure");
-        }
-        $isalone=true;
-        if($this->_slaves){
-            $isalone=false;
-            $this->_slave=$this->_slaves[array_rand($this->_slaves,1)]; //随机命中
-        }
-
-        $this->_parseHostDsn($this->_master);
-
-        if($isalone){
-            $this->_slave=$this->_master;
-        }else{
-            $this->_parseHostDsn($this->_slave);
-        }
-
-        $this->switchDb(); //选择数据库
-
-    }
-    private function _parseHostDsn(&$hostdsn){
-
-        $promisekeys=['host','port','username','password'];
-        if(!is_array($hostdsn)){
-            $hostdsnArr=explode(';',$hostdsn);
-            $hostdsn=[];
-            foreach ($hostdsnArr as $hostItem){
-                $hostItemArr=explode('=',$hostItem);
-                if($hostItemArr&&count($hostItemArr)==2){
-                    $k=trim($hostItemArr[0]);
-                    $v=trim($hostItemArr[1]);
-                    if(in_array($k,$promisekeys)){
-                        $hostdsn[$k]=$v;
-                    }
-                }
-            }
-
-        }else{
-            foreach ($hostdsn as $k=>$v){
-                if(!in_array($k,$promisekeys)){
-                    unset($hostdsn[$k]);
-                }
-            }
-        }
-        if(empty($hostdsn)){
-            throw new XlException("hostdsn parse is invalid");
-        }
-    }
-
-    public function switchDb($config=null){
-
-        if($config&&is_array($config)) {
-            $this->_dbconfig = $config;
-            $this->_database=$this->_dbconfig['database'];
-            $this->_tablepre=$this->_dbconfig['tablepre'];
-        }
-        $dbf=sysclass("dbfactory",0);
-        $readconfig=$this->_dbconfig;
-
-        $readconfig['hostname']=$this->_slave['host']?:'localhost';
-        $readconfig['port']=$this->_slave['port']?:'3306';
-        $readconfig['username']=$this->_slave['username'];
-        $readconfig['password']=$this->_slave['password'];
-
-        $this->_readdb=$dbf::getInstance($readconfig)->getDbObj($this->_database);
 
     }
 
@@ -1127,7 +1053,5 @@ final class XlOldSqlviewFactory extends XlMvcBase
 
         return $val;
     }
-
-
 
 }
