@@ -1,6 +1,7 @@
 <?php
 
 namespace xl\base;
+use xl\core\XlLock;
 
 
 class XlMvcBase extends XlHookBase {
@@ -160,41 +161,20 @@ class XlMvcBase extends XlHookBase {
         return $this->SuccInf("验证通过");
 
     }
-    final public function superLock($key='',$sec=2){
+    final public function superLock($key='',$sec=2,$autoReleaseLock=false){
 
         //开启上锁机制
         $key=$key?:get_class($this);
-        $key="superlock_".$key;
-        $islock=$this->superGetMemData($key);
 
-        if(empty($islock)){
-            $this->superSetMemData($key,1);//上锁
-            return null;
-        }
-        //如果上锁则执行等待
-        $t1=microtime(true);
-        while(1){
-            $islock=$this->superGetMemData($key);
-            $t2=microtime(true);
-            if(empty($islock)){
-                $this->superSetMemData($key,1);//上锁
-                break;
-            }
-            if($t2-$t1>$sec){
-                //等待2秒后自动解锁
-                $this->superDelMemData($key);
-                break;
-            }
-            usleep(10);
-        }
+        return XlLock::lock($key,$sec,$autoReleaseLock);
+
 
     }
     final public function superUnlock($key=''){
 
         $key=$key?:get_class($this);
-        $key="superlock_".$key;
 
-        $this->superDelMemData($key); //删除上锁机制
+        XlLock::unlock($key);
 
     }
 

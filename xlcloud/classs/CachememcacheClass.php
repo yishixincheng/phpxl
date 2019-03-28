@@ -52,6 +52,12 @@ class CachememcacheClass extends XlClassBase
 
     }
 
+    public function getMemcache(){
+
+        return $this->memcache;
+
+    }
+
     public function setting($type = '')
     {
 
