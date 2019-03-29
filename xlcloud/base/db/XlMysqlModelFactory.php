@@ -845,6 +845,22 @@ final class XlMysqlModelFactory extends XlMvcBase {
     }
 
     /**
+     * @param string $columns
+     * @param $condition
+     * @param null $debug
+     */
+    public function getVal($columns="*",$condition,$debug=null){
+        $rt=$this->getOne($columns,$condition,$debug);
+        if($rt){
+            if(count($rt)==1){
+                return array_pop($rt);
+            }
+            return $rt;
+        }
+        return null;
+    }
+
+    /**
      * @return mixed
      * 检索数据表
      */

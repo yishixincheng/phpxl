@@ -446,6 +446,22 @@ final class XlMysqlViewFactory extends XlMvcBase {
 
     }
 
+    /**
+     * @param string $columns
+     * @param $condition
+     * @param null $debug
+     */
+    public function getVal($columns="*",$condition,$debug=null){
+        $rt=$this->getOne($columns,$condition,$debug);
+        if($rt){
+            if(count($rt)==1){
+                return array_pop($rt);
+            }
+            return $rt;
+        }
+        return null;
+    }
+
     public function getOne($columns="*",$condition,$debug=null){
 
         //检索数据表,避免重新获取错误，最大智能尝试一次

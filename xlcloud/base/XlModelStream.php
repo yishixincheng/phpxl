@@ -63,6 +63,17 @@ final class XlModelStream extends XlMvcBase{
     }
 
     /**
+     * 值
+     */
+    public function val(){
+
+        array_push($this->_streamlist,['method'=>"val","position"=>"after","type"=>1]);
+
+        return $this;
+
+    }
+
+    /**
      * before
      */
     public function before($func){
@@ -380,6 +391,19 @@ final class XlModelStream extends XlMvcBase{
         return $params;
 
     }
+
+    protected function val_deal($func=null,$params){
+
+        if(!$params){
+            return null;
+        }
+        if(is_array($params)&&count($params)==1){
+            return array_pop($params);
+        }
+        return $params;
+
+    }
+
     /**
      * @param $func
      * @param $params

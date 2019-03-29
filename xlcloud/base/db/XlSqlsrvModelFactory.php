@@ -613,6 +613,22 @@ final class XlSqlsrvModelFactory extends XlMvcBase {
     }
 
     /**
+     * @param string $columns
+     * @param $condition
+     * @param null $debug
+     */
+    public function getVal($columns="*",$condition,$debug=null){
+        $rt=$this->getOne($columns,$condition,$debug);
+        if($rt){
+            if(count($rt)==1){
+                return array_pop($rt);
+            }
+            return $rt;
+        }
+        return null;
+    }
+
+    /**
      * @return mixed
      * 检索数据表
      */
@@ -2176,7 +2192,7 @@ final class XlSqlsrvModelFactory extends XlMvcBase {
         }
         $tablenames=[];
         foreach ($pmmap as $tb=>$pn){
-            $model='';$sqlview='';$modelconfig=null;$_model=null;
+            $model='';$modelconfig=null;$_model=null;
             if($pn==$this){
                 $_model=$this;
             }else {
@@ -2185,8 +2201,6 @@ final class XlSqlsrvModelFactory extends XlMvcBase {
                     if (is_array($modelname)) {
                         if ($modelname['model']) {
                             $model = $modelname['mode'];
-                        } else if ($modelname['sqlview']) {
-                            $sqlview = $modelname['sqlview'];
                         }
                     } else {
                         $model = $modelname;
@@ -2201,9 +2215,6 @@ final class XlSqlsrvModelFactory extends XlMvcBase {
                     $_model=$this->Model($model,$modelconfig);
                     $_model->autoCreateTable();
 
-                }elseif($sqlview){
-                    $_model=$this->SqlView($sqlview,$modelconfig);
-                    $_model->autoCreateView();
                 }
             }
             if($_model){
@@ -2221,9 +2232,6 @@ final class XlSqlsrvModelFactory extends XlMvcBase {
 
     public function beginTransaction(){
 
-        if(strtolower($this->_engine)!="innodb"){
-            throw new XlException("数据库引擎类型不支持事务！");
-        }
 
         $db=$this->_writedb?:$this->_readdb;
 
@@ -2237,9 +2245,6 @@ final class XlSqlsrvModelFactory extends XlMvcBase {
 
     public function commit(){
 
-        if(strtolower($this->_engine)!="innodb"){
-            throw new XlException("数据库引擎类型不支持事务！");
-        }
 
         $db=$this->_writedb?:$this->_readdb;
 
@@ -2253,9 +2258,6 @@ final class XlSqlsrvModelFactory extends XlMvcBase {
 
     public function rollBack(){
 
-        if(strtolower($this->_engine)!="innodb"){
-            throw new XlException("数据库引擎类型不支持事务！");
-        }
 
         $db=$this->_writedb?:$this->_readdb;
 
