@@ -167,6 +167,8 @@ class FileLock{
         if(static::$files[$key]){
             flock(static::$files[$key],LOCK_UN);
             fclose(static::$files[$key]);
+            $filepath=static::getFilePath($key); //移除文件
+            GDelFile($filepath);
         }
     }
 

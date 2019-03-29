@@ -83,7 +83,7 @@ function Xl_Recursion_Del_Array_Value(&$parent,&$keys){
 
 
 
-function GDelFile($path){
+function GDelFile($path,$dirdelself=true){
     if(file_exists($path)){
         if(is_dir($path)){
             if(substr($path,-1,1)!=DIRECTORY_SEPARATOR){
@@ -92,10 +92,10 @@ function GDelFile($path){
             $dirs=@scandir($path);
             foreach ($dirs as $v){
                 if($v!='.'&&$v!='..'){
-                    GDelFile($path.$v);
+                    GDelFile($path.$v,true);
                 }
             }
-            @rmdir($path);
+            $dirdelself&&@rmdir($path); //是否删除自身文件夹
         }else{
             if(@chmod($path,0777)){
                 @unlink($path);
