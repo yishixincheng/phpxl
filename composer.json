@@ -1,0 +1,11 @@
+{
+   "name":"phpxl",
+   "description":"Weapp sdk of php",
+   "keywords":["php框架","xl框架","php","xl","phpxl"],
+   "license" : "MIT",
+   "homepage": "https://github.com/yishixincheng/phpxl",
+   "version": "2.0.0",
+   "require" : {
+      "php" : ">=7.0.0"
+   }
+}
