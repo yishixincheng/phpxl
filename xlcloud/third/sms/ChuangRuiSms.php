@@ -30,7 +30,7 @@ class ChuangRuiSms{
         $result = $this->curlSMS($url,$data);
         //print_r($data); //测试
 
-        if(strpos($result,"success")==0) {
+        if(stripos($result,"success")==0) {
             //提交成功
             return true;
             //逻辑代码
