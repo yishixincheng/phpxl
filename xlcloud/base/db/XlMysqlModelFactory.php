@@ -90,6 +90,38 @@ final class XlMysqlModelFactory extends XlMvcBase {
     }
 
     /**
+     * 重新获取对象，检测配置文件有没有改变
+     */
+    public function __invoke(){
+
+        if(!$this->_selfmotionconfiguration){
+            return;
+        }
+        $config=null;
+        if(method_exists($this->_model,"config")){
+            $this->_selfmotionconfiguration=true;
+            $config=$this->_model->config(null);
+            if(!$config){
+                return;
+            }
+        }
+        if($tablename=$config['tablename']){
+            if(strpos($tablename,"/")===0){
+                $this->_tablename=substr($tablename,1);
+            }else{
+                $this->_tablename=$this->_logictablename."_".$tablename;
+            }
+        }
+        if($config['database']){
+            if(strpos($config['database'],"/")===0){
+                $this->_database=$config['database'];
+            }else{
+                $this->_database=$this->_logicdatabase."_".$config['database'];
+            }
+        }
+
+    }
+    /**
      * @param $modelname
      * @throws XlException
      * 解析绑定的Model
