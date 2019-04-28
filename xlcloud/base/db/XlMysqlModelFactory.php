@@ -32,6 +32,7 @@ final class XlMysqlModelFactory extends XlMvcBase {
     private $_readdb=null;
     private $_selfmotionconfiguration=false; //是否自动配置
     private $_dbhostconf=null;
+    private $_dbevnconf=null;
 
 
     /**
@@ -232,6 +233,7 @@ final class XlMysqlModelFactory extends XlMvcBase {
     private function _parseConfig($config=null){
 
         $configfunc_param=null;
+        $dbenvfunc_param=null;
         if(is_string($config)&&$config){
             $configstr=trim($config);
             $config=[];
@@ -240,8 +242,16 @@ final class XlMysqlModelFactory extends XlMvcBase {
             }else{
                 $config['tablename']=$configstr;
             }
-        }else if(is_object($config)){
-            $config =  json_decode( json_encode($config),true);
+        }else{
+            if(isset($config['dbenvparam'])){
+                $dbenvfunc_param=$config['dbenvparam'];
+            }
+            if(isset($config['configparam'])){
+                $configfunc_param=$config['configparam'];
+            }
+        }
+        if(method_exists($this->_model,"dbevn")){
+            $this->_dbevnconf=$this->_model->dbevn($dbenvfunc_param);
         }
         $ishaveconfigfunc=method_exists($this->_model,"config");
         if(empty($config)&&!$ishaveconfigfunc){
@@ -398,7 +408,7 @@ final class XlMysqlModelFactory extends XlMvcBase {
         }
         if($this->_dbhostconf['default']){
             //无分布式
-            $dbconf=$this->_dbhostconf;
+            $dbconf=$this->_dbevnconf?:$this->_dbhostconf;
         }else{
             $dbconf=sysclass("globalconf")->getDbHostConf($this->_database,$this->_tablename,$sharding);
         }

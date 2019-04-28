@@ -11,6 +11,7 @@ final class XlMysqlViewFactory extends XlMvcBase {
     private $_dbconfig=null;
     private $_tablepre=null;
     private $_dbhostconf=null;
+    private $_dbevnconf=null;
 
     private $_model_path=MODEL_PATH;
 
@@ -22,7 +23,6 @@ final class XlMysqlViewFactory extends XlMvcBase {
 
     private $_master=null; //主数据配置信息
     private $_slaves=null; //从数据库配置信息
-    private $_slave=null;  //当前命中的从数据库
     private $_readdb=null;
     private $_modelsconfig=null;
     private $_isdebug=false;
@@ -55,7 +55,7 @@ final class XlMysqlViewFactory extends XlMvcBase {
 
         if($this->_dbhostconf['default']){
             //无分布式
-            $dbconf=$this->_dbhostconf;
+            $dbconf=$this->_dbevnconf?:$this->_dbhostconf;
         }else{
             $dbconf=sysclass("globalconf")->getDbHostConf($this->_database,$this->_tablename,null);
         }
@@ -85,32 +85,48 @@ final class XlMysqlViewFactory extends XlMvcBase {
 
     private function _parseConfig($config=null){
 
-        if(empty($config)&&$config!==0){
-            return;
-        }
-        if(is_object($config)){
-            $config =  json_decode( json_encode($config),true);
-        }
-        if(!is_array($config)){
+        $configfunc_param=null;
+        $dbenvfunc_param=null;
+        if(is_string($config)&&$config){
             $configstr=trim($config);
             $config=[];
             if(strpos($configstr,"@")===0){
-                if(!method_exists($this->_model,"config")){
-                    throw new XlException(get_class($this->_model)." method config is not defined");
-                }
-                $config=$this->_model->config(substr($configstr,1));
-                if(!is_array($config)){
-                    throw new XlException(get_class($this->_model)." method config returntype is must array"); //返回值类型必须是数组
-                }
+                $configfunc_param=substr($configstr,1);
             }else{
                 $config['tablename']=$configstr;
             }
+        }else{
+            if(isset($config['dbenvparam'])){
+                $dbenvfunc_param=$config['dbenvparam'];
+            }
+            if(isset($config['configparam'])){
+                $configfunc_param=$config['configparam'];
+            }
         }
-
-        if(!$config){
-            return;
+        if(method_exists($this->_model,"dbevn")){
+            $this->_dbevnconf=$this->_model->dbevn($dbenvfunc_param);
         }
-
+        $ishaveconfigfunc=method_exists($this->_model,"config");
+        if(empty($config)&&!$ishaveconfigfunc){
+            return null;
+        }
+        if($configfunc_param&&!$ishaveconfigfunc){
+            throw new XlException(get_class($this->_model)." method config is not defined");
+        }
+        $config=$config?:[];
+        if($ishaveconfigfunc){
+            $autoconfig=$this->_model->config($configfunc_param);
+            if($configfunc_param==null){
+                $this->_selfmotionconfiguration=true;
+            }
+            if(!is_array($autoconfig)){
+                throw new XlException(get_class($this->_model)." method config returntype is must array"); //返回值类型必须是数组
+            }
+            $config=array_merge($config,$autoconfig); //函数调用覆盖
+        }
+        if(empty($config)){
+            return null;
+        }
         if($tablename=$config['tablename']){
             if(strpos($tablename,"/")===0){
                 $this->_tablename=substr($tablename,1);
