@@ -34,7 +34,7 @@ final class XlSqlsrvModelFactory extends XlMvcBase {
     private $_readdb=null;
     private $_selfmotionconfiguration=false; //是否自动配置
     private $_dbhostconf=null;
-    private $_dbevnconf=null;
+    private $_dbenvconf=null;
 
 
     /**
@@ -202,7 +202,7 @@ final class XlSqlsrvModelFactory extends XlMvcBase {
             }
         }
         if(method_exists($this->_model,"dbenv")){
-            $this->_dbevnconf=$this->_model->dbevn($dbenvfunc_param);
+            $this->_dbenvconf=$this->_model->dbenv($dbenvfunc_param);
         }
         $ishaveconfigfunc=method_exists($this->_model,"config");
         if(empty($config)&&!$ishaveconfigfunc){
@@ -359,7 +359,7 @@ final class XlSqlsrvModelFactory extends XlMvcBase {
         }
         if($this->_dbhostconf['default']){
             //无分布式
-            $dbconf=$this->_dbevnconf?:$this->_dbhostconf;
+            $dbconf=$this->_dbenvconf?:$this->_dbhostconf;
         }else{
             $dbconf=sysclass("globalconf")->getDbHostConf($this->_database,$this->_tablename,$sharding);
         }
