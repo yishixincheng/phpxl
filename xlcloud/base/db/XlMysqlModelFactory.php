@@ -32,7 +32,6 @@ final class XlMysqlModelFactory extends XlMvcBase {
     private $_readdb=null;
     private $_selfmotionconfiguration=false; //是否自动配置
     private $_dbhostconf=null;
-    private $_dbenvconf=null;
 
 
     /**
@@ -84,9 +83,31 @@ final class XlMysqlModelFactory extends XlMvcBase {
         $this->_dbhostconf=$dbhostconf;
         $this->_dbconfig=$this->_dbhostconf['masterhost'];
 
+        $this->_hookDbEnv($config);
         //根据modelname生成model具体实例，如user.User,或者user,img(表名找到对应的model类)
-        $this->parseModelName($modelname,$config,$model_name);
+        $this->_parseModelName($modelname,$config,$model_name);
 
+    }
+
+    private function _hookDbEnv($config=null){
+
+
+        $dbenvfunc_param=null;
+        if(is_array($config)&&isset($config['dbenvparam'])){
+            $dbenvfunc_param=$config['dbenvparam'];
+        }
+
+        if(method_exists($this->_model,"dbenv")){
+            $_dbenvconf=$this->_model->dbenv($dbenvfunc_param);
+
+            if(empty($_dbenvconf)||!is_array($_dbenvconf)){
+                throw new XlException("dbenv method return val is invalid;");
+            }
+            $this->_dbhostconf=$_dbenvconf;
+            $this->_dbhostconf['default']=true;
+            $this->_dbconfig=$_dbenvconf['masterhost'];
+
+        }
 
     }
 
@@ -127,7 +148,7 @@ final class XlMysqlModelFactory extends XlMvcBase {
      * @throws XlException
      * 解析绑定的Model
      */
-    public function parseModelName($modelname,$config=null,$model_name=null){
+    private function _parseModelName($modelname,$config=null,$model_name=null){
 
         //只支持2层目录
         $this->_tablepre=$this->_dbconfig['tablepre']?:''; //表前缀
@@ -243,16 +264,11 @@ final class XlMysqlModelFactory extends XlMvcBase {
                 $config['tablename']=$configstr;
             }
         }else{
-            if(isset($config['dbenvparam'])){
-                $dbenvfunc_param=$config['dbenvparam'];
-            }
             if(isset($config['configparam'])){
                 $configfunc_param=$config['configparam'];
             }
         }
-        if(method_exists($this->_model,"dbenv")){
-            $this->_dbenvconf=$this->_model->dbenv($dbenvfunc_param);
-        }
+
         $ishaveconfigfunc=method_exists($this->_model,"config");
         if(empty($config)&&!$ishaveconfigfunc){
             return null;
@@ -408,7 +424,7 @@ final class XlMysqlModelFactory extends XlMvcBase {
         }
         if($this->_dbhostconf['default']){
             //无分布式
-            $dbconf=$this->_dbenvconf?:$this->_dbhostconf;
+            $dbconf=$this->_dbhostconf;
         }else{
             $dbconf=sysclass("globalconf")->getDbHostConf($this->_database,$this->_tablename,$sharding);
         }

@@ -84,9 +84,32 @@ final class XlSqlsrvModelFactory extends XlMvcBase {
         $this->_dbhostconf=$dbhostconf;
         $this->_dbconfig=$this->_dbhostconf['masterhost'];
 
+        $this->_hookDbEnv($config);
         //根据modelname生成model具体实例，如user.User,或者user,img(表名找到对应的model类)
-        $this->parseModelName($modelname,$config,$model_name);
+        $this->_parseModelName($modelname,$config,$model_name);
 
+
+    }
+
+    private function _hookDbEnv($config=null){
+
+
+        $dbenvfunc_param=null;
+        if(is_array($config)&&isset($config['dbenvparam'])){
+            $dbenvfunc_param=$config['dbenvparam'];
+        }
+
+        if(method_exists($this->_model,"dbenv")){
+            $_dbenvconf=$this->_model->dbenv($dbenvfunc_param);
+
+            if(empty($_dbenvconf)||!is_array($_dbenvconf)){
+                throw new XlException("dbenv method return val is invalid;");
+            }
+            $this->_dbhostconf=$_dbenvconf;
+            $this->_dbhostconf['default']=true;
+            $this->_dbconfig=$_dbenvconf['masterhost'];
+
+        }
 
     }
 
@@ -95,7 +118,7 @@ final class XlSqlsrvModelFactory extends XlMvcBase {
      * @throws XlException
      * 解析绑定的Model
      */
-    public function parseModelName($modelname,$config=null,$model_name=null){
+    private function _parseModelName($modelname,$config=null,$model_name=null){
 
         //只支持2层目录
         $this->_tablepre=$this->_dbconfig['tablepre']?:''; //表前缀
