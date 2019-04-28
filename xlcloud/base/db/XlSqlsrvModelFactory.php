@@ -201,7 +201,7 @@ final class XlSqlsrvModelFactory extends XlMvcBase {
                 $configfunc_param=$config['configparam'];
             }
         }
-        if(method_exists($this->_model,"dbevn")){
+        if(method_exists($this->_model,"dbenv")){
             $this->_dbevnconf=$this->_model->dbevn($dbenvfunc_param);
         }
         $ishaveconfigfunc=method_exists($this->_model,"config");
