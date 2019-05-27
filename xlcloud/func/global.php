@@ -422,7 +422,7 @@ function removeemptynodefromarray(&$arr){
     $arr=$tem;
 }
 
-function fetchfromkeys($arr,$keys){
+function fetchfromkeys($arr,$keys,$autotrim=true){
 
     $tmp=array();
     if(is_string($keys)){
@@ -438,11 +438,12 @@ function fetchfromkeys($arr,$keys){
         return $tmp;
     }
     foreach($arr as $k=>$v){
-
         if(in_array($k,$keys)){
+            if($autotrim&&is_string($v)&&$v){
+                $v=trim($v);
+            }
             $tmp[$k]=$v;
         }
-
     }
     return $tmp;
 
