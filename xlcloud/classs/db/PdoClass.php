@@ -440,6 +440,13 @@ class PdoClass extends XlClassBase implements DbInterface {
                     $value=json_encode($value);
                     $this->add_backslash($value);
                 }
+
+                if(is_string($value)){
+                    if(strpos($value,"'")!==false){
+                        $value=str_replace("'","\'",$value);
+                    }
+                }
+
                 $istr.="'".$value."',";
 
             }
@@ -493,6 +500,12 @@ class PdoClass extends XlClassBase implements DbInterface {
                 if(is_array($value)){
                     $value=json_encode($value);
                     $this->add_backslash($value);
+                }
+
+                if(is_string($value)){
+                    if(strpos($value,"'")!==false){
+                        $value=str_replace("'","\'",$value);
+                    }
                 }
                 $arrstr.=$key."='".$value."',";
             }
