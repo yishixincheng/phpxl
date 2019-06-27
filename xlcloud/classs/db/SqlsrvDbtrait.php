@@ -103,6 +103,10 @@ trait SqlsrvDbtrait{
         if(strpos($value,"\\")!==false){
             $value= str_replace("\\","\\\\",$value);
         }
+        if(strpos($value,"'")!==false){
+            $value=str_replace("'","\'",$value);
+        }
+
     }
 
     public function debugLog($debug=null,$sqlstr){
