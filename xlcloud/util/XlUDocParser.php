@@ -314,18 +314,10 @@ final class XlUDocParser
 
         while ($this->lexer->isNextToken(DocLexer::T_COMMA)) {
             $this->match(DocLexer::T_COMMA);
-
             if ($this->lexer->isNextToken(DocLexer::T_CLOSE_PARENTHESIS)) {
                 break;
             }
-
-            $token = $this->lexer->lookahead;
             $value = $this->Value();
-
-            if ( ! is_object($value) && ! is_array($value)) {
-                $this->syntaxError('Value', $token);
-            }
-
             $values[] = $value;
         }
 
