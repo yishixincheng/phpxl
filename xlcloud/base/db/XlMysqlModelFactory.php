@@ -200,7 +200,7 @@ final class XlMysqlModelFactory extends XlMvcBase {
             }
 
             $this->_engine=$this->_model->engine??$this->_engine;
-            $this->_charset=$this->_model->charset??"utf8";
+            $this->_charset=$this->_model->charset??"utf8mb4";
 
             //parse _fields 获取主键
             $this->_primarykeys=[];
@@ -606,7 +606,7 @@ final class XlMysqlModelFactory extends XlMvcBase {
         return $this->_create_table($tablename,$sqlline,"MRG_MyISAM",$this->_charset,$attach);
 
     }
-    private function _create_table($table,$sqlline,$e='InnoDB',$charset='utf8',$attach=null){
+    private function _create_table($table,$sqlline,$e='InnoDB',$charset='utf8mb4',$attach=null){
 
 
         //不存在，则创建
@@ -1007,7 +1007,21 @@ final class XlMysqlModelFactory extends XlMvcBase {
 
         //创建自动创建id
         if(method_exists($this->_model,"id")){
-            return $this->_model->id();
+            $id=$this->_model->id();
+
+            if(is_string($id)||is_numeric($id)){
+                return $id;
+            }
+            if(is_array($id)){
+
+                return $this->_bindModelCreateId(isset($id['model'])?$id['model']:null);
+
+            }
+            if(is_object($id)){
+
+                return $this->_bindModelCreateId($id);
+            }
+
         }
 
         if($hashkey&&$this->_hashkey_type=="bigint"){
@@ -1040,6 +1054,68 @@ final class XlMysqlModelFactory extends XlMvcBase {
         return null;
 
     }
+
+    /**
+     * @param null $model
+     * 根据id生成model
+     */
+    private function _bindModelCreateId($model=null){
+
+        if($model==null){
+
+            return $this->_createincid();
+
+        }else{
+
+            $model->insert(['id'=>null]);
+
+            return $model->getId();
+
+        }
+
+    }
+
+    /**
+     * 创建自增id
+     */
+    private function _createincid(){
+
+        $this->connectDbHostAndGetTable(); //链接
+
+        $iscreatetable=false;
+
+        $tablename=$this->_tablepre.$this->_logictablename."_incid";
+
+        $this->_writedb->insert($tablename,['id'=>null],null,function ($errid) use(&$iscreatetable,$tablename){
+
+            //异常捕获,表不存在，则检测是否创建
+            if($errid=="TABLE_NOT_EXIST"){
+                $sqlline="`id` bigint(20) NOT NULL AUTO_INCREMENT,PRIMARY KEY (`id`)";
+                $sqlstr="CREATE TABLE IF NOT EXISTS `".$tablename."` (".$sqlline.")  ENGINE=".($this->_engine?:'InnoDB')." DEFAULT CHARSET=".($this->_charset?:'utf8mb4');
+                $iscreatetable=$this->query($sqlstr);
+
+            }else if($errid=="TABLE_NEED_REPAIR"){
+                //表需要修复
+                $iscreatetable=$this->query("REPAIR TABLE ".$tablename);
+
+            }
+
+            return $iscreatetable;
+
+
+        },null);
+
+        if($iscreatetable){
+            return $this->_createincid(); //重新获取
+        }
+
+
+        return $this->_writedb->insert_id(); //获取最新自增id
+
+
+
+    }
+
 
     /**
      * @return mixed

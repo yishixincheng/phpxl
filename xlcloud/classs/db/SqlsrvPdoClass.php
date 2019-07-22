@@ -475,7 +475,11 @@ class SqlsrvPdoClass extends XlClassBase implements DbInterface
                     $value=json_encode($value);
                     $this->add_backslash($value);
                 }
-                $istr.="'".$value."',";
+                if($value===null){
+                    $istr.="null,";
+                }else{
+                    $istr.="'".$value."',";
+                }
 
             }
             $dstr=rtrim($dstr,",");

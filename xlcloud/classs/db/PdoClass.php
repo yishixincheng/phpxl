@@ -435,12 +435,18 @@ class PdoClass extends XlClassBase implements DbInterface {
             array_walk($columns, [$this, 'add_special_char2']);
             foreach($columns as $key=>$value)
             {
+
                 $dstr.="`".$key."`,";
                 if(is_array($value)){
                     $value=json_encode($value);
                     $this->add_backslash($value);
                 }
-                $istr.="'".$value."',";
+
+                if($value===null){
+                    $istr.="null,";
+                }else{
+                    $istr.="'".$value."',";
+                }
 
             }
             $dstr=rtrim($dstr,",");
