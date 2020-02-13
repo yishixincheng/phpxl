@@ -35,8 +35,8 @@ class LoginService extends ServiceBase{
             if ($code && !$encryptData && !$iv) {
 
                 $userInfo=$callback("findUserByOpenId",["openid"=>$openid]);
-                $wxUserInfo = json_decode($userInfo['user_info'],true);
-                $callback("storeUserInfo",["wxUserInfo"=>$wxUserInfo,"skey"=>$skey,"session_key"=>$session_key]);
+                $wxUserInfo = $userInfo['user_info'];
+                $callback("storeUserInfo",["userinfo"=>$wxUserInfo,'openid'=>$openid,"skey"=>$skey,"session_key"=>$session_key]);
                 return [
                     'loginState' => 1,
                     'userinfo' => [
@@ -52,8 +52,10 @@ class LoginService extends ServiceBase{
                 OPENSSL_RAW_DATA,
                 base64_decode($iv)
             );
-            $userinfo = json_decode($decryptData,true);
-            $callback("storeUserInfo",["userinfo"=>$userinfo,"skey"=>$skey,"session_key"=>$session_key]);
+
+            $user=$callback("findUserByOpenId",["openid"=>$openid]);
+            $userinfo=$user['user_info'];
+            $callback("storeUserInfo",["userinfo"=>$userinfo?:json_decode($decryptData,true),'openid'=>$openid,"skey"=>$skey,"session_key"=>$session_key]);
 
             return [
                 'loginState' => 1,
@@ -77,31 +79,37 @@ class LoginService extends ServiceBase{
 
         if(!$skey){
             $skey=$_SERVER['HTTP_X_WX_SKEY'];
-            if(!$skey){
-                throw new \Exception("请求头未包含 skey，请配合客户端 SDK 登录后再进行请求");
+
+            if(empty($skey)){
+
+                return [
+                    'loginState' => 0,
+                    'userinfo' => []
+                ];
+
             }
         }
         try{
             $userinfo=$callback("findUserBySKey",["skey"=>$skey]);
+
             if ($userinfo === NULL) {
                 return [
                     'loginState' => 0,
                     'userinfo' => []
                 ];
             }
-            $wxLoginExpires = Config::getWxLoginExpires();
-            $timeDifference = time() - strtotime($userinfo['last_visit_time']);
-            if ($timeDifference > $wxLoginExpires) {
-                return [
-                    'loginState' => 0,
-                    'userinfo' => []
-                ];
-            } else {
-                return [
-                    'loginState' => 1,
-                    'userinfo' => json_decode($userinfo['user_info'], true)
-                ];
+
+            $user_info=json_decode($userinfo['user_info'], true);
+
+            if(!($user_info&&$user_info['uid'])){
+                $user_info=[];
             }
+
+
+            return [
+                'loginState' => 1,
+                'userinfo' => $user_info
+            ];
 
 
         }catch(\Exception $e){
@@ -116,5 +124,51 @@ class LoginService extends ServiceBase{
 
     }
 
+    /**
+     * 检验数据的真实性，并且获取解密后的明文.
+     * @param $encryptedData string 加密的用户数据
+     * @param $iv string 与用户数据一同返回的初始向量
+     * @param $data string 解密后的原文
+     *
+     * @return int 成功0，失败返回对应的错误码
+     */
+    public function decryptData(&$data,$session_key=null,$encryptedData=null, $iv=null)
+    {
 
+        $encryptData = $encryptedData?:$_SERVER['HTTP_X_WX_ENCRYPTED_DATA'];
+        $iv = $iv?:$_SERVER['HTTP_X_WX_IV'];
+
+        $aesKey=base64_decode($session_key);
+
+
+        if (strlen($iv) != 24) {
+            return ErrorCode::$IllegalIv;
+        }
+        $aesIV=base64_decode($iv);
+
+        $aesCipher=base64_decode($encryptedData);
+
+        $result=openssl_decrypt( $aesCipher, "AES-128-CBC", $aesKey, 1, $aesIV);
+
+        $dataObj=json_decode( $result);
+        if( $dataObj  == NULL )
+        {
+            return ErrorCode::$IllegalBuffer;
+        }
+
+        $data = $dataObj->phoneNumber;
+
+        return ErrorCode::$OK;
+    }
+
+
+}
+
+class ErrorCode
+{
+    public static $OK = 0;
+    public static $IllegalAesKey = -41001;
+    public static $IllegalIv = -41002;
+    public static $IllegalBuffer = -41003;
+    public static $DecodeBase64Error = -41004;
 }

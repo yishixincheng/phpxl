@@ -1021,6 +1021,9 @@ final class XlMysqlModelFactory extends XlMvcBase {
 
                 return $this->_bindModelCreateId($id);
             }
+            if(is_null($id)){
+                return $this->_bindModelCreateId();
+            }
 
         }
 
@@ -1162,37 +1165,36 @@ final class XlMysqlModelFactory extends XlMvcBase {
 
             }
 
-        }else{
+        }
 
-            //不分表
-            if($this->_primarykeys){
+        //不分表
+        if($this->_primarykeys){
 
-                if(count($this->_primarykeys)>1){
-                    foreach($this->_primarykeys as $pk){
-                        if(!$columns[$pk]){
-                            throw new XlException("primarykey:".$pk." value is not null");
+            if(count($this->_primarykeys)>1){
+                foreach($this->_primarykeys as $pk){
+                    if(!$columns[$pk]){
+                        throw new XlException("primarykey:".$pk." value is not null");
+                    }
+                }
+            }else{
+                if(empty($columns[$this->_primarykeys[0]])){
+                    $id=$this->createId(); //获取id值
+                    if($id){
+                        //id不存在
+                        $columns[$this->_primarykeys[0]]=$id;
+                    }else{
+
+                        if(!$this->_increments[$this->_primarykeys[0]]){
+                            //不是自增的情况，id必须指定
+                            throw new XlException("primarykey:".$this->_primarykeys[0]." value is not null");
                         }
                     }
-                }else{
-                    if(empty($columns[$this->_primarykeys[0]])){
-                        $id=$this->createId(); //获取id值
-                        if($id){
-                            //id不存在
-                            $columns[$this->_primarykeys[0]]=$id;
-                        }else{
-
-                            if(!$this->_increments[$this->_primarykeys[0]]){
-                                //不是自增的情况，id必须指定
-                                throw new XlException("primarykey:".$this->_primarykeys[0]." value is not null");
-                            }
-                        }
-                    }
-
                 }
 
             }
 
         }
+
         $iscreatetable=false;
         $tablename=$this->connectDbHostAndGetTable($columns);
 

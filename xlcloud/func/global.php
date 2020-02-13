@@ -134,17 +134,21 @@ function GFormatTime($date)
     }else{
         $time1=strtotime($date);
     }
-    $time=($timenow-$time1); //获得秒数
+    $time=$timenow-$time1; //获得秒数
+
+    if($time==0){
+        return date("H:i:s");
+    }
 
     $h=floor($time/3600); //获得小时数
     $f=floor($time/60);
     if($h>87600)
     {
-         return date("Y年m月d日 H:i",$time1);
+         return date("Y年m月d日",$time1);
     }
     if($h>24)
     {
-         return date("m月d日 H:i",$time1);
+         return date("m月d日",$time1);
     }
     if($h>12)
     {

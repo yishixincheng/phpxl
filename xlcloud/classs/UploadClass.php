@@ -119,51 +119,62 @@ class UploadClass extends XlClassBase {
      *
      */
 
-    public function save($limittype=0){
+    public function save($filetype=0){
 
         $_filename=$this->getFileName();
         $_pictype=$this->getPicType();
         $_maxsize=$this->getMaxSize();
 
-        $result="";
+        $result="".$_filename;
         if(is_uploaded_file($_FILES[$_filename]['tmp_name']))
         {
             $success=true;
-            list($width,$height,$type)=getimagesize($_FILES[$this->filename]['tmp_name']);
-            if($type==1)
-                $type='.gif';
-            else if( $type==2 )
-                $type='.jpg';
-            else if( $type==3 )
-                $type='.png';
-            else if($type==4||$type==13)
-            {
-                $type='.swf';
-                $_pictype='flash';
-            }
-            else
-            {
-                $result='上传类型不符合！';
+
+            if(empty($filetype)){
+
+                //上传的是图片文件
+                list($width,$height,$type)=getimagesize($_FILES[$_filename]['tmp_name']);
+                if($type==1)
+                    $type='.gif';
+                else if( $type==2 )
+                    $type='.jpg';
+                else if( $type==3 )
+                    $type='.png';
+                else if($type==4||$type==13)
+                {
+                    $type='.swf';
+                    $_pictype='flash';
+                }
+                else
+                {
+                    $result='文件类型不符合！';
+                    $success=false;
+                }
+
+            }else if(in_array($filetype,['mp4'])){
+
+
+                $ext = strtolower(pathinfo($_FILES[$_filename]['name'], PATHINFO_EXTENSION));
+
+                if($ext!="mp4"){
+                    $result='请上传MP4视频文件！';
+                    $success=false;
+                }
+                $type=".mp4";
+
+            }else{
+
+                $result='上传类型不符合！！'.$filetype;
                 $success=false;
+
             }
-            if($limittype==0)
-            {
-                //代表上传的是图片
-                if($type==".swf")
-                {
-                    $success=false;
-                }
-            }
-            else if($limittype==1)
-            {
-                if($type!=".swf")
-                {
-                    $success=false;
-                }
-            }
+
+
+
             if($_FILES[$_filename]['size']>$_maxsize)
             {
                 $success=false;
+                $result='文件太大';
             }
             if($success)
             {

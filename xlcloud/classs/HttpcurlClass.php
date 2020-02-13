@@ -162,7 +162,7 @@ class HttpcurlClass extends XlClassBase {
             }else{
                 unset($files[$key]);
                 if(class_exists('\CURLFile')){
-                    $files[$key]=new \CURLFile($value); // >=5.5
+                    $files[$key]=new \CURLFile(realpath($_FILES[$value]['tmp_name'])); // >=5.5
                 }else{
                     $files[$key]='@'.$value;
                 }

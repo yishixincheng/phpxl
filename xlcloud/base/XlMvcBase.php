@@ -452,9 +452,7 @@ class XlMvcBase extends XlHookBase {
                 $_Isplugin=false;
                 $_Ns=defined("ROOT_NS")?ROOT_NS:'';
             }else{
-                if($this->_Isplugin){
-                    throw new XlException("非法调用");
-                }
+                $_Isplugin=substr($task,0,$pos);
             }
             $task=substr($task,$pos+1);
         }

@@ -25,6 +25,7 @@ final class TransferAccount extends XlApiBase{
     protected $touid=0;              //平台要转账的uid
     protected $bankno=0;               //银行卡编码
     protected $tradeno;
+    protected $commission;         //佣金
 
     public function banknameToBankno($name){
 
@@ -138,9 +139,9 @@ final class TransferAccount extends XlApiBase{
             return $this->ErrorInf("缺少微信配置文件");
         }
         if(substr($includepath,0,1)=="/"){
-            $includepath=ROOT_PATH.substr($includepath,1);
+            $includepath=PROROOT_PATH.substr($includepath,1);
         }else{
-            $includepath=ROOT_PATH.'config/'.$includepath;
+            $includepath=PROROOT_PATH.'config/'.$includepath;
         }
         require_once($includepath);//包含配置文件
 
@@ -180,9 +181,9 @@ final class TransferAccount extends XlApiBase{
             return $this->ErrorInf("缺少微信配置文件");
         }
         if(substr($includepath,0,1)=="/"){
-            $includepath=ROOT_PATH.substr($includepath,1);
+            $includepath=PROROOT_PATH.substr($includepath,1);
         }else{
-            $includepath=ROOT_PATH.'config/'.$includepath;
+            $includepath=PROROOT_PATH.'config/'.$includepath;
         }
         require_once($includepath);//包含配置文件
 
@@ -205,9 +206,9 @@ final class TransferAccount extends XlApiBase{
             return $this->ErrorInf("缺少微信配置文件");
         }
         if(substr($includepath,0,1)=="/"){
-            $includepath=ROOT_PATH.substr($includepath,1);
+            $includepath=PROROOT_PATH.substr($includepath,1);
         }else{
-            $includepath=ROOT_PATH.'config/'.$includepath;
+            $includepath=PROROOT_PATH.'config/'.$includepath;
         }
 
         require_once($includepath);//包含配置文件
@@ -248,9 +249,9 @@ final class TransferAccount extends XlApiBase{
             return $this->ErrorInf("缺少微信配置文件");
         }
         if(substr($includepath,0,1)=="/"){
-            $includepath=ROOT_PATH.substr($includepath,1);
+            $includepath=PROROOT_PATH.substr($includepath,1);
         }else{
-            $includepath=ROOT_PATH.'config/'.$includepath;
+            $includepath=PROROOT_PATH.'config/'.$includepath;
         }
         require_once($includepath);//包含配置文件
 
@@ -347,7 +348,12 @@ final class TransferAccount extends XlApiBase{
 
             $cls=['orderno'=>$this->orderno,'tradeno'=>$attach['tradeno'],'time'=>$attach['time']?:SYS_TIME,
                   'payplat'=>$this->payplat,'account'=>$this->account,'realname'=>$this->realname,'bankno'=>$this->bankno,
-                  'fee'=>$this->fee,'title'=>$this->title,'remark'=>$this->remark];
+                  'fee'=>$this->fee,'title'=>$this->title,'remark'=>$this->remark,
+                  'uid'=>$this->touid,'ispay'=>1,'payend_time'=>$attach['time']?:SYS_TIME];
+
+            if($this->commission){
+                $cls['commission']=$this->commission;
+            }
 
             $this->model->add($cls,true);
 
@@ -360,6 +366,9 @@ final class TransferAccount extends XlApiBase{
 
             if($this->bankno){
                 $loggercontent.=" 银行编码：".$this->bankno;
+            }
+            if($this->commission){
+                $loggercontent.=" 佣金：".$this->commission;
             }
             $loggercontent.=PHP_EOL;
 

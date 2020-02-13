@@ -24,6 +24,8 @@ class Config{
     //sslkey路径
     private static $SSLKEY_PATH='';
 
+    private static $RSAPATH='';
+
     //代理端口
     private static $CURL_PROXY_PORT=0;
 

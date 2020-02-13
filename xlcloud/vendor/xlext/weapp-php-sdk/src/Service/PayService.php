@@ -1,10 +1,9 @@
 <?php
 
-namespace Xl_WeApp_SDK;
+namespace Xl_WeApp_SDK\Service;
 use Xl_WeApp_SDK\Lib\WxPayResult;
-use Xl_WeApp_SDK\Service\ServiceBase;
 use Xl_WeApp_SDK\Lib\WxPayParam as WxPayParam;
-
+use Xl_WeApp_SDK\Config;
 /**
  * Class PayService
  * @package Xl_WeApp_SDK
@@ -67,6 +66,49 @@ class PayService extends ServiceBase{
          return $result;
 
      }
+
+    /**
+     * @param $rt
+     * 生成小程序签名
+     */
+     public function getPaySign($rt){
+
+         $attach=[
+             'timeStamp'=>strval(time()),
+             'nonceStr'=>static::getNonceStr(),
+             'package'=>'prepay_id='.$rt['prepay_id'],
+             'signType'=>'MD5'
+         ];
+         $paydata=$attach;
+
+         $paydata['appId']=Config::getAppId();
+
+         ksort($paydata);
+
+         $keystrs=$this->_toUrlParams($paydata);
+         $keystrs.="&key=".Config::getKEY();
+
+         $keystrs=strtoupper(md5($keystrs));
+
+         $attach['paySign']=$keystrs;
+
+         return $attach;
+
+     }
+
+    private function _toUrlParams($values)
+    {
+        $buff = "";
+        foreach ($values as $k => $v)
+        {
+            if($k != "sign" && $v != "" && !is_array($v)){
+                $buff .= $k . "=" . $v . "&";
+            }
+        }
+
+        $buff = trim($buff, "&");
+        return $buff;
+    }
 
     /**
      * 订单查询
@@ -304,6 +346,170 @@ class PayService extends ServiceBase{
          return $result;
 
      }
+
+
+    /**
+     * @param $params
+     * @param int $timeOut
+     * @return array
+     * @throws \Exception
+     * 企业转账到零钱
+     */
+    public function transfersOrder($params,$timeOut=6){
+
+        $url="https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers";
+        $inputObj=new WxPayParam();
+        $inputObj->setValues($params); //置入参数
+
+        //小程序，trade_type=JSAPI,openid必传
+        $this->checkMustParam($inputObj,['partner_trade_no','openid','amount','desc'],"转账到零钱接口");
+
+        if($inputObj->getValueByKey("check_name")=="FORCE_CHECK"){
+            if(!$inputObj->isKeySet("re_user_name")){
+                throw new \Exception("re_user_name参数缺失");
+            }
+        }
+
+        $inputObj->setValueByKey("appid",Config::getAppId());
+        $inputObj->setValueByKey("mch_id",Config::getMchid());
+        $inputObj->setValueByKey("spbill_create_ip",$_SERVER['REMOTE_ADDR']);//终端ip
+        $inputObj->setValueByKey("nonce_str",static::getNonceStr()); //随机字符串
+
+        //签名
+        $inputObj->SetSign();
+        $xml = $inputObj->ToXml();
+
+        $startTimeStamp = self::getMillisecond();//请求开始时间
+        $response=static::postXmlCurl($xml,$url,false,$timeOut);
+        $result=WxPayResult::Init($response);
+
+        //上报数据
+        $this->reportCostTime($url,$startTimeStamp,$result);
+
+        return $result;
+
+    }
+
+    public function transfersOrderQuery($params,$timeOut=6){
+
+        $url="https://api.mch.weixin.qq.com/mmpaymkttransfers/gettransferinfo";
+
+        $inputObj=new WxPayParam();
+        $inputObj->setValues($params); //置入参数
+        if(!$inputObj->isKeySet("partner_trade_no")){
+            throw new \Exception("订单查询接口中partner_trade_no必填！");
+        }
+        $inputObj->setValueByKey("appid",Config::getAppId());
+        $inputObj->setValueByKey("mch_id",Config::getMchid());
+        $inputObj->setValueByKey("nonce_str",static::getNonceStr()); //随机字符串
+
+        //签名
+        $inputObj->SetSign();
+        $xml = $inputObj->ToXml();
+
+        $startTimeStamp = self::getMillisecond();//请求开始时间
+        $response=static::postXmlCurl($xml,$url,false,$timeOut);
+        $result=WxPayResult::Init($response);
+
+        //上报数据
+        $this->reportCostTime($url,$startTimeStamp,$result);
+
+        return $result;
+
+    }
+
+    /**
+     * @param $params
+     * @param int $timeOut
+     * 企业转账到银行卡
+     */
+    public function payToBankOrder($params,$timeOut=6){
+
+        $url="https://api.mch.weixin.qq.com/mmpaysptrans/pay_bank";
+        $inputObj=new WxPayParam();
+
+        $params['enc_bank_no']=$this->_rsa($params['enc_bank_no']);
+        $params['enc_true_name']=$this->_rsa($params['enc_true_name']);
+
+        $inputObj->setValues($params); //置入参数
+
+        //小程序，trade_type=JSAPI,openid必传
+        $this->checkMustParam($inputObj,['partner_trade_no','enc_bank_no','enc_true_name','bank_code','amount'],"转账到零钱接口");
+
+
+        $inputObj->setValueByKey("mch_id",Config::getMchid());
+        $inputObj->setValueByKey("nonce_str",static::getNonceStr()); //随机字符串
+
+        //签名
+        $inputObj->SetSign();
+        $xml = $inputObj->ToXml();
+
+        $startTimeStamp = self::getMillisecond();//请求开始时间
+        $response=static::postXmlCurl($xml,$url,false,$timeOut);
+        $result=WxPayResult::Init($response);
+
+        //上报数据
+        $this->reportCostTime($url,$startTimeStamp,$result);
+
+        return $result;
+
+
+    }
+
+    public function payToBankOrderQuery($params,$timeOut=6){
+
+        $url="https://api.mch.weixin.qq.com/mmpaysptrans/query_bank";
+
+        $inputObj=new WxPayParam();
+        $inputObj->setValues($params); //置入参数
+        if(!$inputObj->isKeySet("partner_trade_no")){
+            throw new \Exception("订单查询接口中partner_trade_no必填！");
+        }
+        $inputObj->setValueByKey("mch_id",Config::getMchid());
+        $inputObj->setValueByKey("nonce_str",static::getNonceStr()); //随机字符串
+
+        //签名
+        $inputObj->SetSign();
+        $xml = $inputObj->ToXml();
+
+        $startTimeStamp = self::getMillisecond();//请求开始时间
+        $response=static::postXmlCurl($xml,$url,false,$timeOut);
+        $result=WxPayResult::Init($response);
+
+        //上报数据
+        $this->reportCostTime($url,$startTimeStamp,$result);
+
+        return $result;
+
+    }
+
+    /**
+     * @param $str
+     * rsa加密
+     */
+    private function _rsa($str){
+
+
+        $privateKeyFilePath = Config::getRSAPATH().'rsa_private_key.pem';
+        $publicKeyFilePath = Config::getRSAPATH().'rsa_public_key.pem';
+
+        extension_loaded('openssl') or die('php需要openssl扩展支持');
+
+        $privateKey = openssl_pkey_get_private(file_get_contents($privateKeyFilePath));
+        $publicKey = openssl_pkey_get_public(file_get_contents($publicKeyFilePath));
+
+        ($privateKey && $publicKey) or die('密钥或者公钥不可用');
+
+        if(openssl_private_encrypt($str, $encryptData, $privateKey)){
+
+            return base64_encode($encryptData);
+
+        }
+
+        return null;
+
+    }
+
 
 
     /**
