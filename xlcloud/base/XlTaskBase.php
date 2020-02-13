@@ -53,9 +53,9 @@ abstract class XlTaskBase extends XlMvcBase
             }
         }
         $this->_nextTaskParam=[
-            'params'=>$rt['params']?:null,
+            'params'=>$rt['params']??null,
             'result'=>$result,
-            'isbreak'=>$isbreak?:null
+            'isbreak'=>$isbreak??null
         ];
     }
     public function leave(){
